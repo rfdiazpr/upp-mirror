@@ -20,6 +20,12 @@ namespace GraphDraw_ns
 		FLOAT_OVER_GRAPH = 0x100
 	} ElementPosition;
 
+	enum {
+		VERTICAL_MASK   = 0x00F,
+		HORIZONTAL_MASK = 0x0F0,
+		FLOAT_MASK      = 0xF00
+	};
+
 	typedef enum {
 		ELEMENT_BORDER_NONE   = 0x0,
 		
@@ -38,11 +44,6 @@ namespace GraphDraw_ns
 
 	ElementBorderPosition GetElementSubArea( Point p, Rect r, int borderWidth );
 
-	enum {
-		VERTICAL_MASK   = 0x00F,
-		HORIZONTAL_MASK = 0x0F0,
-		FLOAT_MASK      = 0xF00
-	};
 
 
 	typedef enum RefreshStrategy {

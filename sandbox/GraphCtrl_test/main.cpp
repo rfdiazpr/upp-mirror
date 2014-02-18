@@ -90,7 +90,7 @@ GraphDraw_test::GraphDraw_test()
 	// ====================================
 	points << Pointf(0.5,1) << Pointf(1, 3.5)<< Pointf(2,1.8)<< Pointf(4, 3)<< Pointf(5.5, 2.5) << Pointf(6,7) << Pointf(7, 9)<< Pointf(8,10)<< Pointf(10, 15)<< Pointf(15, 15);
 	g1.AddSeries(points).PlotStyle<StaggeredSeriesPlot>();
-//	g4.
+	g1.Refresh();
 
 	// ====================================
 	//                 G3
@@ -114,11 +114,12 @@ GraphDraw_test::GraphDraw_test()
 	SmartTextTickMark& sttmg3_1 = g3_markerElem.AddMarker<SmartTextTickMark>(1, 25000);
 		sttmg3_1.SetText("\1[ [ [*@6;1  3 ]]]");
 		sttmg3_1.SetBackGroundStyle(GraphCtrl_testImg::BACKGND());
+	g3.Refresh();
 
 	// ====================================
 	//                 G4
 	// ====================================
-	//g4.debugTrace = true;
+	g4.debugTrace = true;
 	g4.CreateElement2<ExclusionAreaDraw, FLOAT_OVER_GRAPH>(0, 0, g4.GetX1CoordConverter(), g4.GetY1CoordConverter() );
 	//g4.CreateElement1<GraphDraw_ns::MarkerElement<MyGraphCtrl::Types>, TOP_OF_GRAPH>(20, 0, g4.GetXCoordConverter() );
 	MarkerElementType& markerElem = g4.CreateElement1< AutoHideElementCtrl<MarkerElementType>, TOP_OF_GRAPH>(30, -1, g4.GetX1CoordConverter() );
@@ -148,6 +149,7 @@ GraphDraw_test::GraphDraw_test()
 	g4.GetLegendElement().SetElementWidth(28);
 	//g4.GetYGridAxisDraw().SetBackGroundStyle(GraphCtrl_testImg::LEGEND_BACKGND4());
 	g4.GetY1GridAxisDraw().SetVSelectStyle(GraphCtrl_testImg::VSELECT());
+	g4.Refresh();
 	
 
 	// ====================================
@@ -168,6 +170,8 @@ GraphDraw_test::GraphDraw_test()
 	SmartTextTickMark& sttm4 = markerElemG5_4.AddMarker<SmartTextTickMark>(4, 3.8);
 		sttm4.SetText("---M4---");
 		sttm4.SetBackGroundStyle(GraphCtrl_testImg::BACKGND());
+
+	g5.Refresh();
 
 	
 	bReport << THISBACK(DoReport);
@@ -239,6 +243,9 @@ GUI_APP_MAIN
 
 
 	TRACE_INFO("STARTING application");
+	
+//	MemoryBreakpoint(19096);
+	
 	One<GraphDraw_test> app = new GraphDraw_test();
 	app->Sizeable().Run();
 	TRACE_INFO("ENDING application");

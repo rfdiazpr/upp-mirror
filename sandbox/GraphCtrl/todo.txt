@@ -18,6 +18,16 @@
 		--------------
 
 
+
+18/02/2014 - SVN.6927
+----------------------
+* Added DrawFocus(bool)  in '.USC' file to enable/disable focus drawing (in case the layout contains only one Ctrl and don't need to draw the Focus )
+* Refactored GridAxisDraw and GridStepIterator
+   - Added management for tick level : majorTickMark and minorTickMark
+   - Axis text size automatically taken in account to adjust grid step
+   - Corrected LOG scale management
+
+
 31/01/2014 - SVN.6840
 ----------------------
 * COMPLETION  now works with on FULL class hierarchy of GraphCtrl !!!

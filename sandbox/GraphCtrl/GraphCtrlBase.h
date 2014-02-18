@@ -111,6 +111,7 @@ class CRTP_GraphCtrl_Base :  public GRAPHDRAW_BASE_CLASS, public Ctrl
 	bool isScrollFromAxisAllowed;
 	bool isZoomFromGraphAllowed;
 	bool isScrollFromGraphAllowed;
+	bool drawFocus;
 
 	Callback1<Bar&> WhenBar;
 	
@@ -132,6 +133,7 @@ class CRTP_GraphCtrl_Base :  public GRAPHDRAW_BASE_CLASS, public Ctrl
 	, isScrollFromAxisAllowed(true)
 	, isZoomFromGraphAllowed(true)
 	, isScrollFromGraphAllowed(true)
+	, drawFocus(false)
 	, WhenBar( THISBACK(ContextMenu) )
 	, currElement(0)
 	{
@@ -157,6 +159,7 @@ class CRTP_GraphCtrl_Base :  public GRAPHDRAW_BASE_CLASS, public Ctrl
 	, isScrollFromAxisAllowed(true)
 	, isZoomFromGraphAllowed(true)
 	, isScrollFromGraphAllowed(true)
+	, drawFocus(false)
 	, WhenBar( THISBACK(ContextMenu) )
 	, currElement(0)
 	{
@@ -198,18 +201,28 @@ class CRTP_GraphCtrl_Base :  public GRAPHDRAW_BASE_CLASS, public Ctrl
 		ScheduleFullRefresh();
 	}
 
-	virtual bool   IsModified() const {
+	virtual bool IsModified() const {
 		return ( Ctrl::IsModified() || _B::IsModifiedData());
 	}
 
-	virtual void   ClearModify() {
+	virtual void ClearModify() {
 		Ctrl::ClearModify();
 		_B::ClearModifyData();
 	}
 
-	DERIVED&  UseLocalSelectLoop(bool p = true) {
+	DERIVED& UseLocalSelectLoop(bool p = true) {
 		useLocalSelectLoop = p;
 		return *static_cast<DERIVED*>(this);
+	}
+
+
+	DERIVED& DrawFocus(bool p = true) {
+		drawFocus = p ;
+		return *static_cast<DERIVED*>(this);
+	}
+
+	virtual void DrawFocus(Draw& w) {
+		Upp::DrawFocus(w, Rect(GetSize()).Deflated(5));
 	}
 
 	private:
@@ -323,7 +336,7 @@ class CRTP_GraphCtrl_Base :  public GRAPHDRAW_BASE_CLASS, public Ctrl
 			Paint2(w);
 			SetModify();
 		}
-		if(HasFocus()) DrawFocus(w, Rect(GetSize()).Deflated(5));
+		if( drawFocus && HasFocus() ) DrawFocus(w);
 	}
 	int GetCopyRatio() { return copyRatio; }
 	

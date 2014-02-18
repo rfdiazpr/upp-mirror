@@ -271,7 +271,6 @@ namespace GraphDraw_ns
 					Upp::Fill( ib.Begin(), bckgColor, ib.GetLength() );
 					BufferPainter bp(ib, MD_ANTIALIASED);
 					ChPaint(bp, r2.Size(), _backgndStyle );
-					//Premultiply(ib);
 					dw.DrawImage(r2.left, r2.top, ib);
 				}
 				// Draw OUTLINE

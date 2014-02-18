@@ -234,7 +234,8 @@ fn GD_AdjustElementFrame(side, plotRect, &elem)
 
 subctrl GraphDraw {
 	Frame  SetFrame @1;
-	bool  WantFocus = true @7;
+	bool WantFocus = true @7;
+	bool DrawFocus = false;
 	DrawMode SetDrawMode = MODE_ANTIALIASED;
 	bool UseLocalSelectLoop = true;
 	bool DisableGraphZoom = false;
@@ -247,8 +248,8 @@ subctrl GraphDraw {
 	bool DisableYScroll = false;
 	
 	int SetTopMargin    = 10;
-	int SetBottomMargin = 0;
-	int SetLeftMargin   = 0;
+	int SetBottomMargin = 3;
+	int SetLeftMargin   = 3;
 	int SetRightMargin  = 15;
 	Color SetCtrlBackgroundStyle = White;
 	Color SetPlotBackgroundStyle = LtGray;

@@ -236,6 +236,12 @@ namespace GraphDraw_ns
 			for (int j = 0; j < _yConverters.GetCount(); j++) {
 				_yConverters[j]->updateScreenSize( _plotRect.GetHeight(), 0  );
 			}
+
+			for (int j = 0; j < _drawElements.GetCount(); j++) {
+				if (!_drawElements[j]->IsHidden()) {
+					_drawElements[j]->Update();
+				}
+			}
 		}
 		
 
@@ -1072,6 +1078,7 @@ namespace GraphDraw_ns
 		typedef typename TYPES::X_TypeGridAxisDraw    TypeGridAxisDrawX;
 		typedef typename TYPES::TypeLabelElement      TypeLabel;
 	
+		protected:
 		TypeCoordConverterX   _xConverter;
 		TypeGridAxisDrawX     _xGridDraw;
 		TypeLabel             _xLabel;

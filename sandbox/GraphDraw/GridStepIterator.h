@@ -9,17 +9,18 @@ namespace GraphDraw_ns
 	// ============================
 	//    GridStepManager   CLASS
 	// ============================
-
-	class GridStepData {
+	class  GridStepData {
 		public:
+			bool tickLevel;    // 0:Major tick    1:secondary tick    2: ....
+			char drawTickText;
+			Size_<Upp::uint16>    textSize;
 			TypeGraphCoord stepGraphValue;
-			bool           drawTickText;
-			unsigned char  tickLevel;    // 0:Major tick    1:secondary tick    2: ....
+			String 		   text;
 			Value          customParams; // general purpose step parameter holder : filled when calculating the steps
 			
 			GridStepData()
-			: drawTickText(true)
-			, tickLevel(0)
+			: tickLevel(0)
+			, drawTickText(true)
 			{
 			}
 	};
@@ -52,7 +53,20 @@ namespace GraphDraw_ns
 		public:
 			inline bool operator==( const CLASSNAME& v) const { return( _currentStep==v._currentStep ); }
 			inline bool operator!=( const CLASSNAME& v) const { return( _currentStep!=v._currentStep ); }
-			inline TypeScreenCoord  operator*() const { return getScreenValue(); }
+			inline operator TypeScreenCoord() const { return _coordConverter.toScreen( getGraphValue() ); }
+			inline operator Size() const            { return Size(_stepData[_currentStep].textSize.cx, _stepData[_currentStep].textSize.cy); }
+			inline operator String() const          { return _stepData[_currentStep].text; }
+			//inline GridStepData&    operator->()    { return _stepData[_currentStep]; }
+			inline const GridStepData&    operator->()  const  { return _stepData[_currentStep]; }
+
+			inline TypeGraphCoord getGraphValue()   const { return _stepData[_currentStep].stepGraphValue; }
+			inline const Value& getCustomStepData() const { return _stepData[_currentStep].customParams; }
+			inline unsigned int getTickLevel()      const { return _stepData[_currentStep].tickLevel; }
+			inline bool drawTickText()              const { return _stepData[_currentStep].drawTickText; }
+			inline TypeGraphCoord getGraphRange()   const { return _coordConverter.getSignedGraphRange(); }
+			inline int getStepNum()                 const { return _currentStep; }
+			inline bool isFirst()                   const { return (_currentStep==0); }
+			inline bool isLast()                    const { return (_currentStep==(_nbSteps-1)); }
 
 			inline CLASSNAME& toEnd()   { _currentStep = _nbSteps; return *this; }
 			inline CLASSNAME& toBegin() { _currentStep = 0; return *this; }
@@ -71,45 +85,15 @@ namespace GraphDraw_ns
 				++_currentStep;
 				return tmp;
 			}
-
-			inline TypeGraphCoord getGraphValue() const// methode that calculates the grid step position value
-			{
-				return _stepData[_currentStep].stepGraphValue;// _graphStepValues[_currentStep];
-			}
-
-			inline const Value& getCustomStepData() const// methode that calculates the grid step position value
-			{
-				return _stepData[_currentStep].customParams;
-			}
-			
-			inline unsigned int getTickLevel() const// methode that calculates the grid step position value
-			{
-				return _stepData[_currentStep].tickLevel;
-			}
-			
-			inline bool drawTickText() const { return _stepData[_currentStep].drawTickText; }
-
-			inline TypeScreenCoord getScreenValue() const // methode that calculates the grid step position value
-			{
-				return _coordConverter.toScreen( getGraphValue() );
-			}
-
-			inline TypeGraphCoord getGraphRange() const// methode that returns the range of graph
-			{
-				return _coordConverter.getSignedGraphRange();
-			}
-			inline int getStepNum() const { return _currentStep; }
-			inline bool isFirst()   const { return (_currentStep==0); }
-			inline bool isLast()    const { return (_currentStep==(_nbSteps-1)); }
 	};
 
 
 	typedef Callback2< const GridStepIterator&, String&> TypeFormatTextCbk; // IN: valueIterator,  OUT: formated value
 
-	template<int NB_MAX_STEPS=200>
 	class GridStepManager {
 		public:
-			typedef GridStepManager<NB_MAX_STEPS>  CLASSNAME;
+			enum { NB_MAX_STEPS = 100 };
+			typedef GridStepManager  CLASSNAME;
 			typedef GridStepIterator Iterator;
 			typedef Callback2<CLASSNAME&, CoordinateConverter&> TypeGridStepCalcCallBack;
 
@@ -176,28 +160,33 @@ namespace GraphDraw_ns
 		public:
 			GridStepManager(CoordinateConverter& coordConv)
 			: _textSize(30)
-			, _nbMaxSteps( Upp::min(15, NB_MAX_STEPS) )
+			, _nbMaxSteps( Upp::min(15, (int)NB_MAX_STEPS) )
 			, _currentStep( 0 )
 			, _coordConverter( coordConv )
 			{
 				setStdGridSteps();
-				Update();
+				UpdateGridSteps();
 			}
 
 			GridStepManager(int nbSteps, int currStep, CoordinateConverter& coordConv)
 			: _textSize(30)
-			, _nbMaxSteps( Upp::max(5, Upp::min(nbSteps, NB_MAX_STEPS)) )
+			, _nbMaxSteps( Upp::max(5, Upp::min(nbSteps, (int)NB_MAX_STEPS)) )
 			, _currentStep( currStep )
 			, _coordConverter( coordConv )
 			{
 				setStdGridSteps();
-				Update();
+				UpdateGridSteps();
 			}
 			
 		private:
 			// explicitly forbidden to use
 			CLASSNAME& operator=( const CLASSNAME& v) { return *this; }
-			GridStepManager() {}
+			//GridStepManager()
+			//: _textSize(30)
+			//, _nbMaxSteps( 0)//CLASSNAME::NB_MAX_STEPS) )
+			//, _currentStep( 0 )
+			//, _coordConverter()
+			//{}
 
 		public:
 			void setGridStepCalcBack(TypeGridStepCalcCallBack cbk) { _updateCbk = cbk; }
@@ -209,12 +198,14 @@ namespace GraphDraw_ns
 			virtual ~GridStepManager() {}
 
 
-			virtual void Update()
+			virtual void UpdateGridSteps()
 			{
-				if (_textSize > 1) {
+				//LOG("UpdateGridSteps()");
+				if (_textSize > 1.0) {
 					_nbMaxSteps = _coordConverter.getScreenRange()/_textSize;
 				}
 				_updateCbk(*this, _coordConverter);
+				
 			}
 
 			void SetNbSteps(int nbSteps)
@@ -224,14 +215,23 @@ namespace GraphDraw_ns
 			
 			int GetNbSteps() { return _nbSteps; }
 
-			void SetTextMaxSize(double textSize)
+			bool SetTextMaxSize(double textSize)
 			{
 				textSize *= 2;
-				LOG("> SetTextMaxSize(" << textSize << ")  current  _textSize=" << _textSize);
-				if ( abs(_textSize-textSize)/_textSize > 1.1) {
-					_textSize = textSize;
-					LOG("      ---UPDATED--- : _textSize = textSize = " << textSize);
+				if ( _textSize < textSize) {
+					if ( textSize/_textSize > 1.2) {
+						RLOG("> SetTextMaxSize(>1.2)(" << textSize << ")  old  _textSize=" << _textSize  <<  "  ---UPDATED---");
+						_textSize = textSize;
+						return true;
+					}
+				} else {
+					if (textSize/_textSize < 0.5) {
+						RLOG("> SetTextMaxSize(<0.5)(" << textSize << ")  old  _textSize=" << _textSize  <<  "  ---UPDATED---");
+						_textSize = textSize;
+						return true;
+					}
 				}
+				return false;
 			}
 
 			Iterator End() {
@@ -244,66 +244,65 @@ namespace GraphDraw_ns
 
 			void stdGridStepCalcCbk(CLASSNAME& gridStepManager, CoordinateConverter& coordConv )
 			{
-				TypeGraphCoord gridStartValue;
-				TypeGraphCoord gridStepValue;
-				gridStepValue = GetNormalizedStep( coordConv.getSignedGraphRange() );
-				gridStartValue = GetGridStartValue( gridStepValue, coordConv.getGraphMin() );
+				TypeGraphCoord gridStepValue = GetNormalizedStep( (float)coordConv.getSignedGraphRange() ); // DO NOT REMOVE (float) ==> prevents artifacts du to range precision errors when scrolling  (ex: range changes from 14.000000000000052 to 13.99999999999997)
+				TypeGraphCoord gridStartValue = GetGridStartValue( gridStepValue, coordConv.getGraphMin() );
 				_nbSteps = (unsigned int)tabs((coordConv.getGraphMax() - gridStartValue) / gridStepValue);
 				
 				if (_nbSteps > _nbMaxSteps) {
 					_nbSteps = _nbMaxSteps;
 				}
 
-				LOG("stdGrid  ==============");
+				LOG("stdGrid [" << (int) this << "] ==============");
 				// fill step values ==> used by gridStepIterator
 				for (unsigned int c=0; c<_nbSteps+1; ++c) {
 					_stepDrawingParams[c].stepGraphValue = gridStartValue + gridStepValue*c;
 					_stepDrawingParams[c].drawTickText = 1;// ==> draw tick text
-					LOG("stdGrid     - step["<< c <<"] = " << _stepDrawingParams[c].stepGraphValue );
+					LOG("stdGrid [" << (int) this << "]    - step["<< c <<"] = " << _stepDrawingParams[c].stepGraphValue );
 				}
-				
-				LOG("stdGrid  getGraphMin   =" << coordConv.getGraphMin() );
-				LOG("stdGrid  getGraphMax   =" << coordConv.getGraphMax() );
-				LOG("stdGrid  gridStartValue=" << gridStartValue );
-				LOG("stdGrid  gridStepValue =" << gridStepValue );
-				LOG("stdGrid    screenRange =" << coordConv.getScreenRange() );
-				LOG("stdGrid    screenMin   =" << coordConv.getScreenMin() );
-				LOG("stdGrid    screenMax   =" << coordConv.getScreenMax() );
-				LOG("stdGrid  _nbSteps      =" << _nbSteps );
-				LOG("stdGrid  _nbMaxSteps   =" << _nbMaxSteps );
-				LOG("stdGrid  _textSize     =" << _textSize );
+				LOG("stdGrid [" << (int) this << "]  SignedRange   =" << coordConv.getSignedGraphRange() );
+				LOG("stdGrid [" << (int) this << "]  getGraphMin   =" << coordConv.getGraphMin() );
+				LOG("stdGrid [" << (int) this << "]  getGraphMax   =" << coordConv.getGraphMax() );
+				LOG("stdGrid [" << (int) this << "]  gridStartValue=" << gridStartValue );
+				LOG("stdGrid [" << (int) this << "]  gridStepValue =" << gridStepValue );
+				LOG("stdGrid [" << (int) this << "]    screenRange =" << coordConv.getScreenRange() );
+				LOG("stdGrid [" << (int) this << "]    screenMin   =" << coordConv.getScreenMin() );
+				LOG("stdGrid [" << (int) this << "]    screenMax   =" << coordConv.getScreenMax() );
+				LOG("stdGrid [" << (int) this << "]  _nbSteps      =" << _nbSteps );
+				LOG("stdGrid [" << (int) this << "]  _nbMaxSteps   =" << _nbMaxSteps );
+				LOG("stdGrid [" << (int) this << "]  _textSize     =" << _textSize );
 			}
 
 			void log10GridStepCalcCbk(CLASSNAME& gridStepManager, CoordinateConverter& coordConv )
 			{
-					const double rangeFactor = coordConv.getGraphMax()/coordConv.getGraphMin();
+				const double rangeFactor = coordConv.getGraphMax()/coordConv.getGraphMin();
 				if ( rangeFactor < 10 ) {
 					stdGridStepCalcCbk(gridStepManager, coordConv);
 				}
 				else
 				{
 					const double logRangeFactor = floor(log10(rangeFactor));
-					int logStepValue = GetNormalizedStep( logRangeFactor );
+					int logStepValue = GetNormalizedStep( (float)logRangeFactor );
 					if (logStepValue == 0) logStepValue = 1;
 					
 					TypeGraphCoord gridStartValue =  GetGridStartValue(logStepValue, log10(coordConv.getGraphMin()));
 					--gridStartValue;
-					int nbLogSteps = (log10(coordConv.getGraphMax())-gridStartValue) / logStepValue;
+					unsigned int nbLogSteps = (log10(coordConv.getGraphMax())-gridStartValue) / logStepValue;
 					if (nbLogSteps > _nbMaxSteps) {
 						nbLogSteps = _nbMaxSteps;
 					}
 					
 					double logStepDensity = 2;
-					if ( nbLogSteps > 0 ) logStepDensity = _nbMaxSteps/nbLogSteps;
+					if ( nbLogSteps > 0 ) logStepDensity = (_nbMaxSteps*logStepValue)/logRangeFactor;
 
 					LOG("============================");
-					LOG("log10  getGraphMin=" << coordConv.getGraphMin() );
-					LOG("log10  getGraphMax=" << coordConv.getGraphMax() );
-					LOG("log10  rangeFactor=" << rangeFactor );
-					LOG("log10  logStepValue=" << double(logStepValue) );
+					LOG("log10  getGraphMin   =" << coordConv.getGraphMin() );
+					LOG("log10  getGraphMax   =" << coordConv.getGraphMax() );
+					LOG("log10  rangeFactor   =" << rangeFactor );
+					LOG("log10  logRangeFactor=" << logRangeFactor );
+					LOG("log10  logStepValue  =" << double(logStepValue) );
 					LOG("log10  gridStartValue=" << gridStartValue );
-					LOG("log10  _nbMaxSteps=" << _nbMaxSteps );
-					LOG("log10  nbLogSteps=" << nbLogSteps );
+					LOG("log10  _nbMaxSteps   =" << _nbMaxSteps );
+					LOG("log10  nbLogSteps    =" << nbLogSteps );
 					LOG("log10  logStepDensity=" << logStepDensity );
 					LOG("log10  _textSize     =" << _textSize );
 

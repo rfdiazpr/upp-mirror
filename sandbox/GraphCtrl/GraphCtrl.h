@@ -44,7 +44,8 @@ struct GraphCtrlDefaultTypes {
 		typedef GraphDraw_ns::StdGridAxisDrawCtrl<GraphCtrlDefaultTypes, GraphDraw_ns::GridAxisDraw<GraphCtrlDefaultTypes> > X2_TypeGridAxisDraw;
 		typedef GraphDraw_ns::StdGridAxisDrawCtrl<GraphCtrlDefaultTypes, GraphDraw_ns::GridAxisDraw<GraphCtrlDefaultTypes> > Y_TypeGridAxisDraw;
 		typedef GraphDraw_ns::StdGridAxisDrawCtrl<GraphCtrlDefaultTypes, GraphDraw_ns::GridAxisDraw<GraphCtrlDefaultTypes> > Y2_TypeGridAxisDraw;
-		typedef GraphDraw_ns::GridStepManager<>                                                                              TypeGridStepManager;
+//		typedef GraphDraw_ns::GridStepManager<>                                                                              TypeGridStepManager;
+		typedef GraphDraw_ns::GridStepManager                                                                                TypeGridStepManager;
 		typedef GraphDraw_ns::StdLabelCtrl<GraphCtrlDefaultTypes,GraphDraw_ns::LabelElement>                                 TypeLabelElement;
 		typedef GraphDraw_ns::StdLegendCtrl<GraphCtrlDefaultTypes, GraphDraw_ns::LegendElement<GraphCtrlDefaultTypes> >      TypeLegendElement;
 		typedef GraphDraw_ns::StdBlankAreaCtrl<GraphCtrlDefaultTypes, GraphDraw_ns::BlankAreaElement >                       TypeBlankElement;

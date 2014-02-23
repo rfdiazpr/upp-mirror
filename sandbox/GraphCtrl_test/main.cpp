@@ -85,6 +85,9 @@ GraphDraw_test::GraphDraw_test()
 {
 	CtrlLayout(*this, "Window title");
 
+	sizeofGraphCtrl = sizeof(XYY2LT_GraphCtrl);
+	sizeofGridStepData = sizeof(GraphDraw_ns::GridStepData);
+	sizeofGridStepData_200 = sizeof(GraphDraw_ns::GridStepData[100]);
 	// ====================================
 	//                 G1
 	// ====================================

@@ -34,7 +34,8 @@ struct DebugLogBlockString
 	const String name;
 	bool printLogs;
 };
-#define RLOGBLOCK_STR(COND, TXT)   //StringStream str; str << TXT; DebugLogBlockString DLBS( str.GetResult(), COND );
+#define RLOGBLOCK_STR(COND, TXT) //StringStream str; str << TXT; DebugLogBlockString DLBS( str.GetResult(), COND );
+#define RLOG_STR(COND, TXT)   // StringStream str; str << TXT; DebugLogBlockString DLBS( str.GetResult(), COND );
 
 
 
@@ -168,6 +169,7 @@ namespace GraphDraw_ns
 		// helper method
 		void AppendElementToRect(GraphElement& element, Rect& fromRect, const int scale)
 		{
+			RLOGBLOCK_STR( debugTrace, "CRTP_EmptyGraphDraw::AppendElementToRect()");
 			Rect res = fromRect;
 			switch(element.GetElementPos()) {
 				case TOP_OF_GRAPH:
@@ -204,20 +206,19 @@ namespace GraphDraw_ns
 		
 		inline void updateSizes( const int scale = 1 )
 		{
+			RLOGBLOCK_STR( debugTrace, "CRTP_EmptyGraphDraw::updateSizes(" << this << ")");
 			Rect svg = _plotRect;
 			_plotRect = _ctrlRect;
 
 			Sort(_drawElements, compareGraphElementPriority);
 
 			Rect tmpRect = _plotRect;
-
 			for (int j = _drawElements.GetCount()-1; j>=0; j--) {
 				if (!_drawElements[j]->IsHidden()) {
 					AppendElementToRect(*(_drawElements[j]), tmpRect, scale);
 					if ( _drawElements[j]->GetStackingPriority() >=0 ) _plotRect = tmpRect;
 				}
 			}
-
 			if (_plotRect != svg) {
 				_CtrlBackgroundImage.Clear();
 				ClearPlotDrawImg();
@@ -239,7 +240,7 @@ namespace GraphDraw_ns
 
 			for (int j = 0; j < _drawElements.GetCount(); j++) {
 				if (!_drawElements[j]->IsHidden()) {
-					_drawElements[j]->Update();
+					_drawElements[j]->PrePaint();
 				}
 			}
 		}
@@ -348,7 +349,7 @@ namespace GraphDraw_ns
 		DERIVED& SetRightMargin(int v)  { rightMargin.SetElementWidth(v);  return *static_cast<DERIVED*>(this); }
 
 		DERIVED& setScreenSize(Rect r, const int scale=1)	{
-			//RLOGBLOCK("setScreenSize");
+			RLOGBLOCK_STR( debugTrace, "setScreenSize(" << r << " , " << scale << ")");
 			if (r!=_ctrlRect || scale != 1) {
 				_ctrlRect = r;
 				ClearPlotDrawImg();
@@ -359,7 +360,7 @@ namespace GraphDraw_ns
 		}
 
 		inline DERIVED& setScreenSize( const int scale=1 )	{
-			//RLOGBLOCK("setScreenSize");
+			RLOGBLOCK_STR( debugTrace, "setScreenSize()");
 			return setScreenSize(_ctrlRect, scale);
 		}
 
@@ -1013,7 +1014,8 @@ namespace GraphDraw_ns
 			typedef GraphDraw_ns::GridAxisDraw<GraphDrawDefaultTypes> Y_TypeGridAxisDraw;
 			typedef GraphDraw_ns::GridAxisDraw<GraphDrawDefaultTypes> Y2_TypeGridAxisDraw;
 
-			typedef GridStepManager<>                                 TypeGridStepManager;
+//			typedef GridStepManager<>                                 TypeGridStepManager;
+			typedef GridStepManager                                   TypeGridStepManager;
 			typedef LabelElement                                      TypeLabelElement;
 			typedef LegendElement<GraphDrawDefaultTypes>              TypeLegendElement;
 			typedef BlankAreaElement                                  TypeBlankElement;
@@ -1486,6 +1488,7 @@ namespace GraphDraw_ns
 		virtual ~CRTP_XYGraphDraw() {}
 
 		DERIVED& setGraphSize(Rectf r) {
+			RLOGBLOCK_STR( _B::debugTrace, "CRTP_XYGraphDraw::setGraphSize()");
 			_B::_xConverter.updateGraphSize(r.TopLeft().x, r.BottomRight().x);
 			_B::_yConverter.updateGraphSize(r.TopLeft().y, r.BottomRight().y);
 			_B::updateSizes();
@@ -1493,6 +1496,7 @@ namespace GraphDraw_ns
 		}
 
 		DERIVED& setGraphSize(TypeGraphCoord x0, TypeGraphCoord x1, TypeGraphCoord y0, TypeGraphCoord y1) {
+			RLOGBLOCK_STR( _B::debugTrace, "CRTP_XYGraphDraw::setGraphSize()");
 			_B::_xConverter.updateGraphSize( x0, x1);
 			_B::_yConverter.updateGraphSize( y0, y1);
 			_B::updateSizes();
@@ -1547,6 +1551,7 @@ namespace GraphDraw_ns
 		public:
 		DERIVED& setGraphSize(TypeGraphCoord x0, TypeGraphCoord x1, TypeGraphCoord y0, TypeGraphCoord y1, TypeGraphCoord y20, TypeGraphCoord y21 )
 		{
+			RLOGBLOCK_STR( _B::debugTrace, "CRTP_XYY2GraphDraw::setGraphSize()");
 			_B::_xConverter.updateGraphSize( x0, x1);
 			_B::_yConverter.updateGraphSize( y0, y1);
 			_B::_y2Converter.updateGraphSize( y20, y21);
@@ -1580,6 +1585,7 @@ namespace GraphDraw_ns
 		public:
 		DERIVED& setGraphSize(TypeGraphCoord x0, TypeGraphCoord x1, TypeGraphCoord y0, TypeGraphCoord y1, TypeGraphCoord y20, TypeGraphCoord y21 )
 		{
+			RLOGBLOCK_STR( _B::debugTrace, "CRTP_XYY2LTGraphDraw::setGraphSize()");
 			_B::_xConverter.updateGraphSize( x0, x1);
 			_B::_yConverter.updateGraphSize( y0, y1);
 			_B::_y2Converter.updateGraphSize( y20, y21);

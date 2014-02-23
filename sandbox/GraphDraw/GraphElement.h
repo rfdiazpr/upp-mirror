@@ -146,14 +146,13 @@ namespace GraphDraw_ns
 						_frame.top = plotRect.top;
 						_frame.bottom = plotRect.bottom;
 					}
-					Update();
 				}
 			}
 
 			virtual ~GraphElement() {}
 
 			inline void SetName(const char* name) { _name = name; };
-			inline void SetFrame(Rect v) { _frame = v; Update(); }
+			inline void SetFrame(Rect v) { _frame = v; }
 			inline const Rect& GetFrame() const { return _frame; }
 
 			inline void SetFloatFrame(Rect v) { _floatFrame = v; }
@@ -186,6 +185,10 @@ namespace GraphDraw_ns
 
 			inline void PaintElementBckGround(Draw& dw, Size sz) { if ( !_backgndStyle.IsNull() ) ChPaint(dw, sz, _backgndStyle ); }
 
+
+			// Do general painting prepapration actions : update, recalculations, ...
+			virtual void PrePaint() {};
+
             // Paint element somewhere inside the graph area as a FLOATING element (legend, ...)
 			// Offset and clipping are set with the '_floatFrame' settings
 			virtual void PaintFloatElement(Draw& dw, int scale) { };
@@ -198,7 +201,6 @@ namespace GraphDraw_ns
 			// Painting zone is clipped so nothing can be drawn outside
 			virtual void PaintOnPlot_underData(Draw& dw, int otherWidth, int scale) {}
 			virtual void PaintOnPlot_overData(Draw& dw, int otherWidth, int scale) {}
-			virtual void Update() {}; // called when coordinates need update
 
 			virtual void MouseEnter(Point p, dword keyflags)  { }
 			virtual void MouseLeave()                         { }

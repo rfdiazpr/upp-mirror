@@ -45,7 +45,7 @@ tRect]([@(0.0.255) const]_[_^Rect^ Rect][@(0.0.255) `&]_[*@3 plotRect])&]
 [s2; This method is called when all GraphElements have been added 
 to the Graph, and finally, all elements need they`'re size to 
 be adjusted.&]
-[s2; NB: for internal use only&]
+[s2; NB: for [/@6 internal use only] `=`=> not to be used&]
 [s3; &]
 [s4;%- &]
 [s5;:GraphElement`:`:SetName`(const char`*`):%- [@(0.0.255) void]_[* SetName]([@(0.0.255) c
@@ -61,6 +61,12 @@ the element in the elements list.&]
 [s2; Returns TRUE if p is in the GraphElement. This is used to distribute 
 events to the correct element according to mouse position.&]
 [s3; &]
+[s4;%- &]
+[s5;:GraphElement`:`:PrePaint`(`):%- [@(0.0.255) virtual] [@(0.0.255) void]_[* PrePaint]()&]
+[s2; Called before the GraphElement get`'s painted.&]
+[s2; It is intended to contain general painting prepapration actions 
+: update, recalculations, ...&]
+[s3;%- &]
 [s4;%- &]
 [s5;:GraphElement`:`:SetElementPos`(ElementPosition`):%- [@(0.0.255) virtual] 
 [@(0.0.255) void]_[* SetElementPos](ElementPosition_[*@3 v])&]
@@ -144,6 +150,8 @@ raphElement Painting Details] for more detailed explanations.&]
 [@(0.0.255) void]_[* FitToData]([^topic`:`/`/GraphDraw`/src`/GraphElementFrame`$en`-us`#typedef^ F
 itToDataStrategy]_[*@3 fitStrategy])&]
 [s2;  [%-*@3 fitStrategy] .&]
+[s2; Method dedicated to managing GridAxisDraw`::FitToData() direct 
+access from GraphCtrl `=`=> unused for other GraphElement classes&]
 [s3; &]
 [ {{10000F(128)G(128)@1 [s0; [* Constructor detail]]}}&]
 [s0; &]

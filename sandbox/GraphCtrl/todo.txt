@@ -17,6 +17,9 @@
 		|    DONE    |
 		--------------
 
+23/02/2014 - SVN.6947
+----------------------
+* Corrected scrolling artifacts on Log and Std scale when grid autoscalling
 
 
 18/02/2014 - SVN.6927

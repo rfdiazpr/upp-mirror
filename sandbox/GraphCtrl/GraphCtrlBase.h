@@ -176,6 +176,7 @@ class CRTP_GraphCtrl_Base :  public GRAPHDRAW_BASE_CLASS, public Ctrl
 	}
 
 	virtual void Refresh() {
+		RLOGBLOCK_STR( _B::debugTrace, "CRTP_GraphCtrl_Base::Refresh(" << this << ")");
 		_B::updateSizes();
 		Ctrl::Refresh();
 	};
@@ -710,7 +711,6 @@ class CRTP_GraphCtrl_Base :  public GRAPHDRAW_BASE_CLASS, public Ctrl
 
 	virtual Image  CursorImage(Point p, dword keyflags)
 	{
-		RLOGBLOCK_STR( _B::debugTrace, "CRTP_GraphCtrl_Base::CursorImage(" << this << ")");
 		Image output;
 		if ( ProcessMouseCallBack<Image>(p, keyflags, &GraphDraw_ns::GraphElement::CursorImage, output, GraphDrawImg::CROSS())) {
 			return output;
@@ -735,6 +735,7 @@ class CRTP_GraphCtrl_Base :  public GRAPHDRAW_BASE_CLASS, public Ctrl
 	}
 	
 	virtual void MouseWheel(Point p, int zdelta, dword keyflags) {
+		RLOGBLOCK_STR( _B::debugTrace, "CRTP_GraphCtrl_Base::MouseWheel(" << this << ")");
 		// Process FLOAT elements FIRST
 		for (int j = 0; j < _B::_drawElements.GetCount(); j++)
 		{

@@ -219,7 +219,7 @@ it`'s content is used to paint the GraphElement.&]
 [s0; &]
 [s0; The different painting layers are drawn in the following order 
 :&]
-[s0;l256;i163;m`-;N1; Draw Graph an Plot background&]
+[s0;l256;i163;m`-;N1; Draw Graph background and Plot background&]
 [s0;l256;i163;m`-;N1; Call [*^topic`:`/`/GraphDraw`/src`/GraphElement`$en`-us`#GraphElement`:`:PaintOnPlot`_underData`(Draw`&`,int`,int`)^ P
 aintOnPlot`_underData()]&]
 [s0;l256;i163;m`-;N1;  [^topic`:`/`/GraphDraw`/src`/GraphDraw`$en`-us`#CRTP`_EmptyGraphDraw`:`:PaintPlotData`(T`&`,int`)^@6 P

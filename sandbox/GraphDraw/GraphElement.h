@@ -187,7 +187,7 @@ namespace GraphDraw_ns
 
 
 			// Do general painting prepapration actions : update, recalculations, ...
-			virtual void PrePaint() {};
+			virtual void PrePaint( int scale ) {};
 
             // Paint element somewhere inside the graph area as a FLOATING element (legend, ...)
 			// Offset and clipping are set with the '_floatFrame' settings

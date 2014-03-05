@@ -62,7 +62,8 @@ the element in the elements list.&]
 events to the correct element according to mouse position.&]
 [s3; &]
 [s4;%- &]
-[s5;:GraphElement`:`:PrePaint`(`):%- [@(0.0.255) virtual] [@(0.0.255) void]_[* PrePaint]()&]
+[s5;:GraphElement`:`:PrePaint`(int`):%- [@(0.0.255) virtual] [@(0.0.255) void]_[* PrePaint](
+[@(0.0.255) int]_[*@3 scale])&]
 [s2; Called before the GraphElement get`'s painted.&]
 [s2; It is intended to contain general painting prepapration actions 
 : update, recalculations, ...&]

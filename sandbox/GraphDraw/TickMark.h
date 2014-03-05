@@ -116,7 +116,7 @@ namespace GraphDraw_ns
 				x += xyOffset.x;
 				y += xyOffset.y;
 				const int scTickLength = GetTickLength()*scale;
-				Rect rect;
+				Rect rect(0,0,1,1);
 				switch(axisPos){
 					case LEFT_OF_GRAPH:
 					case RIGHT_OF_GRAPH:
@@ -134,7 +134,7 @@ namespace GraphDraw_ns
 			virtual Size GetTickSize(ElementPosition axisPos, const int scale) const 
 			{
 				const int scTickLength = GetTickLength()*scale;
-				Size sz;
+				Size sz(1,1);
 				switch(axisPos) {
 					case LEFT_OF_GRAPH:
 					case RIGHT_OF_GRAPH:
@@ -163,7 +163,7 @@ namespace GraphDraw_ns
 			Color  OutlineColor;
 		
 		public:
-			SmartTextTickMark() : textColor(Green), textBckgndColor(Null), OutlineColor(Black) { SetTickLength(15); }
+			SmartTextTickMark() : textSize(10,10), textColor(Green), textBckgndColor(Null), OutlineColor(Black) { SetTickLength(15); }
 			virtual ~SmartTextTickMark() {}
 
 			virtual void UpdateTick() {
@@ -206,7 +206,7 @@ namespace GraphDraw_ns
 			{
 				x += xyOffset.x*scale;
 				y += xyOffset.y*scale;
-				Rect markRect;
+				Rect markRect(0,0,1,1);
 				Size sz = GetTickSize(side, scale);
 				switch (side) {
 					case LEFT_OF_GRAPH:

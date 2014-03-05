@@ -8,12 +8,13 @@ uses
 uses(GD_TIMINGS) TimingPolicies;
 
 file
+	GraphDraw.h,
 	CoordinateConverter.h,
 	GraphDraw.cpp,
 	src.tpp,
-	GraphDraw.h,
 	GraphFunctions.h,
-	GridStepIterator.h,
+	GridStepManager.cpp,
+	GridStepManager.h,
 	GraphDraw.iml,
 	SeriesConfig.h,
 	SeriesGroup.h,

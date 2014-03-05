@@ -154,7 +154,7 @@ namespace GraphDraw_ns
 		, _xSeparation(p._xSeparation)
 		, _legendStyleLength(p._legendStyleLength)
 		, v_series(p.v_series)
-		{ PrePaint(); }
+		{ PrePaint(1); }
 
 		virtual ~LegendElement() {}
 
@@ -173,7 +173,7 @@ namespace GraphDraw_ns
 			DrawLegend(dw, scale);
 		}
 
-		virtual void PrePaint() {
+		virtual void PrePaint( int scale ) {
 			if (v_series==0) {
 				v_series = &_B::_parent->GetSeries();
 			}

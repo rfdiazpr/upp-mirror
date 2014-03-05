@@ -29,13 +29,11 @@ namespace GraphDraw_ns
 	{
 		public:
 		typedef GridAxisDraw<TYPES>                   CLASSNAME;
-		typedef typename TYPES::TypeGridStepManager   TypeGridStepManager;
 		typedef GraphElement _B;
 		
 //		protected:
 		CoordinateConverter& _coordConverter;
-//		One< TypeGridStepManager > _gridStepManager;
-		TypeGridStepManager _gridStepManager;
+		GridStepManager _gridStepManager;
 
 		int       _axisWidth;
 		Color     _axisColor;
@@ -62,13 +60,14 @@ namespace GraphDraw_ns
 		, _gridColor(LtGray())
 		, _formatTextCbk(THISBACK(FormatAsDouble))
 		, _meanTickTextsz(10,10)
+		, _tmpTextSize(10,10)
 		, _nbMeanValues(0)
 		{
 			_tickMarks[0] = new LineTickMark();
 			_tickMarks[1] = new LineTickMark();
 			_tickMarks[1]->SetTickLength(_tickMarks[0]->GetTickLength()/2);
 			_B::DisablePos(FLOAT_OVER_GRAPH);
-			PrePaint();
+			PrePaint(1);
 		}
 
 		GridAxisDraw(GridAxisDraw& p)
@@ -83,32 +82,27 @@ namespace GraphDraw_ns
 		, _gridColor(Null)  // This is a slave Axis ==> so no need to draw grid
 		, _formatTextCbk( p._formatTextCbk )
 		, _meanTickTextsz( p._meanTickTextsz )
+		, _tmpTextSize(10,10)
 		, _nbMeanValues(0)
 		{
 			_tickMarks[0] = new LineTickMark();
 			_tickMarks[1] = new LineTickMark();
 			_tickMarks[1]->SetTickLength(_tickMarks[0]->GetTickLength()/2);
-			PrePaint();
+			PrePaint(1);
 		}
 
 		virtual ~GridAxisDraw() {}
 
 
-//		virtual CLASSNAME* Clone() { return new CLASSNAME(*this); }
-
-		virtual void PrePaint() {
-			//RLOG("GridAxisDraw::PrePaint(" << (int)this << ")");
-			//onTextFontUpdate();
+		virtual void PrePaint( int scale ) {
+			//RLOGBLOCK( "GridAxisDraw::PrePaint()" );
+			UpdateTickTextData(scale);
+			if ( _B::IsHorizontal() ) { _gridStepManager.SetTextMaxSize( _meanTickTextsz.cx ); }
+			else                      { _gridStepManager.SetTextMaxSize( _meanTickTextsz.cy ); }
 			_gridStepManager.UpdateGridSteps();
 		}
 		
-		virtual void onTextFontUpdate() {
-			RLOG("GridAxisDraw::onTextFontUpdate(" << (int)this << ")");
-			if ( _B::IsHorizontal() ) { _gridStepManager.SetTextMaxSize( _meanTickTextsz.cx ); }
-			else                      { _gridStepManager.SetTextMaxSize( _meanTickTextsz.cy ); }
-			 _gridStepManager.UpdateGridSteps();
-		}
-		
+
 		virtual void  SetElementPos(ElementPosition v) {
 			if (v==LEFT_OF_GRAPH || v==RIGHT_OF_GRAPH) {
 				_B::DisablePos(BOTTOM_OF_GRAPH);
@@ -118,7 +112,7 @@ namespace GraphDraw_ns
 				_B::DisablePos(RIGHT_OF_GRAPH);
 			}
 			_B::SetElementPos(v);
-		 }
+		}
 
 		
 		virtual void FitToData(FitToDataStrategy fitStrategy) {
@@ -156,16 +150,17 @@ namespace GraphDraw_ns
 		}
 
 
-		TypeGridStepManager& GetGridStepManager()                       { return _gridStepManager; }
+		GridStepManager& GetGridStepManager()                           { return _gridStepManager; }
 		inline CLASSNAME& setAxisColor(Color v)                         { _axisColor = v; return *this;  }
 		inline CLASSNAME& setAxisWidth(int v)                           { _axisWidth = v; return *this;  }
-		inline CLASSNAME& setAxisTextFont(Font v)                       { _axisTextFont = v; onTextFontUpdate(); return *this; }
+		inline CLASSNAME& setAxisTextFont(Font v)                       { _axisTextFont = v; return *this; }
 		inline CLASSNAME& setAxisTextColor(Color v)                     { _axisTextColor = v; return *this; }
 		inline CLASSNAME& setAxisTickColor(Color v)                     { _axisTickColor = v; return *this; }
 		inline CLASSNAME& setGridColor(Color v)                         { _gridColor = v; return *this; }
 		inline CLASSNAME& setMajorTickMark(TickMark* v)                 { _tickMarks[0] = v; return *this;  }
 		inline CLASSNAME& setMinorTickMark(TickMark* v)                 { _tickMarks[1] = v; return *this;  }
 		inline CLASSNAME& setAxisTextFormat(TypeFormatTextCbk v)        { _formatTextCbk = v; return *this;  }
+		
 		CLASSNAME& setAxisTextFormat(AxisTextFormat v) {
 			switch(v) {
 				case AXIS_TEXT_FORMAT_STD:  resetAxisTextFormat() ; break;
@@ -178,7 +173,6 @@ namespace GraphDraw_ns
 		
 		inline CLASSNAME& resetAxisTextFormat() {
 			_formatTextCbk = THISBACK(FormatAsDouble);
-			onTextFontUpdate();  ////// ================ TODO  replace with   ReCalcTextSize() =============
 			_gridStepManager.setStdGridSteps();
 			return *this;
 		}
@@ -186,7 +180,6 @@ namespace GraphDraw_ns
 		inline CLASSNAME& setAxisLogFormat(TypeFormatTextCbk cbk=TypeFormatTextCbk()) {
 			if ( cbk ) _formatTextCbk = cbk;
 			else       _formatTextCbk = THISBACK(FormatAsLog10);
-			onTextFontUpdate();
 			_gridStepManager.setLogGridSteps();
 			return *this;
 		}
@@ -194,7 +187,6 @@ namespace GraphDraw_ns
 		inline CLASSNAME& setAxisDateFormat( TypeFormatTextCbk cbk=TypeFormatTextCbk() ) {
 			if ( cbk ) _formatTextCbk = cbk;
 			else       _formatTextCbk = THISBACK(FormatAsDate);
-			onTextFontUpdate();
 			_gridStepManager.setDateGridSteps();
 			return *this;
 		}
@@ -202,7 +194,6 @@ namespace GraphDraw_ns
 		inline CLASSNAME& setAxisTimeFormat( TypeFormatTextCbk cbk=TypeFormatTextCbk() ) {
 			if ( cbk ) _formatTextCbk = cbk;
 			else       _formatTextCbk = THISBACK(FormatAsTime);
-			onTextFontUpdate();
 			_gridStepManager.setTimeGridSteps();
 			return *this;
 		}
@@ -216,17 +207,9 @@ namespace GraphDraw_ns
 
 		inline CoordinateConverter& GetCoordConverter()                 { return _coordConverter;  }
 
-		inline typename TypeGridStepManager::Iterator GridStepBegin(void) { return  _gridStepManager.Begin(); }
-		inline typename TypeGridStepManager::Iterator GridStepEnd(void)   { return  _gridStepManager.End(); }
+		inline GridStepIterator GridStepBegin(void) { return  _gridStepManager.Begin(); }
+		inline GridStepIterator GridStepEnd(void)   { return  _gridStepManager.End(); }
 
-/*
-		template<class T>
-		T& CreateGridStepManager() {
-				_gridStepManager =  new T(_coordConverter);
-				_gridStepManager.UpdateGridSteps();
-				return (*_gridStepManager);
-		}
-*/
 		void FormatAsDouble( const GridStepIterator& iter, String& output ) {
 			if (iter.drawTickText()) {
 				output = FormatDouble( iter.getGraphValue() );
@@ -345,10 +328,37 @@ namespace GraphDraw_ns
 		}
 
 
+		void UpdateTickTextData( int scale ) {
+			Sizef tmpSize(0,0);
+			int nbSizeValues = 0;
+			 _gridStepManager.UpdateGridSteps();
+
+			GridStepIterator iter = GridStepBegin();
+			GridStepIterator endIter = GridStepEnd();
+
+			Font scaledAxisTextFont( _axisTextFont );
+			if (scale>1) scaledAxisTextFont.Height(scale*scaledAxisTextFont.GetHeight());
+			while ( iter != endIter )
+			{
+				iter->text.Clear();
+				_formatTextCbk( iter, iter->text );
+				
+				if (!iter->text.IsEmpty()) {
+					iter->textSize = GraphDraw_ns::GetSmartTextSize(iter->text , scaledAxisTextFont, scale);
+					tmpSize.cx += iter->textSize.cx;
+					tmpSize.cy += iter->textSize.cy;
+					++nbSizeValues;
+				}
+				++iter;
+			}
+			tmpSize /= nbSizeValues;
+			_meanTickTextsz = tmpSize;
+		}
+
 		template<int GRAPH_SIDE>
 		void PaintTickText(Draw& dw,  const GridStepIterator& value, TypeScreenCoord x, TypeScreenCoord y, Color& color, Font& scaledFont, int scale) {
 			Upp::String text;
-			_formatTextCbk(value, text );
+			_formatTextCbk( value, text );
 			if (!text.IsEmpty()) {
 				Size sz = GraphDraw_ns::GetSmartTextSize(text, scaledFont, scale);
 				_tmpTextSize += sz;
@@ -371,11 +381,11 @@ namespace GraphDraw_ns
 
 		virtual void PaintAxisLeft(Draw& dw, const int scale)
 		{
-			typename TypeGridStepManager::Iterator iter = GridStepBegin();
-			typename TypeGridStepManager::Iterator endIter = GridStepEnd();
+			GridStepIterator iter = GridStepBegin();
+			GridStepIterator endIter = GridStepEnd();
 
 			Font scaledAxisTextFont( _axisTextFont );
-			scaledAxisTextFont.Height(scale*scaledAxisTextFont.GetHeight());
+			if (scale>1) scaledAxisTextFont.Height(scale*scaledAxisTextFont.GetHeight());
 			dw.DrawLineOp(_B::GetElementWidth()*scale, _coordConverter.getScreenMin(), _B::GetElementWidth()*scale, _coordConverter.getScreenMax(), _axisWidth*scale, _axisColor );
 			while ( iter != endIter)
 			{
@@ -391,11 +401,11 @@ namespace GraphDraw_ns
 
 		virtual void PaintAxisRight(Draw& dw, const int scale)
 		{
-			typename TypeGridStepManager::Iterator iter = GridStepBegin();
-			typename TypeGridStepManager::Iterator endIter = GridStepEnd();
+			GridStepIterator iter = GridStepBegin();
+			GridStepIterator endIter = GridStepEnd();
 
 			Font scaledAxisTextFont( _axisTextFont );
-			scaledAxisTextFont.Height(scale*scaledAxisTextFont.GetHeight());
+			if (scale>1) scaledAxisTextFont.Height(scale*scaledAxisTextFont.GetHeight());
 			dw.DrawLineOp(0, _coordConverter.getScreenMin(), 0, _coordConverter.getScreenMax(), _axisWidth*scale, _axisColor);
 			while ( iter != endIter)
 			{
@@ -412,11 +422,11 @@ namespace GraphDraw_ns
 
 		virtual void PaintAxisBottom(Draw& dw, const int scale)
 		{
-			typename TypeGridStepManager::Iterator iter = GridStepBegin();
-			typename TypeGridStepManager::Iterator endIter = GridStepEnd();
+			GridStepIterator iter = GridStepBegin();
+			GridStepIterator endIter = GridStepEnd();
 
 			Font scaledAxisTextFont( _axisTextFont );
-			scaledAxisTextFont.Height(scale*scaledAxisTextFont.GetHeight());
+			if (scale>1) scaledAxisTextFont.Height(scale*scaledAxisTextFont.GetHeight());
 			dw.DrawLineOp(_coordConverter.getScreenMin(), 0, _coordConverter.getScreenMax(),0 , _axisWidth*scale, _axisColor );
 			while ( iter != endIter )
 			{
@@ -432,11 +442,11 @@ namespace GraphDraw_ns
 
 		virtual void PaintAxisTop(Draw& dw, const int scale)
 		{
-			typename TypeGridStepManager::Iterator iter = GridStepBegin();
-			typename TypeGridStepManager::Iterator endIter = GridStepEnd();
+			GridStepIterator iter = GridStepBegin();
+			GridStepIterator endIter = GridStepEnd();
 
 			Font scaledAxisTextFont( _axisTextFont );
-			scaledAxisTextFont.Height(scale*scaledAxisTextFont.GetHeight());
+			if (scale>1) scaledAxisTextFont.Height(scale*scaledAxisTextFont.GetHeight());
 			dw.DrawLineOp(_coordConverter.getScreenMin(), _B::GetElementWidth()*scale, _coordConverter.getScreenMax(), _B::GetElementWidth()*scale, _axisWidth*scale, _axisColor );
 			while ( iter != endIter)
 			{
@@ -454,8 +464,8 @@ namespace GraphDraw_ns
 		{
 			if ( !_gridColor.IsNullInstance())
 			{
-				typename TypeGridStepManager::Iterator iter = GridStepBegin();
-				typename TypeGridStepManager::Iterator endIter = GridStepEnd();
+				GridStepIterator iter = GridStepBegin();
+				GridStepIterator endIter = GridStepEnd();
 				while( iter != endIter)
 				{
 					dw.DrawLineOp( 0, iter, xRange, iter, 1, _gridColor );
@@ -468,8 +478,8 @@ namespace GraphDraw_ns
 		{
 			if ( !_gridColor.IsNullInstance())
 			{
-				typename TypeGridStepManager::Iterator iter = GridStepBegin();
-				typename TypeGridStepManager::Iterator endIter = GridStepEnd();
+				GridStepIterator iter = GridStepBegin();
+				GridStepIterator endIter = GridStepEnd();
 				while( iter != endIter)
 				{
 					dw.DrawLineOp( iter, 0, iter, yRange, 1, _gridColor );

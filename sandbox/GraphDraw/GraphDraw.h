@@ -17,7 +17,7 @@
 
 
 #ifndef TRACE_INFO
-#define TRACE_INFO(TXT) //{ std::ostringstream str; str <<  "\n" << TXT; LOG(str.str().c_str()); }
+#define TRACE_INFO(TXT) { std::ostringstream str; str <<  "\n" << TXT; LOG(str.str().c_str()); }
 #endif
 
 #ifndef TRACE_ERROR
@@ -35,7 +35,7 @@ struct DebugLogBlockString
 	bool printLogs;
 };
 #define RLOGBLOCK_STR(COND, TXT) //StringStream str; str << TXT; DebugLogBlockString DLBS( str.GetResult(), COND );
-#define RLOG_STR(COND, TXT)   // StringStream str; str << TXT; DebugLogBlockString DLBS( str.GetResult(), COND );
+#define RLOG_STR(COND, TXT)      //StringStream str; str << TXT; DebugLogBlockString DLBS( str.GetResult(), COND );
 
 
 
@@ -69,7 +69,7 @@ namespace GraphDraw_ns
 #include "GraphFunctions.h"
 #include "SeriesConfig.h"
 #include "SeriesGroup.h"
-#include "GridStepIterator.h"
+#include "GridStepManager.h"
 #include "StdGraphElements.h"
 #include "GridAxisDraw.h"
 
@@ -238,11 +238,6 @@ namespace GraphDraw_ns
 				_yConverters[j]->updateScreenSize( _plotRect.GetHeight(), 0  );
 			}
 
-			for (int j = 0; j < _drawElements.GetCount(); j++) {
-				if (!_drawElements[j]->IsHidden()) {
-					_drawElements[j]->PrePaint();
-				}
-			}
 		}
 		
 
@@ -250,7 +245,9 @@ namespace GraphDraw_ns
 		bool debugTrace;
 
 		CRTP_EmptyGraphDraw()
-		: _drawMode( MD_DRAW )
+		: _ctrlRect(0,0,100,100)
+		, _plotRect(0,0,100,100)
+		, _drawMode( MD_DRAW )
 		, _doFastPaint(false)
 		, _paintTiming("paint()")
 		, _paintPlotDataTiming("paintPlotData()")
@@ -849,11 +846,10 @@ namespace GraphDraw_ns
 		template<class T>
 		void Paint(T& dw, int scale)
 		{
-			RLOGBLOCK_STR( debugTrace, "CRTP_EmptyGraphDraw::Paint(" << this << ")   [ FastPaint , PlotImgEmpty ] => [ " << _doFastPaint << " , " << _PlotDrawImage.IsEmpty() << " ]");
+			RLOGBLOCK_STR( debugTrace, "CRTP_EmptyGraphDraw::Paint(" << this << ")   [ FastPaint , PlotImgEmpty ] => [ " << _doFastPaint << " , " << _PlotDrawImage.IsEmpty() << " ] ===========================");
 			_paintTiming.beginTiming();
 			_paintBackGndTiming.beginTiming();
 
-			//RLOGBLOCK("==================================" );
 			if ( _CtrlBackgroundImage.IsEmpty() )
 			{
 				_initBackGndPaintTiming.beginTiming();
@@ -889,6 +885,13 @@ namespace GraphDraw_ns
 			// BEGIN paint in PLOT AREA
 			// --------------------------------------
 			dw.Clipoff(_plotRect.left, _plotRect.top, _plotRect.GetWidth(), _plotRect.GetHeight());
+
+			for (int j = 0; j < _drawElements.GetCount(); j++) {
+				if (!_drawElements[j]->IsHidden()) {
+					_drawElements[j]->PrePaint(scale);
+				}
+			}
+
 
 			// --------------
 			// GRAPH ELEMENTS on PLOT area --UNDER DATA-- ( X/Y Grid, or anything else )
@@ -1014,8 +1017,6 @@ namespace GraphDraw_ns
 			typedef GraphDraw_ns::GridAxisDraw<GraphDrawDefaultTypes> Y_TypeGridAxisDraw;
 			typedef GraphDraw_ns::GridAxisDraw<GraphDrawDefaultTypes> Y2_TypeGridAxisDraw;
 
-//			typedef GridStepManager<>                                 TypeGridStepManager;
-			typedef GridStepManager                                   TypeGridStepManager;
 			typedef LabelElement                                      TypeLabelElement;
 			typedef LegendElement<GraphDrawDefaultTypes>              TypeLegendElement;
 			typedef BlankAreaElement                                  TypeBlankElement;
@@ -1512,9 +1513,26 @@ namespace GraphDraw_ns
 	{
 		public:
 		typedef CRTP_XYLGraphDraw<TYPES, DERIVED> CLASSNAME;
+		typedef CRTP_GD_Legend< TYPES, DERIVED ,  CRTP_GD_Y1< TYPES, DERIVED, CRTP_GD_X1< TYPES, DERIVED, CRTP_EmptyGraphDraw<TYPES, DERIVED > > > > _B;
 
 		CRTP_XYLGraphDraw() {}
 		virtual ~CRTP_XYLGraphDraw() {}
+
+		DERIVED& setGraphSize(Rectf r) {
+			RLOGBLOCK_STR( _B::debugTrace, "CRTP_XYGraphDraw::setGraphSize()");
+			_B::_xConverter.updateGraphSize(r.TopLeft().x, r.BottomRight().x);
+			_B::_yConverter.updateGraphSize(r.TopLeft().y, r.BottomRight().y);
+			_B::updateSizes();
+			return *static_cast<DERIVED*>(this);
+		}
+
+		DERIVED& setGraphSize(TypeGraphCoord x0, TypeGraphCoord x1, TypeGraphCoord y0, TypeGraphCoord y1) {
+			RLOGBLOCK_STR( _B::debugTrace, "CRTP_XYGraphDraw::setGraphSize()");
+			_B::_xConverter.updateGraphSize( x0, x1);
+			_B::_yConverter.updateGraphSize( y0, y1);
+			_B::updateSizes();
+			return *static_cast<DERIVED*>(this);
+		}
 	};
 
 	// ============================
@@ -1525,8 +1543,26 @@ namespace GraphDraw_ns
 	{
 		public:
 		typedef CRTP_XYLTGraphDraw<TYPES, DERIVED> CLASSNAME;
+		typedef CRTP_GD_Title< TYPES, DERIVED , CRTP_GD_Legend< TYPES, DERIVED ,  CRTP_GD_Y1< TYPES, DERIVED, CRTP_GD_X1< TYPES, DERIVED, CRTP_EmptyGraphDraw<TYPES, DERIVED > > > > > _B;
+
 		CRTP_XYLTGraphDraw() {}
 		~CRTP_XYLTGraphDraw() {}
+
+		DERIVED& setGraphSize(Rectf r) {
+			RLOGBLOCK_STR( _B::debugTrace, "CRTP_XYGraphDraw::setGraphSize()");
+			_B::_xConverter.updateGraphSize(r.TopLeft().x, r.BottomRight().x);
+			_B::_yConverter.updateGraphSize(r.TopLeft().y, r.BottomRight().y);
+			_B::updateSizes();
+			return *static_cast<DERIVED*>(this);
+		}
+
+		DERIVED& setGraphSize(TypeGraphCoord x0, TypeGraphCoord x1, TypeGraphCoord y0, TypeGraphCoord y1) {
+			RLOGBLOCK_STR( _B::debugTrace, "CRTP_XYGraphDraw::setGraphSize()");
+			_B::_xConverter.updateGraphSize( x0, x1);
+			_B::_yConverter.updateGraphSize( y0, y1);
+			_B::updateSizes();
+			return *static_cast<DERIVED*>(this);
+		}
 	};
 
 	// ============================
@@ -1596,6 +1632,40 @@ namespace GraphDraw_ns
 
 };
 
+class XY_GraphDraw   : public GraphDraw_ns::CRTP_XYGraphDraw<GraphDraw_ns::GraphDrawDefaultTypes, XY_GraphDraw>
+{
+	public:
+	typedef XY_GraphDraw  CLASSNAME;
+	typedef GraphDraw_ns::CRTP_XYGraphDraw<GraphDraw_ns::GraphDrawDefaultTypes, XY_GraphDraw> _B;
+	typedef GraphDraw_ns::GraphDrawDefaultTypes  Types;
+};
+
+
+class XYLT_GraphDraw : public GraphDraw_ns::CRTP_XYLTGraphDraw<GraphDraw_ns::GraphDrawDefaultTypes, XYLT_GraphDraw>
+{
+	public:
+	typedef XYLT_GraphDraw  CLASSNAME;
+	typedef GraphDraw_ns::CRTP_XYLTGraphDraw<GraphDraw_ns::GraphDrawDefaultTypes, XYLT_GraphDraw> _B;
+	typedef GraphDraw_ns::GraphDrawDefaultTypes  Types;
+};
+
+
+
+class XYY2_GraphDraw   : public GraphDraw_ns::CRTP_XYY2GraphDraw<GraphDraw_ns::GraphDrawDefaultTypes, XYY2_GraphDraw>
+{
+	public:
+	typedef XYY2_GraphDraw  CLASSNAME;
+	typedef GraphDraw_ns::CRTP_XYY2GraphDraw<GraphDraw_ns::GraphDrawDefaultTypes, XYY2_GraphDraw> _B;
+	typedef GraphDraw_ns::GraphDrawDefaultTypes  Types;
+};
+
+class XYY2LT_GraphDraw : public GraphDraw_ns::CRTP_XYY2LTGraphDraw<GraphDraw_ns::GraphDrawDefaultTypes, XYY2LT_GraphDraw>
+{
+	public:
+	typedef XYY2LT_GraphDraw  CLASSNAME;
+	typedef GraphDraw_ns::CRTP_XYY2LTGraphDraw<GraphDraw_ns::GraphDrawDefaultTypes, XYY2LT_GraphDraw>_B;
+	typedef GraphDraw_ns::GraphDrawDefaultTypes  Types;
+};
 END_UPP_NAMESPACE
 
 #endif

@@ -59,57 +59,11 @@ namespace GraphDraw_ns
 		}
 	}
 
-
-/*
-	Size GetSmartTextSize(const char *text, Font font, int cx) {
-		if(*text == '\1') {
-			Size sz;
-			RichText txt = ParseQTF(text + 1);
-			txt.ApplyZoom(GetRichTextStdScreenZoom());
-			sz.cx = min(cx, txt.GetWidth());
-			sz.cy = txt.GetHeight(Zoom(1, 1), sz.cx);
-			return sz;
-		}
-		return GetTLTextSize(ToUnicode(text, CHARSET_DEFAULT), font);
-	}
-	
-	int GetSmartTextHeight(const char *s, int cx, Font font) {
-		if(*s == '\1') {
-			Size sz;
-			RichText txt = ParseQTF(s + 1);
-			txt.ApplyZoom(GetRichTextStdScreenZoom());
-			return txt.GetHeight(Zoom(1, 1), cx);
-		}
-		int cy = font.Info().GetHeight();
-		int h = cy;
-		while(*s) {
-			if(*s == '\n')
-				h += cy;
-			s++;
-		}
-		return h;
-	}
-	
-	void DrawSmartText(Draw& draw, int x, int y, int cx, const char *text, Font font, Color ink, int accesskey, int scale=1) {
-		if(*text == '\1') {
-			RichText txt = ParseQTF(text + 1, accesskey);
-			txt.ApplyZoom(GetRichTextStdScreenZoom());
-			txt.Paint(Zoom(scale, 1), draw, x, y, cx);
-			return;
-		}
-		DrawTLText(draw, x, y, cx, ToUnicode(text, CHARSET_DEFAULT), font, ink, accesskey);
-	}
-	*/
-	
-	
-	
-	
-	
 	Size GetSmartTextSize(const char *text, Font& scaledFont, int scale, int cx) {
 		if(*text == '\1') {
-			Size sz;
 			RichText txt = ParseQTF(text + 1);
 			txt.ApplyZoom(GetRichTextStdScreenZoom());
+			Size sz;
 			sz.cx = min(cx, txt.GetWidth());
 			sz.cy = txt.GetHeight(Zoom(1, 1), sz.cx);
 			return sz*scale;
@@ -119,7 +73,6 @@ namespace GraphDraw_ns
 	
 	int GetSmartTextHeight(const char *s, int cx, Font font, int scale) {
 		if(*s == '\1') {
-			Size sz;
 			RichText txt = ParseQTF(s + 1);
 			txt.ApplyZoom(GetRichTextStdScreenZoom());
 			return txt.GetHeight(Zoom(scale, 1), cx);

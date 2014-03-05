@@ -17,6 +17,19 @@
 		|    DONE    |
 		--------------
 
+
+
+05/03/2014 - SVN.6999
+----------------------
+* Corrected some initialized vars issues.
+* Added missing setGraphSize()  methods (regression since hierarchy refactoring)
+* Added some predefined Graphs usable in GraphDraw (no need to be Ctrl)
+* Added ChangeStatus class to introduce change management in some parts of code
+* Renamed + Refactoring GridStepIterator.h   ==>  GridStepManager.h  +  GridStepManager.cpp
+* Refactoring : code simplification :  replaced all  TypeGridStepManager::Iterator   with  GridStepIterator
+* Corrected  GetImage()  regression ==> grid is now correctly resized according to scale
+
+
 23/02/2014 - SVN.6947
 ----------------------
 * Corrected scrolling artifacts on Log and Std scale when grid autoscalling

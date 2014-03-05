@@ -308,12 +308,12 @@ necessary&]
 [s0;%% &]
 [s0;*@7;4%% &]
 [ {{10000@(113.42.0) [s0;%% [*@7;4 CRTP`_XYGraphDraw class]]}}&]
-[s0; &]
-[s1; [@(0.0.255)3 template][3 _<][@(0.0.255)3 class][3 _][*@4;3 TYPES][3 , ][@(0.0.255)3 class][3 _][*@4;3 D
-ERIVED][3 >]&]
+[s1;:noref: [@(0.0.255)3 template][3 _<][@(0.0.255)3 class][3 _][*@4;3 TYPES][3 , 
+][@(0.0.255)3 class][3 _][*@4;3 DERIVED][3 >]&]
 [s1;:CRTP`_XYGraphDraw`:`:class: [@(0.0.255) class]_[* CRTP`_XYGraphDraw]_:_[@(0.0.255) publ
-ic]_[*^topic`:`/`/GraphDraw`/src`/GraphDraw`$en`-us`#CRTP`_EmptyGraphDraw`:`:class^@3 C
-RTP`_EmptyGraphDraw]<[*@4 TYPES], [*@4 DERIVED]_>_&]
+ic]_[*@3 CRTP`_GD`_Y1]<_[*@4 TYPES], [*@4 DERIVED], [_^CRTP`_GD`_X1^ CRTP`_GD`_X1]<_[*@4 TY
+PES], [*@4 DERIVED], [_^CRTP`_EmptyGraphDraw^ CRTP`_EmptyGraphDraw]<[*@4 TYPES], 
+[*@4 DERIVED]_>_>_>_&]
 [s2;%% &]
 [s3; &]
 [s4; &]
@@ -328,24 +328,4 @@ ERIVED][@(0.0.255) `&]_[* setGraphSize]([_^TypeGraphCoord^ TypeGraphCoord]_[*@3 
  [_^TypeGraphCoord^ TypeGraphCoord]_[*@3 y1])&]
 [s2;%%  [%-*@3 x0] [%-*@3 x1] [%-*@3 y0] [%-*@3 y1] .&]
 [s3;%% &]
-[s4; &]
-[s5;:CRTP`_XYGraphDraw`:`:GetXCoordConverter`(`): [_^CRTP`_XYGraphDraw`:`:TypeCoordConverterX^ T
-ypeCoordConverterX][@(0.0.255) `&]_[* GetX1CoordConverter]()&]
-[s2;%% Dedicated method that returns X1&]
-[s3; &]
-[s4; &]
-[s5;:CRTP`_XYGraphDraw`:`:GetYCoordConverter`(`): [_^CRTP`_XYGraphDraw`:`:TypeCoordConverterY^ T
-ypeCoordConverterY][@(0.0.255) `&]_[* GetY1CoordConverter]()&]
-[s2;%% &]
-[s3; &]
-[s4; &]
-[s5;:CRTP`_XYGraphDraw`:`:GetXGridAxisDraw`(`): [_^CRTP`_XYGraphDraw`:`:TypeGridAxisDrawX^ T
-ypeGridAxisDrawX][@(0.0.255) `&]_[* GetX1GridAxisDraw]()&]
-[s2;%% &]
-[s3; &]
-[s4; &]
-[s5;:CRTP`_XYGraphDraw`:`:GetYGridAxisDraw`(`): [_^CRTP`_XYGraphDraw`:`:TypeGridAxisDrawY^ T
-ypeGridAxisDrawY][@(0.0.255) `&]_[* GetY1GridAxisDraw]()&]
-[s2;%% &]
-[s3; &]
 [s0;%% ]]

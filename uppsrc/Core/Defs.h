@@ -378,10 +378,18 @@ inline bool IsFin(double d)        { return !IsNaN(d) && !IsInf(d); }
 
 #define OFFSETOF(clss, mbr) ((int)(uintptr_t)&(((clss *)1)->mbr) - 1)
 
+#ifdef CPP_11
+
+#define pick_
+
+#else
+
 #ifdef COMPILER_MSC
 #define pick_
 #else
 #define pick_ const
+#endif
+
 #endif
 
 #define init_

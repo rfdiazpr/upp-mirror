@@ -1,0 +1,11 @@
+description "\3770,128,0";
+
+uses
+	plugin/FT_fontsys;
+
+file
+	DroidFonts.icpp,
+	DroidFonts.brc,
+	Info readonly separator,
+	Copying;
+

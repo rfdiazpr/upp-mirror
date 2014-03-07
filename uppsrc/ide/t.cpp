@@ -536,7 +536,7 @@ void Ide::SyncT(int kind)
 					tf.java = (ext == ".jt");
 					tf.package = n;
 					tf.file = pk.file[iFile];
-					tf.map = tmap;
+					tf.map = pick(tmap);
 					tf.MakeLS();
 					// mark that we've found a local translation file
 					localT = true;

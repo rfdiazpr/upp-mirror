@@ -169,7 +169,7 @@ protected:
 public:
 	T&       Add()                      { T *q = new T; vector.Add(q); return *q; }
 	T&       Add(const T& x)            { T *q = DeepCopyNew(x); vector.Add(q); return *q; }
-	T&       AddPick(T pick_ x)        { T *q = new T(x); vector.Add(q); return *q; }
+	T&       AddPick(T pick_ x)         { T *q = new T(pick(x)); vector.Add(q); return *q; }
 	T&       Add(T *newt)               { vector.Add(newt); return *newt; }
 	template<class TT> TT& Create()     { TT *q = new TT; Add(q); return *q; }
 	const T& operator[](int i) const    { return Get(i); }

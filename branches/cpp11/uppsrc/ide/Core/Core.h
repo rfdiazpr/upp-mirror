@@ -45,10 +45,10 @@ public:
 	virtual String           IdeGetOneFile() const = 0;
 	virtual int              IdeConsoleExecute(const char *cmdline, Stream *out = NULL, const char *envptr = NULL, bool quiet = false) = 0;
 	virtual int              IdeConsoleExecuteWithInput(const char *cmdline, Stream *out, const char *envptr, bool quiet) = 0;
-	virtual int              IdeConsoleExecute(One<AProcess> process, const char *cmdline, Stream *out = NULL, bool quiet = false) = 0;
+	virtual int              IdeConsoleExecute(One<AProcess> pick_ process, const char *cmdline, Stream *out = NULL, bool quiet = false) = 0;
 	virtual int              IdeConsoleAllocSlot() = 0;
 	virtual bool             IdeConsoleRun(const char *cmdline, Stream *out = NULL, const char *envptr = NULL, bool quiet = false, int slot = 0, String key = Null, int blitz_count = 1) = 0;
-	virtual bool             IdeConsoleRun(One<AProcess> process, const char *cmdline, Stream *out = NULL, bool quiet = false, int slot = 0, String key = Null, int blitz_count = 1) = 0;
+	virtual bool             IdeConsoleRun(One<AProcess> pick_ process, const char *cmdline, Stream *out = NULL, bool quiet = false, int slot = 0, String key = Null, int blitz_count = 1) = 0;
 	virtual void             IdeConsoleFlush() = 0;
 	virtual void             IdeConsoleBeginGroup(String group) = 0;
 	virtual void             IdeConsoleEndGroup() = 0;

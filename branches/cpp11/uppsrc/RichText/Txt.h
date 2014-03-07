@@ -243,6 +243,8 @@ public:
 	bool                  Iterate(Iterator& r, int gpos, const RichStyles& s) const;
 
 	RichTxt(const RichTxt& src, int);
+	RichTxt(RichTxt&&) = default;
+	RichTxt& operator=(RichTxt&&) = default;
 	RichTxt();
 
 #ifdef _DEBUG

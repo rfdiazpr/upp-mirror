@@ -417,8 +417,7 @@ void RichEdit::Pick(RichText pick_ t)
 		text.Cat(RichPara());
 	ReadStyles();
 	EndSizeTracking();
-	Vector<int> all_lang = text.GetAllLanguages();
-	SetupLanguage(all_lang);
+	SetupLanguage(text.GetAllLanguages());
 	Move(0);
 	Update();
 }
@@ -519,8 +518,8 @@ RichEdit::UndoInfo RichEdit::PickUndoInfo()
 {
 	UndoInfo f;
 	f.undoserial = undoserial;
-	f.undo = undo;
-	f.redo = redo;
+	f.undo = pick(undo);
+	f.redo = pick(redo);
 	Clear();
 	return f;
 }
@@ -529,8 +528,8 @@ void RichEdit::SetPickUndoInfo(UndoInfo pick_ f)
 {
 	undoserial = f.undoserial;
 	incundoserial = true;
-	undo = f.undo;
-	redo = f.redo;
+	undo = pick(f.undo);
+	redo = pick(f.redo);
 	Finish();
 }
 

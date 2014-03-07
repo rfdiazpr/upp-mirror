@@ -1607,7 +1607,7 @@ void SortIndex(Index& index, const Less& less)
 {
 	typename Index::ValueContainer k = index.PickKeys();
 	Sort(k, less);
-	index = Index(k);
+	index = Index(pick(k));
 }
 
 template <class Index>

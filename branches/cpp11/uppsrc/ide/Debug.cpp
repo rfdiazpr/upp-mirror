@@ -188,9 +188,9 @@ void Ide::BuildAndDebug(bool runto)
 		debugger = PdbCreate(host, target, runarg);
 #else
 	if(gdbSelector)
-		debugger = Gdb_MI2Create(host, target, runarg, console);
+		debugger = Gdb_MI2Create(pick(host), target, runarg, console);
 	else
-		debugger = GdbCreate(host, target, runarg, console);
+		debugger = GdbCreate(pick(host), target, runarg, console);
 #endif
 	if(!debugger) {
 		IdeEndDebug();

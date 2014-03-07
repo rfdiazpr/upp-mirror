@@ -6,7 +6,7 @@ protected:
 
 public:
 	T&       Add(const K& k, const T& x)            { key.Add(k); return value.Add(x); }
-	T&       AddPick(const K& k, pick_ T& x)        { key.Add(k); return value.AddPick(x); }
+	T&       AddPick(const K& k, T pick_ x)         { key.Add(k); return value.AddPick(pick(x)); }
 	T&       Add(const K& k)                        { key.Add(k); return value.Add(); }
 
 	int      Find(const K& k, unsigned h) const     { return key.Find(k, h); }
@@ -18,15 +18,15 @@ public:
 
 	int      FindAdd(const K& k);
 	int      FindAdd(const K& k, const T& init);
-	int      FindAddPick(const K& k, pick_ T& init);
+	int      FindAddPick(const K& k, T pick_ init);
 
 	int      Put(const K& k, const T& x);
-	int      PutPick(const K& k, pick_ T& x);
+	int      PutPick(const K& k, T pick_ x);
 	T&       Put(const K& k);
 
 	int      FindPut(const K& k);
 	int      FindPut(const K& k, const T& init);
-	int      FindPutPick(const K& k, pick_ T& init);
+	int      FindPutPick(const K& k, T pick_ init);
 
 	T&       Get(const K& k)                     { return value[Find(k)]; }
 	const T& Get(const K& k) const               { return value[Find(k)]; }
@@ -35,12 +35,12 @@ public:
 	T&       GetAdd(const K& k);
 
 	T&       GetAdd(const K& k, const T& x);
-	T&       GetAddPick(const K& k, pick_ T& x);
+	T&       GetAddPick(const K& k, T pick_ x);
 
 	T&       GetPut(const K& k);
 
 	T&       GetPut(const K& k, const T& x);
-	T&       GetPutPick(const K& k, pick_ T& x);
+	T&       GetPutPick(const K& k, T pick_ x);
 
 	void     SetKey(int i, const K& k)           { key.Set(i, k); }
 
@@ -92,14 +92,14 @@ public:
 	void     Swap(AMap& x)                         { UPP::Swap(value, x.value);
 	                                                 UPP::Swap(key, x.key); }
 	const Index<K, HashFn>&  GetIndex() const      { return key; }
-	Index<K, HashFn>         PickIndex() pick_     { return key; }
+	Index<K, HashFn>         PickIndex()           { return pick(key); }
 
 	const Vector<K>& GetKeys() const               { return key.GetKeys(); }
-	Vector<K>        PickKeys() pick_              { return key.PickKeys(); }
+	Vector<K>        PickKeys()                    { return key.PickKeys(); }
 
 	const V&         GetValues() const             { return value; }
 	V&               GetValues()                   { return value; }
-	V                PickValues() pick_            { return value; }
+	V                PickValues()                  { return pick(value); }
 	
 	bool             IsPicked() const              { return value.IsPicked() || key.IsPicked(); }
 
@@ -107,8 +107,8 @@ public:
 
 	AMap()                                         {}
 	AMap(const AMap& s, int) : key(s.key, 0), value(s.value, 0) {}
-	AMap(pick_ Index<K, HashFn>& ndx, pick_ V& val) : key(ndx), value(val) {}
-	AMap(pick_ Vector<K>& ndx, pick_ V& val) : key(ndx), value(val) {}
+	AMap(Index<K, HashFn> pick_ ndx, V pick_ val) : key(ndx), value(val) {}
+	AMap(Vector<K> pick_ ndx, V pick_ val) : key(ndx), value(val) {}
 
 	typedef Vector<K> KeyContainer;
 	typedef K         KeyType;
@@ -141,8 +141,8 @@ public:
 	T        Pop()                            { T h = B::Top(); B::Drop(); return h; }
 
 	VectorMap(const VectorMap& s, int) : AMap<K, T, Vector<T>, HashFn>(s, 1) {}
-	VectorMap(pick_ Index<K, HashFn>& ndx, pick_ Vector<T>& val) : AMap<K, T, Vector<T>, HashFn>(ndx, val) {}
-	VectorMap(pick_ Vector<K>& ndx, pick_ Vector<T>& val) : AMap<K, T, Vector<T>, HashFn>(ndx, val) {}
+	VectorMap(Index<K, HashFn> pick_  ndx, Vector<T> pick_ val) : AMap<K, T, Vector<T>, HashFn>(ndx, val) {}
+	VectorMap(Vector<K> pick_ ndx, Vector<T> pick_ val) : AMap<K, T, Vector<T>, HashFn>(ndx, val) {}
 	VectorMap()                                                       {}
 
 	friend void    Swap(VectorMap& a, VectorMap& b)      { a.B::Swap(b); }
@@ -170,8 +170,8 @@ public:
 	T        *Swap(int i, T *newt)                 { return B::value.Swap(i, newt); }
 
 	ArrayMap(const ArrayMap& s, int) : AMap<K, T, Array<T>, HashFn>(s, 1) {}
-	ArrayMap(pick_ Index<K, HashFn>& ndx, pick_ Array<T>& val) : AMap<K, T, Array<T>, HashFn>(ndx, val) {}
-	ArrayMap(pick_ Vector<K>& ndx, pick_ Array<T>& val) : AMap<K, T, Array<T>, HashFn>(ndx, val) {}
+	ArrayMap(Index<K, HashFn> pick_ ndx, Array<T> pick_ val) : AMap<K, T, Array<T>, HashFn>(ndx, val) {}
+	ArrayMap(Vector<K> pick_ ndx, Array<T> pick_  val) : AMap<K, T, Array<T>, HashFn>(ndx, val) {}
 	ArrayMap() {}
 
 	friend void    Swap(ArrayMap& a, ArrayMap& b)        { a.B::Swap(b); }
@@ -187,8 +187,8 @@ class SegtorMap : public MoveableAndDeepCopyOption< SegtorMap<K, T, NBLK, HashFn
 	typedef AMap< K, T, Segtor<T, NBLK>, HashFn > B;
 public:
 	SegtorMap(const SegtorMap& s, int) : AMap<K, T, Segtor<T, NBLK>, HashFn>(s, 1) {}
-	SegtorMap(pick_ Index<K, HashFn>& ndx, pick_ Segtor<T>& val) : AMap<K, T, Segtor<T, NBLK>, HashFn>(ndx, val) {}
-	SegtorMap(pick_ Vector<K>& ndx, pick_ Segtor<T>& val) : AMap<K, T, Segtor<T, NBLK>, HashFn>(ndx, val) {}
+	SegtorMap(Index<K, HashFn> pick_ ndx, Segtor<T> pick_ val) : AMap<K, T, Segtor<T, NBLK>, HashFn>(ndx, val) {}
+	SegtorMap(Vector<K> pick_ ndx, Segtor<T> pick_ val) : AMap<K, T, Segtor<T, NBLK>, HashFn>(ndx, val) {}
 	SegtorMap()                                              {}
 
 	friend void Swap(SegtorMap& a, SegtorMap& b)             { a.B::Swap(b); }

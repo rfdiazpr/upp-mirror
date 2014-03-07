@@ -129,9 +129,9 @@ ValueArray::ValueArray(const ValueArray& v) {
 	data->Retain();
 }
 
-ValueArray::ValueArray(pick_ Vector<Value>& v)
+ValueArray::ValueArray(Vector<Value> pick_ v)
 {
-	Create() = v;
+	Create() = pick(v);
 }
 
 ValueArray::ValueArray(const Vector<Value>& v, int deep)
@@ -391,11 +391,11 @@ ValueMap::ValueMap(const ValueMap& v)
 	data->Retain();
 }
 
-ValueMap::ValueMap(pick_ Index<Value>& k, pick_ Vector<Value>& v)
+ValueMap::ValueMap(Index<Value> pick_ k, Vector<Value> pick_ v)
 {
 	Data& d = Create();
-	d.key = k;
-	d.value = ValueArray(v);
+	d.key = pick(k);
+	d.value = ValueArray(pick(v));
 }
 
 ValueMap::ValueMap(const Index<Value>& k, const Vector<Value>& v, int deep)
@@ -403,7 +403,7 @@ ValueMap::ValueMap(const Index<Value>& k, const Vector<Value>& v, int deep)
 	Data& d = Create();
 	d.key <<= k;
 	Vector<Value> _v(v, 0);
-	d.value = ValueArray(_v);
+	d.value = ValueArray(pick(_v));
 }
 
 ValueMap::operator Value() const {

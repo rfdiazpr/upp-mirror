@@ -220,7 +220,7 @@ void JsonizeArray(JsonIO& io, T& array)
 			Jsonize(jio, array[i]);
 			jio.Put(va[i]);
 		}
-		io.Set(ValueArray(va));
+		io.Set(ValueArray(pick(va)));
 	}
 }
 

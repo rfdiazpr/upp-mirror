@@ -212,7 +212,12 @@ struct RichPara {
 		const Line&          operator[](int i) const { return line[i]; }
 		void                 Justify(const Format& format);
 		int                  BodyHeight() const;
-		
+
+#ifdef CPP_11
+		Lines(Lines&&) = default;
+		Lines& operator=(Lines&&) = default;
+#endif
+	
 		Lines();
 		~Lines();
 
@@ -288,7 +293,12 @@ struct RichPara {
 	void        ApplyZoom(Zoom z);
 	
 	void        CacheId(int64 id);
-	
+
+#ifdef CPP_11
+	RichPara(RichPara&&) = default;
+	RichPara& operator=(RichPara&&) = default;
+#endif
+
 	RichPara();
 	~RichPara();
 

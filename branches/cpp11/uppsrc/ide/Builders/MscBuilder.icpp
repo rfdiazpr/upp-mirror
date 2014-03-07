@@ -263,9 +263,9 @@ bool MscBuilder::BuildPackage(const String& package, Vector<String>& linkfile, S
 	}
 
 	int first_ifile = sfile.GetCount();
-	sfile.AppendPick(isfile);
-	soptions.AppendPick(isoptions);
-	optimize.AppendPick(ioptimize);
+	sfile.AppendPick(pick(isfile));
+	soptions.AppendPick(pick(isoptions));
+	optimize.AppendPick(pick(ioptimize));
 
 	int ccount = 0;
 
@@ -514,7 +514,7 @@ bool MscBuilder::BuildPackage(const String& package, Vector<String>& linkfile, S
 
 	IdeConsoleEndGroup();
 	obj.Append(linkfile);
-	linkfile = obj;
+	linkfile = pick(obj);
 	return true;
 }
 

@@ -400,7 +400,7 @@ void RichEdit::Clear()
 	zsc = 0;
 }
 
-void RichEdit::SetupLanguage(pick_ Vector<int>& _lng)
+void RichEdit::SetupLanguage(Vector<int> pick_ _lng)
 {
 	Vector<int>& lng = const_cast<Vector<int>&>(_lng);
 	Sort(lng);
@@ -409,10 +409,10 @@ void RichEdit::SetupLanguage(pick_ Vector<int>& _lng)
 		language.Add(lng[i], lng[i] ? LNGAsText(lng[i]) : String(t_("None")));
 }
 
-void RichEdit::Pick(pick_ RichText& t)
+void RichEdit::Pick(RichText pick_ t)
 {
 	Clear();
-	text = t;
+	text = pick(t);
 	if(text.GetPartCount() == 0)
 		text.Cat(RichPara());
 	ReadStyles();
@@ -525,7 +525,7 @@ RichEdit::UndoInfo RichEdit::PickUndoInfo()
 	return f;
 }
 
-void RichEdit::SetPickUndoInfo(pick_ UndoInfo& f)
+void RichEdit::SetPickUndoInfo(UndoInfo pick_ f)
 {
 	undoserial = f.undoserial;
 	incundoserial = true;

@@ -413,9 +413,9 @@ Blitz CppBuilder::BlitzStep(Vector<String>& sfile, Vector<String>& soptions,
 	}
 	b.path = CatAnyPath(outdir, "$blitz.cpp");
 	if(b.count > 1) {
-		sfile = excluded;
-		soptions = excludedoptions;
-		optimize = excludedoptimize;
+		sfile = pick(excluded);
+		soptions = pick(excludedoptions);
+		optimize = pick(excludedoptimize);
 		if(LoadFile(b.path) != blitz) {
 			SaveFile(b.path, blitz);
 			b.build = true;

@@ -551,7 +551,7 @@ bool Gdb::Key(dword key, int count)
 	return Ctrl::Key(key, count);
 }
 
-bool Gdb::Create(One<Host> pick_ _host, const String& exefile, const String& cmdline, bool console)
+bool Gdb::Create(One<Host> rval_ _host, const String& exefile, const String& cmdline, bool console)
 {
 	host = pick(_host);
 	dbg = host->StartProcess(GdbCommand(console) + GetHostPath(exefile));
@@ -607,7 +607,7 @@ Gdb::Gdb()
 	periodic.Set(-50, THISBACK(Periodic));
 }
 
-One<Debugger> GdbCreate(One<Host> pick_ host, const String& exefile, const String& cmdline, bool console)
+One<Debugger> GdbCreate(One<Host> rval_ host, const String& exefile, const String& cmdline, bool console)
 {
 	Gdb *dbg = new Gdb;
 	if(!dbg->Create(pick(host), exefile, cmdline, console)) {

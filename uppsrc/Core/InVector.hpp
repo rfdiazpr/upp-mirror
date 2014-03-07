@@ -310,7 +310,7 @@ void InVector<T>::InsertN(int ii, int n)
 template <class T>
 void InVector<T>::Join(int blki)
 {
-	data[blki].AppendPick(data[blki + 1]);
+	data[blki].AppendPick(pick(data[blki + 1]));
 	data.Remove(blki + 1);
 }
 

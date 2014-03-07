@@ -38,7 +38,7 @@ void Vector<T>::GrowF()
 }
 
 template <class T>
-void Vector<T>::Pick(Vector<T> pick_ v)
+void Vector<T>::Pick(Vector<T> rval_ v)
 {
 	vector = v.vector;
 	items = v.items;
@@ -99,7 +99,7 @@ T& Vector<T>::GrowAdd(const T& x) {
 }
 
 template <class T>
-T& Vector<T>::GrowAddPick(T pick_ x) {
+T& Vector<T>::GrowAddPick(T rval_ x) {
 	T *prev = vector;
 	Grow();
 	T *q = Rdd();
@@ -273,7 +273,7 @@ void Vector<T>::Insert(int q, const T& x, int count) {
 }
 
 template <class T>
-T& Vector<T>::InsertPick(int q, T pick_ x)
+T& Vector<T>::InsertPick(int q, T rval_ x)
 {
 	ASSERT(&x < vector || &x > vector + items);
 	RawInsert(q, 1);
@@ -296,7 +296,7 @@ void Vector<T>::Insert(int q, const Vector& x) {
 }
 
 template <class T>
-void Vector<T>::InsertPick(int i, Vector<T> pick_ v) {
+void Vector<T>::InsertPick(int i, Vector<T> rval_ v) {
 	Chk();
 	v.Chk();
 	ASSERT(!vector || v.vector != vector);
@@ -477,7 +477,7 @@ void Array<T>::Insert(int i, const T& x, int count) {
 }
 
 template <class T>
-T& Array<T>::InsertPick(int i, T pick_ x)
+T& Array<T>::InsertPick(int i, T rval_ x)
 {
 	vector.InsertN(i, 1);
 	vector[i] = new T(pick(x));

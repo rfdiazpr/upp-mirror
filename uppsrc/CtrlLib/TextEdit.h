@@ -163,7 +163,7 @@ public:
 	void      ClearUndo()                     { undo.Clear(); redo.Clear(); }
 	bool      IsUndoOp() const                { return undo_op; }
 	UndoData  PickUndoData();
-	void      SetPickUndoData(UndoData pick_ data);
+	void      SetPickUndoData(UndoData rval_ data);
 
 	void      Cut();
 	void      Copy();

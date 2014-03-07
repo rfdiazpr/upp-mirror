@@ -301,7 +301,7 @@ void  RichTextView::Clear()
 	anchor = cursor = sell = selh = 0;
 }
 
-void  RichTextView::Pick(RichText pick_ rt)
+void  RichTextView::Pick(RichText rval_ rt)
 {
 	sb = 0;
 	anchor = cursor = sell = selh = 0;
@@ -311,7 +311,7 @@ void  RichTextView::Pick(RichText pick_ rt)
 	highlight = -1;
 }
 
-void  RichTextView::Pick(RichText pick_ txt, Zoom z) {
+void  RichTextView::Pick(RichText rval_ txt, Zoom z) {
 	if(z.m != z.d)
 		const_cast<RichText&>(txt).ApplyZoom(z);
 	Pick(pick(txt));

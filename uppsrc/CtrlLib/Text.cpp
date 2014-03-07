@@ -204,7 +204,7 @@ TextCtrl::UndoData TextCtrl::PickUndoData()
 	return data;
 }
 
-void TextCtrl::SetPickUndoData(TextCtrl::UndoData pick_ data)
+void TextCtrl::SetPickUndoData(TextCtrl::UndoData rval_ data)
 {
 	undo = pick(data.undo);
 	redo = pick(data.redo);

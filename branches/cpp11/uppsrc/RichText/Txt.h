@@ -243,9 +243,12 @@ public:
 	bool                  Iterate(Iterator& r, int gpos, const RichStyles& s) const;
 
 	RichTxt(const RichTxt& src, int);
+	RichTxt();
+
+#ifdef CPP_11
 	RichTxt(RichTxt&&) = default;
 	RichTxt& operator=(RichTxt&&) = default;
-	RichTxt();
+#endif
 
 #ifdef _DEBUG
 	void                  Dump();

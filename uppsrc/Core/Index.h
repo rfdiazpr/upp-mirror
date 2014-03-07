@@ -63,8 +63,8 @@ public:
 	HashBase();
 	~HashBase();
 
-	HashBase(pick_ HashBase& b);
-	void operator=(pick_ HashBase& b);
+	HashBase(HashBase pick_ b);
+	void operator=(HashBase pick_ b);
 	HashBase(const HashBase& b, int);
 	void operator<<=(const HashBase& b);
 
@@ -168,13 +168,14 @@ public:
 	void     Jsonize(JsonIO& jio);
 #endif
 
-	V        PickKeys() pick_                 { return key; }
+	V        PickKeys()                       { return pick(key); }
 	const V& GetKeys() const                  { return key; }
 	bool     IsPicked(void) const             { return key.IsPicked(); }
 
 // Pick assignment & copy. Picked source can only Clear(), ~AIndex(), operator=, operator<<=
 
-	AIndex& operator=(pick_ V& s);
+	AIndex& operator=(V pick_ s);
+//	AIndex& operator=(AIndex pick_ s) = default;
 	AIndex& operator<<=(const V& s);
 
 // Standard container interface
@@ -191,7 +192,7 @@ public:
 	friend int  GetCount(const AIndex& v)                 { return v.GetCount(); }
 
 protected:
-	AIndex(pick_ V& s);
+	AIndex(V pick_ s);
 	AIndex(const V& s, int);
 	AIndex() {}
 	AIndex(const AIndex& s, int);
@@ -205,12 +206,13 @@ public:
 	T        Pop()                           { T x = B::Top(); B::Drop(); return x; }
 
 	Index() {}
-	Index(pick_ Index& s) : B(s)             {}
+	Index(Index pick_ s) : B(pick(s))        {}
 	Index(const Index& s, int) : B(s, 1)     {}
-	explicit Index(pick_ Vector<T>& s) : B(s){}
+	explicit Index(Vector<T> pick_ s) : B(pick(s)) {}
 	Index(const Vector<T>& s, int) : B(s, 1) {}
 
-	Index& operator=(pick_ Vector<T>& x)     { B::operator=(x); return *this; }
+	Index& operator=(Vector<T> pick_ x)      { B::operator=(pick(x)); return *this; }
+	Index& operator=(Index<T> pick_ x)       { B::operator=(pick(x)); return *this; }
 
 	friend void Swap(Index& a, Index& b)     { a.B::Swap(b); }
 
@@ -237,12 +239,12 @@ public:
 	T       *Detach(int i)                          { B::hash.Remove(i); return B::key.Detach(i); }
 
 	ArrayIndex() {}
-	ArrayIndex(pick_ ArrayIndex& s) : B(s)          {}
+	ArrayIndex(ArrayIndex pick_ s) : B(s)          {}
 	ArrayIndex(const ArrayIndex& s, int) : B(s, 1)  {}
-	explicit ArrayIndex(pick_ Array<T>& s) : B(s)   {}
+	explicit ArrayIndex(Array<T> pick_ s) : B(s)   {}
 	ArrayIndex(const Array<T>& s, int) : B(s, 1)    {}
 
-	ArrayIndex& operator=(pick_ Array<T>& x)        { B::operator=(x); return *this; }
+	ArrayIndex& operator=(Array<T> pick_ x)        { B::operator=(x); return *this; }
 
 	friend void Swap(ArrayIndex& a, ArrayIndex& b)  { a.B::Swap(b); }
 

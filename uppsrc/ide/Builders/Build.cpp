@@ -243,7 +243,7 @@ bool MakeBuild::BuildPackage(const Workspace& wspc, int pkindex, int pknumber, i
 	One<Host> host = CreateHost(false);
 	if(!IsNull(onefile)) {
 		OneFileHost *h = new OneFileHost;
-		h->host = host;
+		h->host = pick(host);
 		h->onefile = onefile;
 		host = h;
 	}
@@ -333,7 +333,7 @@ void MakeBuild::SetHdependDirs()
 			include.Add(SourcePath(wspc[i], pkg.include[j].text));
 	}
 
-	HdependSetDirs(include);
+	HdependSetDirs(pick(include));
 }
 
 Vector<String> MakeBuild::GetAllUses(const Workspace& wspc, int f,

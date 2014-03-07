@@ -388,8 +388,8 @@ public:
 	Callback1<Value>			WhenClose; 			// Executed before tab closing. Parameter: Key of closed tab
 	Gate	 					CancelCloseAll;		// Return true to cancel action;
 	Callback 		 			WhenCloseAll;		// Executed before 'Close All' action
-	Gate1<Vector<Value> >		CancelCloseSome;	// Return true to cancel action (executed with list of closing tabs)
-	Callback1<Vector<Value> >	WhenCloseSome;		// Executed before any 'Close' action (with list of closing tabs)
+	Gate1<ValueArray>	     	CancelCloseSome;	// Return true to cancel action (executed with list of closing tabs)
+	Callback1<ValueArray>       WhenCloseSome;		// Executed before any 'Close' action (with list of closing tabs)
 
 	TabBar();
 	TabBar& CopyBaseSettings(const TabBar& src);

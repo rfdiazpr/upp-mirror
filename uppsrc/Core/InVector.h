@@ -71,7 +71,7 @@ private:
 	void SetBegin(ConstIterator& it) const;
 	void SetEnd(ConstIterator& it) const;
 
-	void     Chk() const                            { ASSERT_(!IsPicked(), "Broken pick semantics"); }
+	void     Chk() const                            { ASSERT_(!IsPicked(), "Broken pick_ semantics"); }
 
 #ifdef flagIVTEST
 	void Check(int blki, int offset) const;

@@ -250,7 +250,7 @@ template <class T> Value SvoToValue(const T& x)            { return Value(x, Val
 template <class T> Value RichToValue(const T& data);
 
 template <class T> Value RawToValue(const T& data);
-template <class T> Value RawPickToValue(pick_ T& data);
+template <class T> Value RawPickToValue(T pick_ data);
 template <class T> Value RawDeepToValue(const T& data);
 template <class T> T&    CreateRawValue(Value& v);
 

@@ -263,7 +263,8 @@ bool Package::Load(const char *path)
 				else
 				if(p.Id("file")) {
 					do {
-						file.Add(ReadValue(p));
+						File f(ReadValue(p));
+						file.Add() = pick(f);
 						while(!p.IsChar(',') && !p.IsChar(';')) {
 							if(!LoadFOpt(p, "options", file.Top().option) &&
 							   !LoadFOpt(p, "depends", file.Top().depends))

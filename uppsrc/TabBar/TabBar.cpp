@@ -359,14 +359,14 @@ void TabBar::Set(const TabBar& t)
 
 void TabBar::CloseAll(int exception)
 {
-	Vector<Value> vv;
+	ValueArray vv;
 	for(int i = 0; i < tabs.GetCount(); i++)
 		if(i != exception)
 			vv.Add(tabs[i].key);
 		
 	if (exception < 0 && CancelCloseAll())
 		return;
-	else if (exception >= 0 && CancelCloseSome(Vector<Value>(vv,0))) 
+	else if (exception >= 0 && CancelCloseSome(vv)) 
 		return;
 	
 	for(int i = tabs.GetCount() - 1; i >= 0; i--)
@@ -528,7 +528,7 @@ void TabBar::DoStacking()
 	for (int i = 0; i < tstack.GetCount(); i++) {
 		if (stacksort)
 			StableSort(tstack[i], *stacksorter);
-		tabs.AppendPick(tstack[i]);
+		tabs.AppendPick(pick(tstack[i]));
 	}
 	highlight = -1;
 	SetData(v);
@@ -642,7 +642,7 @@ void TabBar::DoCloseGroup(int n)
 	
 	if(WhenCloseSome || CancelCloseSome)
 	{
-		Vector<Value>vv;
+		ValueArray vv;
 		int nTabs = 0;
 		for(int i = 0; i < tabs.GetCount(); i++)
 			if(groupName == tabs[i].group) {
@@ -650,7 +650,7 @@ void TabBar::DoCloseGroup(int n)
 				nTabs++;
 			}
 		// at first, we check for CancelCloseSome()
-		if(vv.GetCount() && !CancelCloseSome(Vector<Value>(vv,0))) {
+		if(vv.GetCount() && !CancelCloseSome(vv)) {
 			// we didn't cancel globally, now we check CancelClose()
 			// for each tab -- group gets removed ONLY if ALL of
 			// group tabs are closed
@@ -1938,10 +1938,10 @@ void TabBar::LeftDown(Point p, dword keyflags)
 		if (cross < tabs.GetCount()) {
 			int tempCross = cross;
 			Value v = tabs[cross].key;
-			Vector<Value>vv;
+			ValueArray vv;
 			vv.Add(v);
 			int ix = cross;
-			if (!CancelClose(v) && !CancelCloseSome(Vector<Value>(vv, 0))) {
+			if (!CancelClose(v) && !CancelCloseSome(vv)) {
 				Close(ix);
 				WhenClose(v);
 				WhenCloseSome(vv);
@@ -1983,9 +1983,9 @@ void TabBar::MiddleDown(Point p, dword keyflags)
 	if (highlight >= 0)
 	{
 		Value v = tabs[highlight].key;
-		Vector<Value>vv;
+		ValueArray vv;
 		vv.Add(v);
-		if (!CancelClose(v) && ! CancelCloseSome(Vector<Value>(vv, 0))) {
+		if (!CancelClose(v) && ! CancelCloseSome(vv)) {
 			Value v = tabs[highlight].key;
 			Close(highlight);
 			WhenClose(v);
@@ -2164,7 +2164,7 @@ void TabBar::DragAndDrop(Point p, PasteClip& d)
 		if (tab < c)
 			c -= count;
 		// Re-insert
-		tabs.InsertPick(c, stacktemp);
+		tabs.InsertPick(c, pick(stacktemp));
 		
 		active = id >= 0 ? FindId(id) : -1;
 		isdrag = false;

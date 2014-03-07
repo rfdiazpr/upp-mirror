@@ -100,7 +100,7 @@ int              IdeConsoleExecuteWithInput(const char *cmdline, Stream *out, co
 int              IdeConsoleExecute(One<AProcess> process, const char *cmdline, Stream *out = NULL, bool quiet = false);
 int              IdeConsoleAllocSlot();
 bool             IdeConsoleRun(const char *cmdline, Stream *out = NULL, const char *envptr = NULL, bool quiet = false, int slot = 0, String key = Null, int blitz_count = 1);
-bool             IdeConsoleRun(One<AProcess> process, const char *cmdline, Stream *out = NULL, bool quiet = false, int slot = 0, String key = Null, int blitz_count = 1);
+bool             IdeConsoleRun(One<AProcess> pick_ process, const char *cmdline, Stream *out = NULL, bool quiet = false, int slot = 0, String key = Null, int blitz_count = 1);
 void             IdeConsoleFlush();
 void             IdeConsoleBeginGroup(String group);
 void             IdeConsoleEndGroup();
@@ -284,6 +284,10 @@ public:
 
 		File()                            { Init(); }
 		File(const String& s) : String(s) { Init(); }
+	#ifdef CPP_11
+		File(File&&) = default;
+		File& operator=(File&&) = default;
+	#endif
 	};
 	struct Config {
 		String name;
@@ -407,7 +411,7 @@ struct Builder {
 VectorMap<String, Builder *(*)()>& BuilderMap();
 void RegisterBuilder(const char *name, Builder *(*create)());
 
-void                  HdependSetDirs(pick_ Vector<String>& id);
+void                  HdependSetDirs(Vector<String> pick_ id);
 void                  HdependTimeDirty();
 void                  HdependClearDependencies();
 void                  HdependAddDependency(const String& file, const String& depends);

@@ -29,7 +29,7 @@ RichPara::~RichPara()
 		Mutex::Lock __(cache_lock);
 		Array<RichPara>& cache = Cache();
 		incache = true;
-		cache.InsertPick(0, *this);
+		cache.InsertPick(0, pick(*this));
 		int total = 0;
 		for(int i = 1; i < cache.GetCount(); i++) {
 			total += cache[i].GetLength();
@@ -573,7 +573,7 @@ void RichPara::Unpack(const String& data, const Array<RichObject>& obj,
 		Array<RichPara>& cache = Cache();
 		for(int i = 0; i < cache.GetCount(); i++)
 			if(cache[i].cacheid == cacheid) {
-				*this = cache[i];
+				*this = pick(cache[i]);
 				incache = false;
 				cache.Remove(i);
 				return;

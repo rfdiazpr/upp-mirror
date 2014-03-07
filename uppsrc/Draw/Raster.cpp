@@ -52,7 +52,7 @@ int Raster::GetPageDisposal(int n)
 	return 0;	
 }
 
-void Raster::Line::Pick(pick_ Line& b)
+void Raster::Line::Pick(Line pick_ b)
 {
 	data = b.data;
 	fmtdata = b.fmtdata;

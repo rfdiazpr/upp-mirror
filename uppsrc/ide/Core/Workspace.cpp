@@ -101,7 +101,7 @@ bool LoadVarFile(const char *name, VectorMap<String, String>& _var)
 			}
 			p.Char(';');
 		}
-		_var = var;
+		_var = pick(var);
 		return true;
 	}
 	catch(...) {

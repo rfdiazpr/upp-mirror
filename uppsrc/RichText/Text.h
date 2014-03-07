@@ -151,7 +151,9 @@ public:
 	RichText()            { Init(); }
 	RichText(const RichText& x, int);
 	RichText(RichTxt pick_ x, RichStyles pick_ st);
-	
+
+#ifdef CPP_11
 	RichText(RichText&&) = default;
 	RichText& operator=(RichText&&) = default;
+#endif
 };

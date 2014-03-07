@@ -129,7 +129,7 @@ ValueArray::ValueArray(const ValueArray& v) {
 	data->Retain();
 }
 
-ValueArray::ValueArray(Vector<Value> pick_ v)
+ValueArray::ValueArray(Vector<Value> rval_ v)
 {
 	Create() = pick(v);
 }
@@ -391,7 +391,7 @@ ValueMap::ValueMap(const ValueMap& v)
 	data->Retain();
 }
 
-ValueMap::ValueMap(Index<Value> pick_ k, Vector<Value> pick_ v)
+ValueMap::ValueMap(Index<Value> rval_ k, Vector<Value> rval_ v)
 {
 	Data& d = Create();
 	d.key = pick(k);

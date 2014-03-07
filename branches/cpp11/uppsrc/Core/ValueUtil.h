@@ -215,7 +215,7 @@ class ValueArray : public ValueType<ValueArray, VALUEARRAY_V, Moveable<ValueArra
 public:
 	ValueArray()                              { Init0(); }
 	ValueArray(const ValueArray& v);
-	explicit ValueArray(Vector<Value> pick_ values);
+	explicit ValueArray(Vector<Value> rval_ values);
 	explicit ValueArray(const Vector<Value>& values, int deep);
 	~ValueArray();
 
@@ -291,7 +291,7 @@ class ValueMap : public ValueType<ValueMap, VALUEMAP_V, Moveable<ValueMap> >{
 public:
 	ValueMap()                                      { Init0(); }
 	ValueMap(const ValueMap& v);
-	ValueMap(Index<Value> pick_ k, Vector<Value> pick_ v);
+	ValueMap(Index<Value> rval_ k, Vector<Value> rval_ v);
 	ValueMap(const Index<Value>& k, const Vector<Value>& v, int deep);
 	~ValueMap();
 

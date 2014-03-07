@@ -270,8 +270,8 @@ public:
 	WithDeepCopy(const T& a) : T(a, 1)             {}
 	WithDeepCopy(const WithDeepCopy& a) : T(a, 1)  {}
 	WithDeepCopy& operator=(const WithDeepCopy& a) { (T&)*this <<= a; return *this; }
-	WithDeepCopy(int, T pick_ a) : T(a)            {}
-	WithDeepCopy& operator^=(T pick_ a)            { (T&)*this = pick(a); return *this; }
+	WithDeepCopy(int, T rval_ a) : T(a)            {}
+	WithDeepCopy& operator^=(T rval_ a)            { (T&)*this = pick(a); return *this; }
 	WithDeepCopy()                                 {}
 };
 

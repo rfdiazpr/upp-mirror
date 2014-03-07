@@ -370,7 +370,7 @@ int MIValue::Parse(String const &s, int i)
 	}
 }
 
-MIValue &MIValue::operator=(MIValue pick_ v)
+MIValue &MIValue::operator=(MIValue rval_ v)
 {
 	Clear();
 	type = pick(v.type);
@@ -396,7 +396,7 @@ MIValue::MIValue()
 	Clear();
 }
 
-MIValue::MIValue(MIValue pick_ v)
+MIValue::MIValue(MIValue rval_ v)
 {
 	Clear();
 	type = v.type;
@@ -736,7 +736,7 @@ void MIValue::FixArrays(void)
 }
 
 // add an item to a tuple
-MIValue &MIValue::Add(String const &key, MIValue pick_ v)
+MIValue &MIValue::Add(String const &key, MIValue rval_ v)
 {
 	if(IsEmpty())
 	{
@@ -776,7 +776,7 @@ MIValue &MIValue::FindAdd(String const &key, String const &data)
 }
 
 // add an item to an array
-MIValue &MIValue::Add(MIValue pick_ v)
+MIValue &MIValue::Add(MIValue rval_ v)
 {
 	if(IsEmpty())
 	{

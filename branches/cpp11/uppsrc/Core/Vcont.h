@@ -19,31 +19,31 @@ class Vector : public MoveableAndDeepCopyOption< Vector<T> > {
 	static T      *RawAlloc(int& n);
 
 #ifdef _DEBUG
-	static Vector& SetPicked(Vector pick_ v)  { BreakWhenPicked((void *)&v); Vector& p = (Vector&)(v); p.items = -1; p.vector = NULL; return p; }
+	static Vector& SetPicked(Vector rval_ v)  { BreakWhenPicked((void *)&v); Vector& p = (Vector&)(v); p.items = -1; p.vector = NULL; return p; }
 #else
-	static Vector& SetPicked(Vector pick_ v)  { Vector& p = (Vector&)(v); p.items = -1; p.vector = NULL; return p; }
+	static Vector& SetPicked(Vector rval_ v)  { Vector& p = (Vector&)(v); p.items = -1; p.vector = NULL; return p; }
 #endif
 
-	void     Pick(Vector<T> pick_ v);
+	void     Pick(Vector<T> rval_ v);
 
 	T       *Rdd()                           { return vector + items++; }
 
 	void     Free();
 	void     __DeepCopy(const Vector& src);
 	T&       Get(int i) const        { ASSERT(i >= 0 && i < items); return vector[i]; }
-	void     Chk() const             { ASSERT_(items >= 0, "Broken pick_ semantics"); }
+	void     Chk() const             { ASSERT_(items >= 0, "Broken rval_ semantics"); }
 	void     ReAlloc(int alloc);
 	void     ReAllocF(int alloc);
 	void     Grow();
 	void     GrowF();
 	T&       GrowAdd(const T& x);
-	T&       GrowAddPick(T pick_ x);
+	T&       GrowAddPick(T rval_ x);
 	void     RawInsert(int q, int count);
 
 public:
 	T&       Add()                   { Chk(); if(items >= alloc) GrowF(); return *(::new(vector + items++) T); }
 	T&       Add(const T& x)         { Chk(); return items < alloc ? DeepCopyConstruct(Rdd(), x) : GrowAdd(x); }
-	T&       AddPick(T pick_ x)      { Chk(); return items < alloc ? *(::new(Rdd()) T(pick(x))) : GrowAddPick(pick(x)); }
+	T&       AddPick(T rval_ x)      { Chk(); return items < alloc ? *(::new(Rdd()) T(pick(x))) : GrowAddPick(pick(x)); }
 	void     AddN(int n);
 	const T& operator[](int i) const { return Get(i); }
 	T&       operator[](int i)       { return Get(i); }
@@ -72,14 +72,14 @@ public:
 	T&       Insert(int i)              { InsertN(i); return Get(i); }
 	void     Insert(int i, const T& x, int count);
 	T&       Insert(int i, const T& x)  { Insert(i, x, 1); return Get(i); }
-	T&       InsertPick(int i, T pick_ x);
+	T&       InsertPick(int i, T rval_ x);
 	void     Insert(int i, const Vector& x);
 	void     Insert(int i, const Vector& x, int offset, int count);
-	void     InsertPick(int i, Vector pick_ x);
+	void     InsertPick(int i, Vector rval_ x);
 	void     InsertSplit(int i, Vector<T>& v, int from);
 	void     Append(const Vector& x)               { Insert(GetCount(), x); }
 	void     Append(const Vector& x, int o, int c) { Insert(GetCount(), x, o, c); }
-	void     AppendPick(Vector pick_ x)            { InsertPick(GetCount(), pick(x)); }
+	void     AppendPick(Vector rval_ x)            { InsertPick(GetCount(), pick(x)); }
 	int      GetIndex(const T& item) const; //deprecated
 	void     Swap(int i1, int i2)    { UPP::Swap(Get(i1), Get(i2)); }
 
@@ -92,7 +92,7 @@ public:
 	operator const T*() const        { return (T*)vector; }
 
 	Vector&  operator<<(const T& x)  { Add(x); return *this; }
-	Vector&  operator|(T pick_ x)   { AddPick(x); return *this; }
+	Vector&  operator|(T rval_ x)   { AddPick(x); return *this; }
 
 #ifdef UPP
 	void     Serialize(Stream& s)    { StreamContainer(s, *this); }
@@ -113,8 +113,8 @@ public:
 	}
 
 // Pick assignment & copy. Picked source can only do Clear(), ~Vector(), operator=, operator <<=
-	Vector(Vector pick_ v)           { Pick(pick(v)); }
-	void operator=(Vector pick_ v)   { Free(); Pick(pick(v)); }
+	Vector(Vector rval_ v)           { Pick(pick(v)); }
+	void operator=(Vector rval_ v)   { Free(); Pick(pick(v)); }
 	bool IsPicked() const            { return items < 0; }
 
 // Deep copy
@@ -169,7 +169,7 @@ protected:
 public:
 	T&       Add()                      { T *q = new T; vector.Add(q); return *q; }
 	T&       Add(const T& x)            { T *q = DeepCopyNew(x); vector.Add(q); return *q; }
-	T&       AddPick(T pick_ x)         { T *q = new T(pick(x)); vector.Add(q); return *q; }
+	T&       AddPick(T rval_ x)         { T *q = new T(pick(x)); vector.Add(q); return *q; }
 	T&       Add(T *newt)               { vector.Add(newt); return *newt; }
 	template<class TT> TT& Create()     { TT *q = new TT; Add(q); return *q; }
 	const T& operator[](int i) const    { return Get(i); }
@@ -199,13 +199,13 @@ public:
 	T&       Insert(int i)              { InsertN(i); return Get(i); }
 	void     Insert(int i, const T& x, int count);
 	T&       Insert(int i, const T& x)  { Insert(i, x, 1); return Get(i); }
-	T&       InsertPick(int i, T pick_ x);
+	T&       InsertPick(int i, T rval_ x);
 	void     Insert(int i, const Array& x);
 	void     Insert(int i, const Array& x, int offset, int count);
 	void     Append(const Array& x)               { Insert(GetCount(), x); }
 	void     Append(const Array& x, int o, int c) { Insert(GetCount(), x, o, c); }
-	void     InsertPick(int i, Array pick_ x)     { vector.InsertPick(i, pick(x.vector)); }
-	void     AppendPick(Array pick_ x)            { InsertPick(GetCount(), pick(x)); }
+	void     InsertPick(int i, Array rval_ x)     { vector.InsertPick(i, pick(x.vector)); }
+	void     AppendPick(Array rval_ x)            { InsertPick(GetCount(), pick(x)); }
 	int      GetIndex(const T& item) const;
 	void     Swap(int i1, int i2)       { UPP::Swap(vector[i1], vector[i2]); }
 	void     Move(int i1, int i2);
@@ -225,7 +225,7 @@ public:
 
 	Array& operator<<(const T& x)       { Add(x); return *this; }
 	Array& operator<<(T *newt)          { Add(newt); return *this; }
-	Array& operator|(T pick_ x)        { AddPick(x); return *this; }
+	Array& operator|(T rval_ x)        { AddPick(x); return *this; }
 
 	bool     IsPicked() const           { return vector.IsPicked(); }
 
@@ -239,8 +239,8 @@ public:
 	~Array()                            { Free(); }
 
 // Pick assignment & copy. Picked source can only Clear(), ~Vector(), operator=, operator<<=
-	Array(Array pick_ v) : vector(pick(v.vector))  {}
-	void operator=(Array pick_ v)            { Free(); vector = pick(v.vector); }
+	Array(Array rval_ v) : vector(pick(v.vector))  {}
+	void operator=(Array rval_ v)            { Free(); vector = pick(v.vector); }
 
 // Deep copy
 	Array(const Array& v, int)          { __DeepCopy(v); }
@@ -376,7 +376,7 @@ protected:
 public:
 	T&       Add()                          { return *::new(Add0()) T; }
 	T&       Add(const T& x)                { return DeepCopyConstruct(Add0(), x); }
-	T&       AddPick(T pick_ x)            { return *(::new(Add0()) T(x)); }
+	T&       AddPick(T rval_ x)            { return *(::new(Add0()) T(x)); }
 	T&       operator[](int i)              { return Get(i); }
 	const T& operator[](int i) const        { return Get(i); }
 	int      GetCount() const               { return items; }
@@ -401,7 +401,7 @@ public:
 	void     Swap(Segtor& b)                { block.Swap(b.block); Swap(items, b.items); }
 
 	Segtor& operator<<(const T& x)          { Add(x); return *this; }
-	Segtor& operator|(T pick_ x)           { AddPick(x); return *this; }
+	Segtor& operator|(T rval_ x)           { AddPick(x); return *this; }
 
 	bool     IsPicked() const               { return block.IsPicked(); }
 
@@ -410,7 +410,7 @@ public:
 #endif
 
 	Segtor()                                { items = 0; }
-	Segtor(Segtor pick_ s) : block(s.block), items(s.items) {}
+	Segtor(Segtor rval_ s) : block(s.block), items(s.items) {}
 	Segtor(const Segtor& s, int);
 	~Segtor();
 

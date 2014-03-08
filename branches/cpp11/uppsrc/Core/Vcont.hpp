@@ -289,6 +289,17 @@ void Vector<T>::Insert(int q, const Vector& x, int offset, int count) {
 	DeepCopyConstructArray(vector + q, x.vector + offset, x.vector + offset + count);
 }
 
+#ifdef CPP_11
+template <class T>
+void Vector<T>::Insert(int i, std::initializer_list<T> init)
+{
+	RawInsert(i, init.size());
+	T *t = vector + i;
+	for(auto q : init)
+		DeepCopyConstruct(t++, q);
+}
+#endif
+
 template <class T>
 void Vector<T>::Insert(int q, const Vector& x) {
 	if(!x.GetCount()) return;

@@ -117,6 +117,10 @@ public:
 	void operator=(Vector rval_ v)   { Free(); Pick(pick(v)); }
 	bool IsPicked() const            { return items < 0; }
 
+#ifdef CPP_11
+	void     Insert(int i, std::initializer_list<T> init);
+#endif
+
 // Deep copy
 	Vector(const Vector& v, int)     { __DeepCopy(v); }
 

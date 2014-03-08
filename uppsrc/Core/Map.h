@@ -107,8 +107,8 @@ public:
 
 	AMap()                                         {}
 	AMap(const AMap& s, int) : key(s.key, 0), value(s.value, 0) {}
-	AMap(Index<K, HashFn> rval_ ndx, V rval_ val) : key(ndx), value(val) {}
-	AMap(Vector<K> rval_ ndx, V rval_ val) : key(ndx), value(val) {}
+	AMap(Index<K, HashFn> rval_ ndx, V rval_ val) : key(pick(ndx)), value(pick(val)) {}
+	AMap(Vector<K> rval_ ndx, V rval_ val) : key(pick(ndx)), value(pick(val)) {}
 
 	typedef Vector<K> KeyContainer;
 	typedef K         KeyType;
@@ -141,8 +141,8 @@ public:
 	T        Pop()                            { T h = B::Top(); B::Drop(); return h; }
 
 	VectorMap(const VectorMap& s, int) : AMap<K, T, Vector<T>, HashFn>(s, 1) {}
-	VectorMap(Index<K, HashFn> rval_  ndx, Vector<T> rval_ val) : AMap<K, T, Vector<T>, HashFn>(ndx, val) {}
-	VectorMap(Vector<K> rval_ ndx, Vector<T> rval_ val) : AMap<K, T, Vector<T>, HashFn>(ndx, val) {}
+	VectorMap(Index<K, HashFn> rval_  ndx, Vector<T> rval_ val) : AMap<K, T, Vector<T>, HashFn>(pick(ndx), pick(val)) {}
+	VectorMap(Vector<K> rval_ ndx, Vector<T> rval_ val) : AMap<K, T, Vector<T>, HashFn>(pick(ndx), pick(val)) {}
 	VectorMap()                                                       {}
 
 	friend void    Swap(VectorMap& a, VectorMap& b)      { a.B::Swap(b); }
@@ -170,8 +170,8 @@ public:
 	T        *Swap(int i, T *newt)                 { return B::value.Swap(i, newt); }
 
 	ArrayMap(const ArrayMap& s, int) : AMap<K, T, Array<T>, HashFn>(s, 1) {}
-	ArrayMap(Index<K, HashFn> rval_ ndx, Array<T> rval_ val) : AMap<K, T, Array<T>, HashFn>(ndx, val) {}
-	ArrayMap(Vector<K> rval_ ndx, Array<T> rval_  val) : AMap<K, T, Array<T>, HashFn>(ndx, val) {}
+	ArrayMap(Index<K, HashFn> rval_ ndx, Array<T> rval_ val) : AMap<K, T, Array<T>, HashFn>(pick(ndx), pick(val)) {}
+	ArrayMap(Vector<K> rval_ ndx, Array<T> rval_  val) : AMap<K, T, Array<T>, HashFn>(pick(ndx), pick(val)) {}
 	ArrayMap() {}
 
 	friend void    Swap(ArrayMap& a, ArrayMap& b)        { a.B::Swap(b); }
@@ -187,8 +187,8 @@ class SegtorMap : public MoveableAndDeepCopyOption< SegtorMap<K, T, NBLK, HashFn
 	typedef AMap< K, T, Segtor<T, NBLK>, HashFn > B;
 public:
 	SegtorMap(const SegtorMap& s, int) : AMap<K, T, Segtor<T, NBLK>, HashFn>(s, 1) {}
-	SegtorMap(Index<K, HashFn> rval_ ndx, Segtor<T> rval_ val) : AMap<K, T, Segtor<T, NBLK>, HashFn>(ndx, val) {}
-	SegtorMap(Vector<K> rval_ ndx, Segtor<T> rval_ val) : AMap<K, T, Segtor<T, NBLK>, HashFn>(ndx, val) {}
+	SegtorMap(Index<K, HashFn> rval_ ndx, Segtor<T> rval_ val) : AMap<K, T, Segtor<T, NBLK>, HashFn>(pick(ndx), pick(val)) {}
+	SegtorMap(Vector<K> rval_ ndx, Segtor<T> rval_ val) : AMap<K, T, Segtor<T, NBLK>, HashFn>(pick(ndx), pick(val)) {}
 	SegtorMap()                                              {}
 
 	friend void Swap(SegtorMap& a, SegtorMap& b)             { a.B::Swap(b); }

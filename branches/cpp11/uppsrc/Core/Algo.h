@@ -1547,7 +1547,7 @@ void SortByKey(Map& map, const Less& less)
 	typename Map::KeyContainer k = map.PickKeys();
 	typename Map::ValueContainer v = map.PickValues();
 	IndexSort(k, v, less);
-	map = Map(k, v);
+	map = Map(pick(k), pick(v));
 }
 
 template <class Map>
@@ -1562,7 +1562,7 @@ void SortByValue(Map& map, const Less& less)
 	typename Map::KeyContainer k = map.PickKeys();
 	typename Map::ValueContainer v = map.PickValues();
 	IndexSort(v, k, less);
-	map = Map(k, v);
+	map = Map(pick(k), pick(v));
 }
 
 template <class Map>
@@ -1577,7 +1577,7 @@ void StableSortByKey(Map& map, const Less& less)
 	typename Map::KeyContainer k = map.PickKeys();
 	typename Map::ValueContainer v = map.PickValues();
 	StableIndexSort(k, v, less);
-	map = Map(k, v);
+	map = Map(pick(k), pick(v));
 }
 
 template <class Map>
@@ -1592,7 +1592,7 @@ void StableSortByValue(Map& map, const Less& less)
 	typename Map::KeyContainer k = map.PickKeys();
 	typename Map::ValueContainer v = map.PickValues();
 	StableIndexSort(v, k, less);
-	map = Map(k, v);
+	map = Map(pick(k), pick(v));
 }
 
 template <class Map>
@@ -1621,7 +1621,7 @@ void StableSortIndex(Index& index, const Less& less)
 {
 	typename Index::ValueContainer k = index.PickKeys();
 	StableSort(k, less);
-	index = Index(k);
+	index = Index(pick(k));
 }
 
 template <class Index>

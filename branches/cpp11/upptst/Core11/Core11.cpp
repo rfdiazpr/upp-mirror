@@ -141,8 +141,10 @@ void TestInMap()
 struct HasClone : MoveableAndDeepCopyOption<HasClone> {
 	Vector<int> a;
 	
+#ifdef CPP_11
 	HasClone(HasClone rval_ x) = default;
 	HasClone& operator=(HasClone rval_ x) = default;
+#endif
 	HasClone(const HasClone& x, int) : a(x.a, 0) {}
 	HasClone() {}
 };

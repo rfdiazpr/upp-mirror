@@ -40,7 +40,7 @@ void TestTransfers()
 	TestTransfer< SortedArrayMap<int, T> >();
 }
 
-template <class InMap>
+template <class InMap, class Val>
 void TestInMap()
 {
 	InMap m;
@@ -94,9 +94,9 @@ void TestInMap()
 	h.Clear();
 	ASSERT(h.GetCount() == 0);
 	
-//	const InVector<String>& h = m.GetValues();
-//	ASSERT(h.GetCount() == m.GetCount());
-//	ASSERT(h[7] == "seven");
+	const Val& vv = m.GetValues();
+	ASSERT(vv.GetCount() == vv.GetCount());
+	ASSERT(vv[7] == "seven");
 	
 	InMap mm = pick(m);
 	ASSERT(m.IsPicked());
@@ -159,11 +159,11 @@ CONSOLE_APP_MAIN
 	TestTransfers<String>();
 	TestTransfers<HasClone>();
 	
-//	TestInMap< SortedVectorMap<int, String> >();
-	TestInMap< SortedArrayMap<int, String> >();
+	TestInMap< SortedVectorMap<int, String>, InVector<String> >();
+	TestInMap< SortedArrayMap<int, String>, InArray<String> >();
 	
-//	SortedArrayMap<int, NoClone> x;
-//	x.Create<NoClone>().a.Add(1);
+	SortedArrayMap<int, NoClone> x;
+	x.Create<NoClone>(1).a.Add(1);
 
 	{
 		SortedVectorMap<int, NoClone> mm;

@@ -575,7 +575,7 @@ struct Slaved_InVector__ : InVectorSlave__ {
 
 template <class K, class T, class Less = StdLess<K> >
 class SortedVectorMap : public SortedAMap<K, T, Less, Slaved_InVector__<T> >,
-                        public MoveableAndDeepCopyOption<SortedVectorMap<K, Less> > {
+                        public MoveableAndDeepCopyOption<SortedVectorMap<K, T, Less> > {
 	typedef Slaved_InVector__<T> Data;
     typedef SortedAMap<K, T, Less, Data>  B;
     

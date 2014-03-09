@@ -239,14 +239,15 @@ public:
 	T       *Detach(int i)                          { B::hash.Remove(i); return B::key.Detach(i); }
 
 	ArrayIndex() {}
-	ArrayIndex(ArrayIndex rval_ s) : B(s)          {}
-	ArrayIndex(const ArrayIndex& s, int) : B(s, 1)  {}
-	explicit ArrayIndex(Array<T> rval_ s) : B(s)   {}
-	ArrayIndex(const Array<T>& s, int) : B(s, 1)    {}
+	ArrayIndex(ArrayIndex rval_ s) : B(pick(s))          {}
+	ArrayIndex(const ArrayIndex& s, int) : B(s, 1)       {}
+	explicit ArrayIndex(Array<T> rval_ s) : B(pick(s))   {}
+	ArrayIndex(const Array<T>& s, int) : B(s, 1)         {}
 
-	ArrayIndex& operator=(Array<T> rval_ x)        { B::operator=(x); return *this; }
+	ArrayIndex& operator=(Array<T> rval_ x)              { B::operator=(pick(x)); return *this; }
+	ArrayIndex& operator=(ArrayIndex<T> rval_ x)         { B::operator=(pick(x)); return *this; }
 
-	friend void Swap(ArrayIndex& a, ArrayIndex& b)  { a.B::Swap(b); }
+	friend void Swap(ArrayIndex& a, ArrayIndex& b)       { a.B::Swap(b); }
 
 	typedef typename B::ConstIterator ConstIterator; // GCC bug (?)
 	STL_INDEX_COMPATIBILITY(ArrayIndex<T _cm_ HashFn>)

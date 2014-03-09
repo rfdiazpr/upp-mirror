@@ -200,11 +200,6 @@ void Vector<T>::Remove(int q, int count) {
 	items -= count;
 }
 
-template <int size>
-class Data_S_ {
-	byte filler[size];
-};
-
 template <class T>
 void Vector<T>::Remove(const int *sorted_list, int n)
 {

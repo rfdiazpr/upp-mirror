@@ -394,9 +394,6 @@ T&& pick(T& x) { return static_cast<T&&>(x); }
 template <class T>
 T& pick(T& x) { return x; }
 
-template <class T>
-T& clone(const T& x) { T y(x, 1); return y; }
-
 #ifdef COMPILER_MSC
 #define pick_
 #define rval_ &

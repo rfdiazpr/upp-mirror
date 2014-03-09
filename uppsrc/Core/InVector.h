@@ -1,6 +1,3 @@
-template <class K, class T, class Less, class Data>
-class SortedAMap;
-
 template <class T> struct Slaved_InVector__;
 template <class T> struct Slaved_InArray__;
 
@@ -15,7 +12,6 @@ struct InVectorSlave__ {
 	virtual void RemoveBlk(int blki, int n) = 0;
 	virtual void Index(int blki, int n) = 0;
 	virtual void Reindex() = 0;
-//	virtual void Serialize(Stream& s) = 0;
 	virtual void Shrink() = 0;
 };
 
@@ -25,7 +21,8 @@ public:
 	class ConstIterator;
 	class Iterator;
 
-	template <class K, class TT, class Less, class Data> friend class SortedAMap;
+	template <class K, class TT, class Lss, class Data> friend class SortedAMap;
+	template <class K, class TT, class Less> friend class SortedVectorMap;
 	template <class TT> friend struct Slaved_InVector__;
 	template <class TT> friend struct Slaved_InArray__;
 
@@ -236,7 +233,7 @@ public:
 
 template <class T>
 class InArray : public MoveableAndDeepCopyOption< InVector<T> > {
-	template <class K, class TT, class Less, class Data> friend class SortedAMap;
+//	template <class K, class TT, class Less, class Data> friend class SortedAMap;
 	template <class TT> friend struct Slaved_InArray__;
 
 public:
@@ -347,8 +344,12 @@ public:
 	bool IsPicked() const                           { return iv.IsPicked(); }
 
 	InArray() {}
+	InArray(InArray rval_ v) : iv(pick(v.iv))       {}
+	InArray& operator=(InArray rval_ v)             { Free(); iv.operator=(pick(v.iv)); return *this; }
 	InArray(const InArray& v, int);
+
 	~InArray()                                      { Free(); }
+	
 	
 	void Swap(InArray& b)                           { iv.Swap(b.iv); }
 	
@@ -439,6 +440,7 @@ template <class T, class Less = StdLess<T> >
 class SortedIndex : MoveableAndDeepCopyOption< SortedIndex<T, Less> > {
 	InVector<T> iv;
 	
+	template <class K, class TT, class Lss> friend class SortedVectorMap;
 	template <class K, class TT, class Lss, class Data> friend class SortedAMap;
 
 public:
@@ -479,9 +481,10 @@ public:
 	
 	const InVector<T>& GetKeys()  const             { return iv; }
 
-
 	SortedIndex()                                        {}
 	SortedIndex(const SortedIndex& s, int) : iv(s.iv, 1) {}
+	
+	bool IsPicked() const                            { return iv.IsPicked(); }
 
 	void Swap(SortedIndex& a)                        { iv.Swap(a.iv); }
 
@@ -497,13 +500,13 @@ public:
 };
 
 template <class K, class T, class Less, class Data>
-class SortedAMap : MoveableAndDeepCopyOption< SortedAMap<K, T, Less, Data> > {
+class SortedAMap {
 protected:
 	SortedIndex<K, Less> key;
-	Data                 value;
+	Data value;
 
-	void     SetSlave()      { key.iv.SetSlave(&value); }
-	T&       At(int i) const { int blki = key.iv.FindBlock(i); return value.Get(blki, i); }
+	void     SetSlave()                             { key.iv.SetSlave(&value); }
+	T&       At(int i) const                        { return (T&)value.data[i]; }
 
 public:
 	int      FindLowerBound(const K& k) const       { return key.FindLowerBound(k); }
@@ -516,14 +519,16 @@ public:
 
 	T&       Get(const K& k)                        { return At(Find(k)); }
 	const T& Get(const K& k) const                  { return At(Find(k)); }
-	const T& Get(const K& k, const T& d) const      { int i = Find(k); return i >= 0 ? value[i] : d; }
+	const T& Get(const K& k, const T& d) const      { int i = Find(k); return i >= 0 ? At(i) : d; }
 
-	T       *FindPtr(const K& k)                    { int i = Find(k); return i >= 0 ? &value[i] : NULL; }
-	const T *FindPtr(const K& k) const              { int i = Find(k); return i >= 0 ? &value[i] : NULL; }
+	T       *FindPtr(const K& k)                    { int i = Find(k); return i >= 0 ? &At(i) : NULL; }
+	const T *FindPtr(const K& k) const              { int i = Find(k); return i >= 0 ? &At(i) : NULL; }
 
-	const K& GetKey(int i) const                    { return key[i]; }
 	const T& operator[](int i) const                { return At(i); }
 	T&       operator[](int i)                      { return At(i); }
+
+	const K& GetKey(int i) const                    { return key[i]; }
+
 	int      GetCount() const                       { return key.GetCount(); }
 	bool     IsEmpty() const                        { return key.IsEmpty(); }
 	void     Clear()                                { key.Clear(); }
@@ -533,22 +538,10 @@ public:
 	void     Remove(int i, int count)               { key.Remove(i, count); }
 	int      RemoveKey(const K& k)                  { return key.RemoveKey(k); }
 
-	void     Drop(int n = 1)                        { key.Drop(n); }
-	T&       Top()                                  { return value.Top(); }
-	const T& Top() const                            { return value.Top(); }
-	const K& TopKey() const                         { return key.Top(); }
-	K        PopKey()                               { K h = TopKey(); Drop(); return h; }
-	void     Trim(int n)                            { key.Trim(n); }
-
-	void     Swap(SortedAMap& x)                    { Swap(value, x.value); Swap(key, x.key); }
-
-	bool     IsPicked() const                       { return value.IsPicked() || key.IsPicked(); }
-	
 	const SortedIndex<K>& GetIndex() const          { return key; }
 	const InVector<K>& GetKeys() const              { return key.GetKeys(); }
 
-	SortedAMap()                                    { SetSlave(); }
-	SortedAMap(const SortedAMap& s, int) : key(s.key, 0), value(s.value, 0) { SetSlave(); }
+	bool     IsPicked() const                       { return value.data.IsPicked() || key.IsPicked(); }
 
 	typedef K        KeyType;
 
@@ -557,24 +550,13 @@ public:
 	KeyConstIterator KeyBegin() const                             { return key.Begin(); }
 	KeyConstIterator KeyEnd() const                               { return key.End(); }
 	KeyConstIterator KeyGetIter(int pos) const                    { return key.GetIter(pos); }
-
-	typedef T                                   ValueType;
-	typedef typename Data::Type::ConstIterator  ConstIterator;
-	typedef typename Data::Type::Iterator       Iterator;
-
-	Iterator         Begin()                                      { return value.data.Begin(); }
-	Iterator         End()                                        { return value.data.End(); }
-	Iterator         GetIter(int pos)                             { return value.data.GetIter(pos); }
-	ConstIterator    Begin() const                                { return value.data.Begin(); }
-	ConstIterator    End() const                                  { return value.data.End(); }
-	ConstIterator    GetIter(int pos) const                       { return value.data.GetIter(pos); }
 };
 
 template <class T>
 struct Slaved_InVector__ : InVectorSlave__ {
 	typedef InVector<T> Type;
 	InVector<T> data;
-	const T *ptr;
+	T *res;
       
 	virtual void Clear()                          { data.Clear(); }
 	virtual void Count(int n)                     { data.count += n; }
@@ -593,28 +575,31 @@ struct Slaved_InVector__ : InVectorSlave__ {
 };
 
 template <class K, class T, class Less = StdLess<K> >
-class SortedVectorMap : public MoveableAndDeepCopyOption<SortedVectorMap<K, T, Less> >,
-                        public SortedAMap<K, T, Less, Slaved_InVector__<T> > {
-    typedef SortedAMap<K, T, Less, Slaved_InVector__<T> > B;
-
+class SortedVectorMap : public SortedAMap<K, T, Less, Slaved_InVector__<T> >,
+                        public MoveableAndDeepCopyOption<SortedVectorMap<K, Less> > {
+	typedef Slaved_InVector__<T> Data;
+    typedef SortedAMap<K, T, Less, Data>  B;
+    
 public:
-	T&       Add(const K& k, const T& x)            { B::value.ptr = &x; B::key.Add(k); return *(T*)B::value.ptr; }
-	T&       Add(const K& k)                        { B::value.ptr = NULL; B::key.Add(k); return *(T*)B::value.ptr; }
+	T&       Add(const K& k)                        { B::key.Add(k); return *B::value.res; }
+	T&       Add(const K& k, const T& x)            { B::key.Add(k); *B::value.res = x; return *B::value.res; }
 
-	int      FindAdd(const K& k)                    { B::value.ptr = NULL; return B::key.FindAdd(k); }
-	int      FindAdd(const K& k, const T& init)     { B::value.ptr = &init; return B::key.FindAdd(k); }
+	int      FindAdd(const K& k)                    { return B::key.FindAdd(k); }
+	int      FindAdd(const K& k, const T& init);
 
 	T&       GetAdd(const K& k)                     { return B::At(FindAdd(k)); }
 	T&       GetAdd(const K& k, const T& x)         { return B::At(FindAdd(k, x)); }
 
-	T        Pop()                                  { T h = B::Top(); B::Drop(); return h; }
-
 	SortedVectorMap& operator()(const K& k, const T& v) { Add(k, v); return *this; }
 
-	const InVector<T>& GetValues() const            { return B::value.data; }
+	SortedVectorMap()                               { B::SetSlave(); }
+#ifdef CPP_11
+	SortedVectorMap(SortedVectorMap rval_);
+	SortedVectorMap& operator=(SortedVectorMap rval_);
+#endif
+	SortedVectorMap(const SortedVectorMap& s, int);
 
-	SortedVectorMap(const SortedVectorMap& s, int) : B(s, 1) {}
-	SortedVectorMap()                                                       {}
+	void     Swap(SortedVectorMap& x);
 
 #ifdef UPP
 	void     Serialize(Stream& s);
@@ -622,10 +607,21 @@ public:
 	void     Jsonize(JsonIO& jio);
 #endif
 
+	const InVector<T>& GetValues() const            { return B::value.data; }
+
 	friend void    Swap(SortedVectorMap& a, SortedVectorMap& b) { a.Swap(b); }
 
-	typedef typename B::ConstIterator ConstIterator;
-	typedef typename B::Iterator      Iterator;
+	typedef T                                   ValueType;
+	typedef typename Data::Type::ConstIterator  ConstIterator;
+	typedef typename Data::Type::Iterator       Iterator;
+
+	Iterator         Begin()                        { return B::value.data.Begin(); }
+	Iterator         End()                          { return B::value.data.End(); }
+	Iterator         GetIter(int pos)               { return B::value.data.GetIter(pos); }
+	ConstIterator    Begin() const                  { return B::value.data.Begin(); }
+	ConstIterator    End() const                    { return B::value.data.End(); }
+	ConstIterator    GetIter(int pos) const         { return B::value.data.GetIter(pos); }
+
 	STL_MAP_COMPATIBILITY(SortedVectorMap<K _cm_ T _cm_ Less>)
 };
 
@@ -633,8 +629,7 @@ template <class T>
 struct Slaved_InArray__ : InVectorSlave__ {
 	typedef InArray<T> Type;
 	InArray<T> data;
-	T         *ptr;
-	bool       mk;
+	T         *res;
       
 	virtual void Clear()                          { data.Clear(); }
 	virtual void Count(int n)                     { data.iv.count += n; }
@@ -651,23 +646,22 @@ struct Slaved_InArray__ : InVectorSlave__ {
 
 	T& Get(int blki, int i) const                 { return *(T*)data.iv.data[blki][i]; }
 	T *Detach(int i)                              { T *x = data.iv[i]; data.iv[i] = NULL; return x; }
-	
-	Slaved_InArray__()                            { mk = false; }
 };
 
 template <class K, class T, class Less = StdLess<K> >
 class SortedArrayMap : public MoveableAndDeepCopyOption<SortedArrayMap<K, T, Less> >,
                         public SortedAMap<K, T, Less, Slaved_InArray__<T> > {
-    typedef SortedAMap<K, T, Less, Slaved_InArray__<T> > B;
+	typedef Slaved_InArray__<T> Data;
+    typedef SortedAMap<K, T, Less, Data> B;
 
 public:
-	T&       Add(const K& k, const T& x)          { B::value.ptr = new T(x); B::key.Add(k); return *(T*)B::value.ptr; }
-	T&       Add(const K& k)                      { B::value.ptr = new T; B::key.Add(k); return *(T*)B::value.ptr; }
-	T&       Add(const K& k, T *newt)             { B::value.ptr = newt; B::key.Add(k); return *newt; }
-	template <class TT> TT& Create(const K& k)    { TT *q = new TT; B::value.ptr = q; B::key.Add(k); return *q; }
+	T&       Add(const K& k, const T& x)          { B::value.res = DeepCopyNew(x); B::key.Add(k); return *(T*)B::value.res; }
+	T&       Add(const K& k)                      { B::value.res = NULL; B::key.Add(k); return *(T*)B::value.res; }
+	T&       Add(const K& k, T *newt)             { B::value.res = newt; B::key.Add(k); return *newt; }
+	template <class TT> TT& Create(const K& k)    { TT *q = new TT(); B::value.res = q; B::key.Add(k); return *q; }
 
-	int      FindAdd(const K& k)                  { B::value.ptr = NULL; return B::key.FindAdd(k); }
-	int      FindAdd(const K& k, const T& init)   { B::value.ptr = (T*)&init; B::value.mk = true; int x = B::key.FindAdd(k); B::value.mk = false; return x; }
+	int      FindAdd(const K& k)                  { B::value.res = NULL; return B::key.FindAdd(k); }
+	int      FindAdd(const K& k, const T& init);
 
 	T&       GetAdd(const K& k)                   { return B::At(FindAdd(k)); }
 	T&       GetAdd(const K& k, const T& x)       { return B::At(FindAdd(k, x)); }
@@ -679,8 +673,12 @@ public:
 
 	SortedArrayMap& operator()(const K& k, const T& v) { Add(k, v); return *this; }
 
-	SortedArrayMap(const SortedArrayMap& s, int) : B(s, 1) {}
-	SortedArrayMap() {}
+	SortedArrayMap()                              { B::SetSlave(); }
+#ifdef CPP_11
+	SortedArrayMap(SortedArrayMap rval_);
+	SortedArrayMap& operator=(SortedArrayMap rval_);
+#endif
+	SortedArrayMap(const SortedArrayMap& s, int);
 
 #ifdef UPP
 	void     Serialize(Stream& s);
@@ -688,9 +686,21 @@ public:
 	void     Jsonize(JsonIO& jio);
 #endif
 
+	void     Swap(SortedArrayMap& x);
+
 	friend void    Swap(SortedArrayMap& a, SortedArrayMap& b) { a.Swap(b); }
 
-	typedef typename B::ConstIterator ConstIterator;
-	typedef typename B::Iterator      Iterator;
+	typedef T                                   ValueType;
+	typedef typename Data::Type::ConstIterator  ConstIterator;
+	typedef typename Data::Type::Iterator       Iterator;
+
+	Iterator         Begin()                        { return B::value.data.Begin(); }
+	Iterator         End()                          { return B::value.data.End(); }
+	Iterator         GetIter(int pos)               { return B::value.data.GetIter(pos); }
+	ConstIterator    Begin() const                  { return B::value.data.Begin(); }
+	ConstIterator    End() const                    { return B::value.data.End(); }
+	ConstIterator    GetIter(int pos) const         { return B::value.data.GetIter(pos); }
+
 	STL_MAP_COMPATIBILITY(SortedArrayMap<K _cm_ T _cm_ HashFn>)
 };
+

@@ -350,7 +350,6 @@ public:
 
 	~InArray()                                      { Free(); }
 	
-	
 	void Swap(InArray& b)                           { iv.Swap(b.iv); }
 	
 #ifdef UPP

@@ -229,7 +229,7 @@ public:
 
 	Array& operator<<(const T& x)       { Add(x); return *this; }
 	Array& operator<<(T *newt)          { Add(newt); return *this; }
-	Array& operator|(T rval_ x)        { AddPick(x); return *this; }
+	Array& operator|(T rval_ x)         { AddPick(x); return *this; }
 
 	bool     IsPicked() const           { return vector.IsPicked(); }
 
@@ -244,7 +244,7 @@ public:
 
 // Pick assignment & copy. Picked source can only Clear(), ~Vector(), operator=, operator<<=
 	Array(Array rval_ v) : vector(pick(v.vector))  {}
-	void operator=(Array rval_ v)            { Free(); vector = pick(v.vector); }
+	void operator=(Array rval_ v)       { Free(); vector = pick(v.vector); }
 
 // Deep copy
 	Array(const Array& v, int)          { __DeepCopy(v); }

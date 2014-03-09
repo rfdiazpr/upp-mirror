@@ -518,3 +518,8 @@ inline unsigned GetHashValue(T *ptr)                             { return GetPtr
 
 template <class T> inline const T& ntl_max(const T& a, const T& b) { return a > b ? a : b; }
 
+template <int size>
+struct Data_S_ : Moveable< Data_S_<size> >
+{
+	byte filler[size];
+};

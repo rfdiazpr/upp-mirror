@@ -52,6 +52,8 @@ public:
 	bool        IsEmpty() const            { Chk(); return !ptr; }
 
 	operator bool() const                  { return ptr; }
+	
+	String ToString() const                { return ptr ? AsString(*ptr) : "<empty>"; }
 
 	One()                                  { ptr = NULL; }
 	One(T *newt)                           { ptr = newt; }

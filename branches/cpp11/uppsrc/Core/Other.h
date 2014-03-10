@@ -90,8 +90,8 @@ public:
 	bool IsEmpty() const                          { return ptr == NULL; }
 	bool IsPicked() const                         { return ptr == (void *)1; }
 
-	void operator=(Any rval_ s)                  { Clear(); Pick(pick(s)); }
-	Any(Any rval_ s)                             { Pick(pick(s)); }
+	void operator=(Any rval_ s)                   { Clear(); Pick(pick(s)); }
+	Any(Any rval_ s)                              { Pick(pick(s)); }
 
 	Any()                                         { ptr = NULL; }
 	~Any()                                        { Clear(); }

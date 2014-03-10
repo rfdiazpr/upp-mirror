@@ -625,4 +625,65 @@ equivalents to VectorMap/ArrayMap `- maps that keep keys sorted:&]
 [s7; -|&]
 [s7; -|DUMPM(m);&]
 [s7; -|DUMP(m.Get(`"zulu`"));&]
-[s5; ]]
+[s7; &]
+[s3; 15. Tuples&]
+[s5; U`+`+ has template classes Tuple2, Tuple3 and Tuple4 for combining 
+2`-4 values with different types. These are quite similiar to 
+std`::tuple class, with some advantages.&]
+[s5; To create a Tuple value, you can use MakeTuple function. If 
+correct types canot be deduced from parameters, you can specify 
+them explicitly:&]
+[s7; -|Tuple3<int, String, String> x `= [* MakeTuple]<int, String, String>(12, 
+`"hello`", `"world`");&]
+[s7; &]
+[s5; Individual values are accessible as members a .. d:&]
+[s7; &]
+[s7; -|DUMP(x.a);&]
+[s7; -|DUMP(x.b);&]
+[s7; -|DUMP(x.c);&]
+[s7; -|&]
+[s5; As long as all individual types have conversion to String (AsString), 
+the tuple also has such conversion and thus can e.g. be easily 
+logged:&]
+[s7; &]
+[s7; -|DUMP(x);&]
+[s7; &]
+[s5; Also, as long as individual types have defined GetHashValue, 
+so does Tuple:&]
+[s7; &]
+[s7; -|DUMP(GetHashValue(x));&]
+[s7; &]
+[s5; As long as individual types have defined operator`=`=, Tuple 
+has defined operator`=`= and operator!`=&]
+[s7; &]
+[s7; -|Tuple3<int, String, String> y `= x;&]
+[s7; -|DUMP(x !`= y);&]
+[s7; &]
+[s5; Finally, as long as all individual types have defined SgnCompare 
+(most U`+`+ types have), Tuple has SgnCompare, Compare method 
+and operators <, <`=, >, >`=:&]
+[s7; &]
+[s7; -|DUMP(x.Compare(y));&]
+[s7; -|&]
+[s7; -|y.b `= `"a`";&]
+[s7; -|&]
+[s7; -|DUMP(SgnCompare(y));&]
+[s7; -|DUMP(x < y);&]
+[s7; -|&]
+[s7; &]
+[s5; U`+`+ Tuples are strictly designed as POD type, which allows 
+POD arrays to be intialized with classic C style:&]
+[s7; -|static Tuple2<int, const char `*> map`[`] `= `{&]
+[s7; -|-|`{ 1, `"one`" `},&]
+[s7; -|-|`{ 2, `"one`" `},&]
+[s7; -|-|`{ 3, `"one`" `},&]
+[s7; -|`};&]
+[s7; -|&]
+[s5; Simple FindTuple template function is provided to search for 
+tuple based on the first value:&]
+[s7; &]
+[s7; -|Tuple2<int, const char `*> `*f `= FindTuple(map, `_`_countof(map), 
+2);&]
+[s7; -|if(f)&]
+[s7; -|-|DUMP(f`->b);&]
+[s7; ]]

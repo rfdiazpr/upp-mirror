@@ -75,4 +75,9 @@ CONSOLE_APP_MAIN
 
 	FixedMapTest< SortedVectorMap<int, String> >();
 	FixedMapTest< SortedArrayMap<int, String> >();
+	
+	One<int> x;
+	DUMP(x);
+	x.Create() = 1;
+	DUMP(x);
 }

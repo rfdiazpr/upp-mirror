@@ -36,6 +36,7 @@ public:
 	void     Serialize(Stream& s);
 	void     Xmlize(XmlIO& xio);
 	void     Jsonize(JsonIO& jio);
+	String   ToString() const;
 #endif
 
 	void     Swap(FixedAMap& x)                { UPP::Swap(value, x.value); UPP::Swap(key, x.key); }

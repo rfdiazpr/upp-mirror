@@ -356,6 +356,27 @@ void Vector<T>::Jsonize(JsonIO& jio)
 {
 	JsonizeArray<Vector<T>, T>(jio, *this);
 }
+
+template <class C>
+String AsStringArray(const C& v)
+{
+	String r;
+	r << '[';
+	for(int i = 0; i < v.GetCount(); i++) {
+		if(i)
+			r << ", ";
+		r << v[i];
+	}
+	r << ']';
+	return r;
+}
+
+template <class T>
+String Vector<T>::ToString() const
+{
+	return AsStringArray(*this);
+}
+
 #endif
 
 // ------------------
@@ -521,6 +542,13 @@ void Array<T>::Jsonize(JsonIO& jio)
 {
 	JsonizeArray<Array<T>, T>(jio, *this);
 }
+
+template <class T>
+String Array<T>::ToString() const
+{
+	return AsStringArray(*this);
+}
+
 #endif
 
 // ------------------
@@ -750,6 +778,13 @@ void BiVector<T>::Serialize(Stream& s) {
 		for(int i = 0; i < items; i++)
 			s % operator[](i);
 }
+
+template <class T>
+String BiVector<T>::ToString() const
+{
+	return AsStringArray(*this);
+}
+
 #endif
 
 // ------------------
@@ -784,4 +819,11 @@ void BiArray<T>::Serialize(Stream& s) {
 		for(int i = 0; i < bv.GetCount(); i++)
 			s % operator[](i);
 }
+
+template <class T>
+String BiArray<T>::ToString() const
+{
+	return AsStringArray(*this);
+}
+
 #endif

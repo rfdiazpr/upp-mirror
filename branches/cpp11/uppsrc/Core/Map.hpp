@@ -246,6 +246,13 @@ void AIndex<T, V, HashFn>::Jsonize(JsonIO& jio)
 {
 	JsonizeIndex<AIndex<T, V, HashFn>, T>(jio, *this);
 }
+
+template <class T, class V, class HashFn>
+String AIndex<T, V, HashFn>::ToString() const
+{
+	return AsStringArray(*this);
+}
+
 #endif
 
 template <class T, class V, class HashFn>
@@ -544,6 +551,23 @@ void AMap<K, T, V, HashFn>::Jsonize(JsonIO& jio)
 {
 	JsonizeMap<AMap<K, T, V, HashFn>, K, T>(jio, *this, "key", "value");
 }
+
+template <class K, class T, class V, class HashFn>
+String AMap<K, T, V, HashFn>::ToString() const
+{
+	String r;
+	r = "{";
+	for(int i = 0; i < GetCount(); i++) {
+		if(i)
+			r << ", ";
+		if(IsUnlinked(i))
+			r << "UNLINKED ";
+		r << GetKey(i) << ": " << (*this)[i];
+	}
+	r << '}';
+	return r;
+}
+
 #endif
 
 template <class K, class T, class V, class HashFn>
@@ -585,4 +609,19 @@ void FixedAMap<K, T, V, Less>::Jsonize(JsonIO& jio)
 {
 	JsonizeSortedMap<FixedAMap<K, T, V, Less>, K, T>(jio, *this, "key", "value");
 }
+
+template <class K, class T, class V, class Less>
+String FixedAMap<K, T, V, Less>::ToString() const
+{
+	String r;
+	r = "{";
+	for(int i = 0; i < GetCount(); i++) {
+		if(i)
+			r << ", ";
+		r << GetKey(i) << ": " << (*this)[i];
+	}
+	r << '}';
+	return r;
+}
+
 #endif

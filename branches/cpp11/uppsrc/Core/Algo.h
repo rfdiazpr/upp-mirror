@@ -1601,7 +1601,6 @@ void StableSortByValue(Map& map)
 	StableSortByValue(map, StdLess<typename Map::ValueType>());
 }
 
-
 template <class Index, class Less>
 void SortIndex(Index& index, const Less& less)
 {

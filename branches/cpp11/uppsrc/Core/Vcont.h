@@ -98,6 +98,7 @@ public:
 	void     Serialize(Stream& s)    { StreamContainer(s, *this); }
 	void     Xmlize(XmlIO& xio, const char *itemtag = "item");
 	void     Jsonize(JsonIO& jio);
+	String   ToString() const;
 #endif
 
 	Vector()                         { vector = NULL; items = alloc = 0; }
@@ -237,6 +238,7 @@ public:
 	void     Serialize(Stream& s)       { StreamContainer(s, *this); }
 	void     Xmlize(XmlIO& xio, const char *itemtag = "item");
 	void     Jsonize(JsonIO& jio);
+	String   ToString() const;
 #endif
 
 	Array()                             {}

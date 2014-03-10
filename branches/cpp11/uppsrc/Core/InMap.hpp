@@ -35,6 +35,12 @@ int SortedIndex<T, Less>::RemoveKey(const T& x)
 	return count;
 }
 
+template <class T, class Less>
+String SortedIndex<T, Less>::ToString() const
+{
+	return AsStringArray(*this);
+}
+
 template <class T>
 void Slaved_InVector__<T>::Insert(int blki, int pos)
 {
@@ -55,6 +61,20 @@ void Slaved_InVector__<T>::AddFirst()
 {
 	data.data.Add().Add();
 	res = &data.data[0][0];
+}
+
+template <class K, class T, class Less, class Data>
+String SortedAMap<K, T, Less, Data>::ToString() const
+{
+	String r;
+	r = "{";
+	for(int i = 0; i < GetCount(); i++) {
+		if(i)
+			r << ", ";
+		r << GetKey(i) << ": " << (*this)[i];
+	}
+	r << '}';
+	return r;
 }
 
 #ifdef CPP_11

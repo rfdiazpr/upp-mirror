@@ -46,6 +46,7 @@ public:
 
 #ifdef UPP
 	void     Serialize(Stream& s);
+	String   ToString() const;
 #endif
 
 	bool     IsPicked() const                   { return items < 0; }
@@ -117,6 +118,7 @@ public:
 
 #ifdef UPP
 	void     Serialize(Stream& s);
+	String   ToString() const;
 #endif
 
 	bool     IsPicked() const                { return bv.IsPicked(); }

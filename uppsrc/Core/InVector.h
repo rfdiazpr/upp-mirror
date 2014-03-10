@@ -145,6 +145,7 @@ public:
 	void     Serialize(Stream& s)                             { StreamContainer(s, *this); }
 	void     Xmlize(XmlIO& xio, const char *itemtag = "item");
 	void     Jsonize(JsonIO& jio);
+	String   ToString() const;
 #endif
 
 	friend void Swap(InVector& a, InVector& b)      { a.Swap(b); }
@@ -356,6 +357,7 @@ public:
 	void     Serialize(Stream& s)                             { StreamContainer(s, *this); }
 	void     Xmlize(XmlIO& xio, const char *itemtag = "item");
 	void     Jsonize(JsonIO& jio);
+	String   ToString() const;
 #endif
 
 	friend void Swap(InArray& a, InArray& b)        { a.Swap(b); }
@@ -491,6 +493,7 @@ public:
 	void     Serialize(Stream& s)                               { iv.Serialize(s); }
 	void     Xmlize(XmlIO& xio, const char *itemtag = "key")    { iv.Xmlize(xio, itemtag); }
 	void     Jsonize(JsonIO& jio)                               { iv.Jsonize(jio); }
+	String   ToString() const;
 #endif
 
 	friend void Swap(SortedIndex& a, SortedIndex& b){ a.Swap(b); }
@@ -541,6 +544,8 @@ public:
 	const InVector<K>& GetKeys() const              { return key.GetKeys(); }
 
 	bool     IsPicked() const                       { return value.data.IsPicked() || key.IsPicked(); }
+	
+	String   ToString() const;
 
 	typedef K        KeyType;
 

@@ -166,6 +166,7 @@ public:
 	void     Serialize(Stream& s);
 	void     Xmlize(XmlIO& xio, const char *itemtag = "key");
 	void     Jsonize(JsonIO& jio);
+	String   ToString() const;
 #endif
 
 	V        PickKeys()                       { return pick(key); }

@@ -654,6 +654,13 @@ void InVector<T>::Jsonize(JsonIO& jio)
 {
 	JsonizeArray<InVector<T>, T>(jio, *this);
 }
+
+template <class T>
+String InVector<T>::ToString() const
+{
+	return AsStringArray(*this);
+}
+
 #endif
 
 template <class T>
@@ -802,6 +809,13 @@ void InArray<T>::Jsonize(JsonIO& jio)
 {
 	JsonizeArray<InArray<T>, T>(jio, *this);
 }
+
+template <class T>
+String InArray<T>::ToString() const
+{
+	return AsStringArray(*this);
+}
+
 #endif
 
 #ifdef LLOG

@@ -400,7 +400,7 @@ void RichEdit::Clear()
 	zsc = 0;
 }
 
-void RichEdit::SetupLanguage(Vector<int> pick_ _lng)
+void RichEdit::SetupLanguage(Vector<int> rval_ _lng)
 {
 	Vector<int>& lng = const_cast<Vector<int>&>(_lng);
 	Sort(lng);

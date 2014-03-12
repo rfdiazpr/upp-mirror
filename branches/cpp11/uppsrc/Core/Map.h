@@ -88,6 +88,13 @@ public:
 	void     Xmlize(XmlIO& xio);
 	void     Jsonize(JsonIO& jio);
 	String   ToString() const;
+	bool     operator==(const AMap& b) const       { ASSERT(!HasUnlinked()); return IsEqualMap(*this, b); }
+	bool     operator!=(const AMap& b) const       { return !operator==(b); }
+	int      Compare(const AMap& b) const          { ASSERT(!HasUnlinked()); return CompareMap(*this, b); }
+	bool     operator<=(const AMap& x) const       { return Compare(x) <= 0; }
+	bool     operator>=(const AMap& x) const       { return Compare(x) >= 0; }
+	bool     operator<(const AMap& x) const        { return Compare(x) < 0; }
+	bool     operator>(const AMap& x) const        { return Compare(x) > 0; }
 #endif
 
 	void     Swap(AMap& x)                         { UPP::Swap(value, x.value);

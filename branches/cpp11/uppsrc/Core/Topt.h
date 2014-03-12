@@ -546,3 +546,29 @@ int CompareArray(const C& a, const C& b)
 	}
 	return SgnCompare(a.GetCount(), b.GetCount());
 }
+
+template <class C>
+bool IsEqualMap(const C& a, const C& b)
+{
+	if(a.GetCount() != b.GetCount())
+		return false;
+	for(int i = 0; i < a.GetCount(); i++)
+		if(a.GetKey(i) != b.GetKey(i) || a[i] != b[i])
+			return false;
+	return true;
+}
+
+template <class C>
+int CompareMap(const C& a, const C& b)
+{
+	int n = min(a.GetCount(), b.GetCount());
+	for(int i = 0; i < n; i++) {
+		int q = SgnCompare(a.GetKey(i), b.GetKey(i));
+		if(q)
+			return q;
+		q = SgnCompare(a[i], b[i]);
+		if(q)
+			return q;
+	}
+	return SgnCompare(a.GetCount(), b.GetCount());
+}

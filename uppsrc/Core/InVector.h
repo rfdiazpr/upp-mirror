@@ -567,6 +567,13 @@ public:
 	bool     IsPicked() const                       { return value.data.IsPicked() || key.IsPicked(); }
 	
 	String   ToString() const;
+	bool     operator==(const SortedAMap& b) const  { return IsEqualMap(*this, b); }
+	bool     operator!=(const SortedAMap& b) const  { return !operator==(b); }
+	int      Compare(const SortedAMap& b) const     { return CompareMap(*this, b); }
+	bool     operator<=(const SortedAMap& x) const  { return Compare(x) <= 0; }
+	bool     operator>=(const SortedAMap& x) const  { return Compare(x) >= 0; }
+	bool     operator<(const SortedAMap& x) const   { return Compare(x) < 0; }
+	bool     operator>(const SortedAMap& x) const   { return Compare(x) > 0; }
 
 	typedef K        KeyType;
 

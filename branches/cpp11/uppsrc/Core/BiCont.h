@@ -47,6 +47,13 @@ public:
 #ifdef UPP
 	void     Serialize(Stream& s);
 	String   ToString() const;
+	bool     operator==(const BiVector<T>& b) const { return IsEqualArray(*this, b); }
+	bool     operator!=(const BiVector<T>& b) const { return !operator==(b); }
+	int      Compare(const BiVector<T>& b) const    { return CompareArray(*this, b); }
+	bool     operator<=(const BiVector<T>& x) const { return Compare(x) <= 0; }
+	bool     operator>=(const BiVector<T>& x) const { return Compare(x) >= 0; }
+	bool     operator<(const BiVector<T>& x) const  { return Compare(x) < 0; }
+	bool     operator>(const BiVector<T>& x) const  { return Compare(x) > 0; }
 #endif
 
 	bool     IsPicked() const                   { return items < 0; }
@@ -119,6 +126,13 @@ public:
 #ifdef UPP
 	void     Serialize(Stream& s);
 	String   ToString() const;
+	bool     operator==(const BiArray<T>& b) const { return IsEqualArray(*this, b); }
+	bool     operator!=(const BiArray<T>& b) const { return !operator==(b); }
+	int      Compare(const BiArray<T>& b) const    { return CompareArray(*this, b); }
+	bool     operator<=(const BiArray<T>& x) const { return Compare(x) <= 0; }
+	bool     operator>=(const BiArray<T>& x) const { return Compare(x) >= 0; }
+	bool     operator<(const BiArray<T>& x) const  { return Compare(x) < 0; }
+	bool     operator>(const BiArray<T>& x) const  { return Compare(x) > 0; }
 #endif
 
 	bool     IsPicked() const                { return bv.IsPicked(); }

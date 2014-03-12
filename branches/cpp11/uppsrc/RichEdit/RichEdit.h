@@ -509,7 +509,7 @@ private:
 	void       SetPaper();
 	void       SetLanguage();
 	void       Language();
-	void       SetupLanguage(Vector<int> pick_ lng);
+	void       SetupLanguage(Vector<int> rval_ lng);
 
 	void       SetBullet(int bullet);
 

@@ -523,3 +523,26 @@ struct Data_S_ : Moveable< Data_S_<size> >
 {
 	byte filler[size];
 };
+
+template <class C>
+bool IsEqualArray(const C& a, const C& b)
+{
+	if(a.GetCount() != b.GetCount())
+		return false;
+	for(int i = 0; i < a.GetCount(); i++)
+		if(!(a[i] == b[i]))
+			return false;
+	return true;
+}
+
+template <class C>
+int CompareArray(const C& a, const C& b)
+{
+	int n = min(a.GetCount(), b.GetCount());
+	for(int i = 0; i < n; i++) {
+		int q = SgnCompare(a[i], b[i]);
+		if(q)
+			return q;
+	}
+	return SgnCompare(a.GetCount(), b.GetCount());
+}

@@ -146,6 +146,13 @@ public:
 	void     Xmlize(XmlIO& xio, const char *itemtag = "item");
 	void     Jsonize(JsonIO& jio);
 	String   ToString() const;
+	bool     operator==(const InVector<T>& b) const { return IsEqualArray(*this, b); }
+	bool     operator!=(const InVector<T>& b) const { return !operator==(b); }
+	int      Compare(const InVector<T>& b) const    { return CompareArray(*this, b); }
+	bool     operator<=(const InVector<T>& x) const { return Compare(x) <= 0; }
+	bool     operator>=(const InVector<T>& x) const { return Compare(x) >= 0; }
+	bool     operator<(const InVector<T>& x) const  { return Compare(x) < 0; }
+	bool     operator>(const InVector<T>& x) const  { return Compare(x) > 0; }
 #endif
 
 	friend void Swap(InVector& a, InVector& b)      { a.Swap(b); }
@@ -354,10 +361,17 @@ public:
 	void Swap(InArray& b)                           { iv.Swap(b.iv); }
 	
 #ifdef UPP
-	void     Serialize(Stream& s)                             { StreamContainer(s, *this); }
+	void     Serialize(Stream& s)                   { StreamContainer(s, *this); }
 	void     Xmlize(XmlIO& xio, const char *itemtag = "item");
 	void     Jsonize(JsonIO& jio);
 	String   ToString() const;
+	bool     operator==(const InArray<T>& b) const  { return IsEqualArray(*this, b); }
+	bool     operator!=(const InArray<T>& b) const  { return !operator==(b); }
+	int      Compare(const InArray<T>& b) const     { return CompareArray(*this, b); }
+	bool     operator<=(const InArray<T>& x) const  { return Compare(x) <= 0; }
+	bool     operator>=(const InArray<T>& x) const  { return Compare(x) >= 0; }
+	bool     operator<(const InArray<T>& x) const   { return Compare(x) < 0; }
+	bool     operator>(const InArray<T>& x) const   { return Compare(x) > 0; }
 #endif
 
 	friend void Swap(InArray& a, InArray& b)        { a.Swap(b); }
@@ -494,6 +508,13 @@ public:
 	void     Xmlize(XmlIO& xio, const char *itemtag = "key")    { iv.Xmlize(xio, itemtag); }
 	void     Jsonize(JsonIO& jio)                               { iv.Jsonize(jio); }
 	String   ToString() const;
+	bool     operator==(const SortedIndex& b) const { return IsEqualArray(*this, b); }
+	bool     operator!=(const SortedIndex& b) const { return !operator==(b); }
+	int      Compare(const SortedIndex& b) const    { return CompareArray(*this, b); }
+	bool     operator<=(const SortedIndex& x) const { return Compare(x) <= 0; }
+	bool     operator>=(const SortedIndex& x) const { return Compare(x) >= 0; }
+	bool     operator<(const SortedIndex& x) const  { return Compare(x) < 0; }
+	bool     operator>(const SortedIndex& x) const  { return Compare(x) > 0; }
 #endif
 
 	friend void Swap(SortedIndex& a, SortedIndex& b){ a.Swap(b); }

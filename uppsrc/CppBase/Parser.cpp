@@ -828,7 +828,7 @@ bool Parser::TryDecl()
 	if(t == tk_int || t == tk_bool || t == tk_float || t == tk_double || t == tk_void ||
 	   t == tk_long || t == tk_signed || t == tk_unsigned || t == tk_short ||
 	   t == tk_char || t == tk___int8 || t == tk___int16 || t == tk___int32 || t == tk___int64) {
-		while(lex[q] == '*' || lex[q] == '&')
+		while(lex[q] == '*' || lex[q] == '&' || lex[q] == tk_rval_)
 			q++;
 		if(!lex.IsId(q))
 			return false;
@@ -854,7 +854,7 @@ bool Parser::TryDecl()
 			return false;
 		type << Tparam(q);
 	}
-	while(lex[q] == '*' || lex[q] == '&')
+	while(lex[q] == '*' || lex[q] == '&' || lex[q] == tk_rval_)
 		q++;
 	if(!lex.IsId(q))
 		return false;

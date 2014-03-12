@@ -92,13 +92,20 @@ public:
 	operator const T*() const        { return (T*)vector; }
 
 	Vector&  operator<<(const T& x)  { Add(x); return *this; }
-	Vector&  operator|(T rval_ x)   { AddPick(x); return *this; }
+	Vector&  operator|(T rval_ x)    { AddPick(x); return *this; }
 
 #ifdef UPP
 	void     Serialize(Stream& s)    { StreamContainer(s, *this); }
 	void     Xmlize(XmlIO& xio, const char *itemtag = "item");
 	void     Jsonize(JsonIO& jio);
 	String   ToString() const;
+	bool     operator==(const Vector<T>& b) const { return IsEqualArray(*this, b); }
+	bool     operator!=(const Vector<T>& b) const { return !operator==(b); }
+	int      Compare(const Vector<T>& b) const    { return CompareArray(*this, b); }
+	bool     operator<=(const Vector<T>& x) const { return Compare(x) <= 0; }
+	bool     operator>=(const Vector<T>& x) const { return Compare(x) >= 0; }
+	bool     operator<(const Vector<T>& x) const  { return Compare(x) < 0; }
+	bool     operator>(const Vector<T>& x) const  { return Compare(x) > 0; }
 #endif
 
 	Vector()                         { vector = NULL; items = alloc = 0; }
@@ -239,6 +246,13 @@ public:
 	void     Xmlize(XmlIO& xio, const char *itemtag = "item");
 	void     Jsonize(JsonIO& jio);
 	String   ToString() const;
+	bool     operator==(const Array<T>& b) const { return IsEqualArray(*this, b); }
+	bool     operator!=(const Array<T>& b) const { return !operator==(b); }
+	int      Compare(const Array<T>& b) const    { return CompareArray(*this, b); }
+	bool     operator<=(const Array<T>& x) const { return Compare(x) <= 0; }
+	bool     operator>=(const Array<T>& x) const { return Compare(x) >= 0; }
+	bool     operator<(const Array<T>& x) const  { return Compare(x) < 0; }
+	bool     operator>(const Array<T>& x) const  { return Compare(x) > 0; }
 #endif
 
 	Array()                             {}

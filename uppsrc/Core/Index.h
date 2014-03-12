@@ -167,6 +167,13 @@ public:
 	void     Xmlize(XmlIO& xio, const char *itemtag = "key");
 	void     Jsonize(JsonIO& jio);
 	String   ToString() const;
+	bool     operator==(const AIndex& b) const { return IsEqualArray(*this, b); }
+	bool     operator!=(const AIndex& b) const { return !operator==(b); }
+	int      Compare(const AIndex& b) const    { return CompareArray(*this, b); }
+	bool     operator<=(const AIndex& x) const { return Compare(x) <= 0; }
+	bool     operator>=(const AIndex& x) const { return Compare(x) >= 0; }
+	bool     operator<(const AIndex& x) const  { return Compare(x) < 0; }
+	bool     operator>(const AIndex& x) const  { return Compare(x) > 0; }
 #endif
 
 	V        PickKeys()                       { return pick(key); }

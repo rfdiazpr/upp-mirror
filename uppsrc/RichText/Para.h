@@ -327,13 +327,6 @@ inline bool operator==(const RichPara::Tab& a, const RichPara::Tab& b) {
 	return a.pos == b.pos && a.align == b.align && a.fillchar == b.fillchar;
 }
 
-bool operator==(const Vector<RichPara::Tab>& a, const Vector<RichPara::Tab>& b);
-
-inline
-bool operator!=(const Vector<RichPara::Tab>& a, const Vector<RichPara::Tab>& b) {
-	return !(a == b);
-}
-
 bool NumberingDiffers(const RichPara::Format& fmt1, const RichPara::Format& fmt2);
 
 void Sort(Vector<RichPara::Tab>& tab);

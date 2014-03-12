@@ -154,15 +154,6 @@ bool NumberingDiffers(const RichPara::Format& fmt1, const RichPara::Format& fmt2
 	       memcmp(fmt1.number, fmt2.number, sizeof(fmt1.number));
 }
 
-bool operator==(const Vector<RichPara::Tab>& a, const Vector<RichPara::Tab>& b)
-{
-	if(a.GetCount() != b.GetCount()) return false;
-	for(int i = 0; i < a.GetCount(); i++)
-		if(a[i].pos != b[i].pos || a[i].align != b[i].align || a[i].fillchar != b[i].fillchar)
-			return false;
-	return true;
-}
-
 RichPara::CharFormat::CharFormat()
 {
 	(Font &)*this = Arial(100);

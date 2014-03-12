@@ -56,6 +56,30 @@ void CompareIndex()
 	ASSERT(b > a);
 }
 
+template <class T>
+void CompareMap()
+{
+	T a;
+	a.Add(1, 2);
+	a.Add(3, 4);
+	
+	T b = clone(a);
+	
+	ASSERT(a == b);
+	b.Add(4, 4);
+	ASSERT(a != b);
+	ASSERT(b > a);
+	
+	b.Clear();
+	b.Add(2, 2);
+	b.Add(3, 4);
+	ASSERT(b > a);
+	
+	b.Clear();
+	b.Add(1, 2);
+	b.Add(3, 5);
+	ASSERT(b > a);
+}
 
 CONSOLE_APP_MAIN
 {
@@ -72,6 +96,12 @@ CONSOLE_APP_MAIN
 	CompareIndex< Index<int> >();
 	CompareIndex< ArrayIndex<int> >();
 	CompareIndex< SortedIndex<int> >();
+	
+	CompareMap<VectorMap<int, int> >();
+	CompareMap<ArrayMap<int, int> >();
+
+	CompareMap<SortedVectorMap<int, int> >();
+	CompareMap<SortedArrayMap<int, int> >();
 	
 	LOG("===== OK");
 }

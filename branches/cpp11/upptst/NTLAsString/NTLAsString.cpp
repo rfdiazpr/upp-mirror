@@ -51,11 +51,14 @@ void FixedMapTest()
 	map.Add(1, "one");
 	map.Add(2, "two");
 	map.Add(3, "three");
+	map.Finish();
 	DUMP(map);
 }
 
 CONSOLE_APP_MAIN
 {
+	StdLogSetup(LOG_FILE|LOG_COUT);
+
 	ArrayTest< Vector<int> > ();
 	ArrayTest< Array<int> > ();
 	ArrayTest< InVector<int> > ();
@@ -73,11 +76,13 @@ CONSOLE_APP_MAIN
 	SortedMapTest< SortedVectorMap<int, String> >();
 	SortedMapTest< SortedArrayMap<int, String> >();
 
-	FixedMapTest< SortedVectorMap<int, String> >();
-	FixedMapTest< SortedArrayMap<int, String> >();
+	FixedMapTest< FixedVectorMap<int, String> >();
+	FixedMapTest< FixedArrayMap<int, String> >();
 	
 	One<int> x;
 	DUMP(x);
 	x.Create() = 1;
 	DUMP(x);
+	
+	LOG("======== OK");
 }

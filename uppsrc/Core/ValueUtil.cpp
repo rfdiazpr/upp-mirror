@@ -80,9 +80,19 @@ bool ValueArray::Data::IsEqual(const Value::Void *p)
 	return sCmp(((Data *)p)->data, data);
 }
 
+int ValueArray::Data::Compare(const Value::Void *p)
+{
+	return CompareArray(data, ((Data *)p)->data);
+}
+
 bool ValueArray::operator==(const ValueArray& v) const
 {
 	return sCmp(data->data, v.data->data);
+}
+
+int ValueArray::Compare(const ValueArray& b) const
+{
+	return CompareArray(data->data, b.data->data);
 }
 
 static String sAsString(const Vector<Value>& v)
@@ -327,7 +337,8 @@ unsigned ValueMap::Data::GetHashValue() const {
 	return w;
 }
 
-static bool sIsEqual(const Index<Value>& a, const Index<Value>& b) {
+static bool sIsEqual(const Index<Value>& a, const Index<Value>& b)
+{
 	if(&a == &b) return true;
 	if(a.GetCount() != b.GetCount()) return false;
 	for(int i = 0; i < a.GetCount(); i++) {
@@ -336,12 +347,34 @@ static bool sIsEqual(const Index<Value>& a, const Index<Value>& b) {
 	return true;
 }
 
-bool ValueMap::Data::IsEqual(const Value::Void *p) {
+bool ValueMap::Data::IsEqual(const Value::Void *p)
+{
 	return sIsEqual(((Data *)p)->key, key) && ((Data *)p)->value == value;
 }
 
-bool ValueMap::operator==(const ValueMap& v) const {
+bool ValueMap::operator==(const ValueMap& v) const
+{
 	return sIsEqual(data->key, v.data->key) && data->value == v.data->value;
+}
+
+int  ValueMap::Data::Compare(const Value::Void *p)
+{
+	Data *b = (Data *)p;
+	int n = min(key.GetCount(), b->key.GetCount());
+	for(int i = 0; i < n; i++) {
+		int q = SgnCompare(key[i], b->key[i]);
+		if(q)
+			return q;
+		q = SgnCompare(value[i], b->value[i]);
+		if(q)
+			return q;
+	}
+	return SgnCompare(key.GetCount(), b->key.GetCount());
+}
+
+int ValueMap::Compare(const ValueMap& b) const
+{
+	return data->Compare((Value::Void *)b.data);
 }
 
 String ValueMap::Data::AsString() const

@@ -37,6 +37,7 @@ struct TFile : Moveable<TFile> {
 		Sort(ls);
 	}
 
+	rval_default(TFile);
 	TFile() { dirty = false; }
 };
 
@@ -510,7 +511,7 @@ void Ide::SyncT(int kind)
 	}
 
 	Vector<TFile> tfile;
-	Vector<int>mainsT;
+	Vector<int> mainsT;
 
 	Progress pi;
 	const Workspace& wspc = IdeWorkspace();

@@ -385,6 +385,7 @@ T clone(const T& x) { T c(x, 1); return c; }
 
 #define pick_
 #define rval_ &&
+#define rval_default(T) T(T&&) = default; T& operator=(T&&) = default;
 
 template <typename T>
 T&& pick(T& x) { return static_cast<T&&>(x); }
@@ -401,6 +402,8 @@ T& pick(T& x) { return x; }
 #define pick_ const
 #define rval_ const &
 #endif
+
+#define rval_default(T)
 
 template <typename T>
 T& pick(const T& x) { return const_cast<T&>(x); }

@@ -218,6 +218,8 @@ public:
 	
 	bool           IsPicked() const                           { return node.IsPicked(); }
 
+	rval_default(XmlNode);
+
 	XmlNode(const XmlNode& n, int);
 
 	XmlNode()                                 { type = XML_DOC; }

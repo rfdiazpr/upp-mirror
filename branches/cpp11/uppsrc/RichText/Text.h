@@ -152,8 +152,5 @@ public:
 	RichText(const RichText& x, int);
 	RichText(RichTxt rval_ x, RichStyles rval_ st);
 
-#ifdef CPP_11
-	RichText(RichText&&) = default;
-	RichText& operator=(RichText&&) = default;
-#endif
+	rval_default(RichText);
 };

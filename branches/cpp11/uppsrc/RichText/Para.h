@@ -213,10 +213,7 @@ struct RichPara {
 		void                 Justify(const Format& format);
 		int                  BodyHeight() const;
 
-#ifdef CPP_11
-		Lines(Lines&&) = default;
-		Lines& operator=(Lines&&) = default;
-#endif
+		rval_default(Lines);
 	
 		Lines();
 		~Lines();
@@ -294,10 +291,7 @@ struct RichPara {
 	
 	void        CacheId(int64 id);
 
-#ifdef CPP_11
-	RichPara(RichPara&&) = default;
-	RichPara& operator=(RichPara&&) = default;
-#endif
+	rval_default(RichPara);
 
 	RichPara();
 	~RichPara();

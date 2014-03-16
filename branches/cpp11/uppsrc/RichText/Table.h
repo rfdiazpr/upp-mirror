@@ -110,6 +110,9 @@ private:
 		Rect              page;
 		int               page0;
 		Size              sz;
+		
+		rval_default(TabLayout);
+		TabLayout() {}
 	};
 
 	mutable TabLayout clayout;
@@ -215,6 +218,8 @@ public:
 	Size                    GetSize() const                        { return Size(GetColumns(), GetRows()); }
 
 	void          Normalize();
+
+	rval_default(RichTable);
 
 	RichTable(const RichTable& src, int);
 	RichTable();

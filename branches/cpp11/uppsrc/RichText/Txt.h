@@ -245,10 +245,7 @@ public:
 	RichTxt(const RichTxt& src, int);
 	RichTxt();
 
-#ifdef CPP_11
-	RichTxt(RichTxt&&) = default;
-	RichTxt& operator=(RichTxt&&) = default;
-#endif
+	rval_default(RichTxt);
 
 #ifdef _DEBUG
 	void                  Dump();

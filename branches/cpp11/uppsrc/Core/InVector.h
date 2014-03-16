@@ -625,10 +625,8 @@ public:
 	SortedVectorMap& operator()(const K& k, const T& v) { Add(k, v); return *this; }
 
 	SortedVectorMap()                               { B::SetSlave(); }
-#ifdef CPP_11
 	SortedVectorMap(SortedVectorMap rval_);
 	SortedVectorMap& operator=(SortedVectorMap rval_);
-#endif
 	SortedVectorMap(const SortedVectorMap& s, int);
 
 	void     Swap(SortedVectorMap& x);
@@ -706,10 +704,8 @@ public:
 	SortedArrayMap& operator()(const K& k, const T& v) { Add(k, v); return *this; }
 
 	SortedArrayMap()                              { B::SetSlave(); }
-#ifdef CPP_11
 	SortedArrayMap(SortedArrayMap rval_);
 	SortedArrayMap& operator=(SortedArrayMap rval_);
-#endif
 	SortedArrayMap(const SortedArrayMap& s, int);
 
 #ifdef UPP

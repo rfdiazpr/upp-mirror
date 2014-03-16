@@ -86,7 +86,6 @@ private:
 	String        ReadBinHex(char& odd) const;
 
 private:
-	const char   *rtf_begin;
 	const char   *rtf;
 
 	TOKEN         token;
@@ -200,8 +199,7 @@ RTFParser::Cell::Cell()
 }
 
 RTFParser::RTFParser(const char *rtf)
-: rtf_begin(rtf)
-, rtf(rtf)
+:	rtf(rtf)
 {
 #ifdef _DEBUG
 	SaveFile(ConfigFile("rtfparser.rtf"), rtf);

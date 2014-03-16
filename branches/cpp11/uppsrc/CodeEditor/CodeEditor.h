@@ -70,7 +70,6 @@ private:
 	Vector<LnInfo>   li;
 	LineInfoRem      li_removed;
 
-	int              sy;
 	CodeEditor       *editor;
 	int              ptrline[2];
 	Image            ptrimg[2];

@@ -284,10 +284,7 @@ public:
 
 		File()                            { Init(); }
 		File(const String& s) : String(s) { Init(); }
-	#ifdef CPP_11
-		File(File&&) = default;
-		File& operator=(File&&) = default;
-	#endif
+		rval_default(File);
 	};
 	struct Config {
 		String name;
@@ -371,6 +368,8 @@ enum {
 	R_SIZE
 };
 
+String Join(const String& a, const String& b, const char *sep = " ");
+
 struct Builder {
 	Host            *host;
 	Index<String>    config;
@@ -380,6 +379,8 @@ struct Builder {
 	Vector<String>   include;
 	Vector<String>   libpath;
 	String           target;
+	String           cpp_options;
+	String           c_options;
 	String           debug_options;
 	String           release_options;
 	String           release_size_options;

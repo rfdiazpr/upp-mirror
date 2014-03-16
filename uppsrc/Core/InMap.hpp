@@ -77,7 +77,6 @@ String SortedAMap<K, T, Less, Data>::ToString() const
 	return r;
 }
 
-#ifdef CPP_11
 template <class K, class T, class Less>
 SortedVectorMap<K, T, Less>::SortedVectorMap(SortedVectorMap rval_ s)
 {
@@ -91,9 +90,9 @@ SortedVectorMap<K, T, Less>& SortedVectorMap<K, T, Less>::operator=(SortedVector
 {
 	B::key = pick(s.key);
 	B::value.data = pick(s.value.data);
+	B::SetSlave();
 	return *this;
 }
-#endif
 
 template <class K, class T, class Less>
 SortedVectorMap<K, T, Less>::SortedVectorMap(const SortedVectorMap& s, int)
@@ -166,7 +165,6 @@ int SortedArrayMap<K, T, Less>::FindAdd(const K& k, const T& init)
 	return q;
 }
 
-#ifdef CPP_11
 template <class K, class T, class Less>
 SortedArrayMap<K, T, Less>::SortedArrayMap(SortedArrayMap rval_ s)
 {
@@ -180,9 +178,9 @@ SortedArrayMap<K, T, Less>& SortedArrayMap<K, T, Less>::operator=(SortedArrayMap
 {
 	B::key = pick(s.key);
 	B::value.data = pick(s.value.data);
+	B::SetSlave();
 	return *this;
 }
-#endif
 
 template <class K, class T, class Less>
 SortedArrayMap<K, T, Less>::SortedArrayMap(const SortedArrayMap& s, int)

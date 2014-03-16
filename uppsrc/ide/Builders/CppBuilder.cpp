@@ -388,8 +388,6 @@ Blitz CppBuilder::BlitzStep(Vector<String>& sfile, Vector<String>& soptions,
 		Time fntime = GetFileTime(fn);
 		if((ext == ".cpp" || ext == ".cc" || ext == ".cxx")
 		   && HdependBlitzApproved(fn) && IsNull(soptions[i]) && !optimize[i]
-//		   && (fntime < blitztime || !blitzexists)
-//		   && (!FileExists(objfile) || now - fntime > 3600)) { // Causes a strage oscillation
 		   && fntime < BlitzBaseTime()) {
 			if(HdependFileTime(fn) > blitztime)
 				b.build = true;

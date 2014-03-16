@@ -535,3 +535,12 @@ void CopyFolder(const char *_dst, const char *_src, Index<String>& used, bool al
 		ff.Next();
 	}
 }
+
+String Join(const String& a, const String& b, const char *sep)
+{
+	String h = a;
+	if(a.GetCount() && b.GetCount())
+		h << sep;
+	h << b;
+	return h;
+}

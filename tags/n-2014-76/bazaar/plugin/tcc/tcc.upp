@@ -1,7 +1,0 @@
-description "Tiny C compiler by Fabrice Bellard\377";
-
-options(POSIX) -DLIBTCC;
-
-file
-	tcc.c;
-

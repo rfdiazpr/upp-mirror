@@ -1,0 +1,15 @@
+description "Witz templates\377";
+
+uses
+	Core,
+	Skylark;
+
+file
+	test2.witz,
+	index.witz,
+	etalon,
+	main.cpp;
+
+mainconfig
+	"" = "SSE2 MT";
+

@@ -149,7 +149,7 @@ void CodeEditor::HlSt::SetInk(int pos, int count, Color ink)
 		v[pos++].ink = ink;
 }
 
-const wchar *CodeEditor::HlString(HlSt& hls, const wchar *p)
+const wchar *CodeEditor::Syntax::HlString(HlSt& hls, const wchar *p)
 {
 	hls.Put(hl_style[INK_CONST_STRING]);
 	const wchar delim = *p;
@@ -205,7 +205,7 @@ const wchar *CodeEditor::HlString(HlSt& hls, const wchar *p)
 	return p;
 }
 
-Color CodeEditor::BlockColor(int level)
+Color CodeEditor::Syntax::BlockColor(int level)
 {
 	if(hilite_scope == 1)
 		return  GetHlStyle(level & 1 ? PAPER_BLOCK1 : PAPER_NORMAL).color;
@@ -226,27 +226,27 @@ void CodeEditor::Bracket(int pos, HlSt& hls)
 	}
 }
 
-Vector <Index<String> > CodeEditor::keyword;
-Vector <Index<String> > CodeEditor::name;
-Index<String> CodeEditor::kw_upp;
-int CodeEditor::kw_macros;
-int CodeEditor::kw_logs;
-int CodeEditor::kw_sql_base;
-int CodeEditor::kw_sql_func;
+Vector <Index<String> > CodeEditor::Syntax::keyword;
+Vector <Index<String> > CodeEditor::Syntax::name;
+Index<String> CodeEditor::Syntax::kw_upp;
+int CodeEditor::Syntax::kw_macros;
+int CodeEditor::Syntax::kw_logs;
+int CodeEditor::Syntax::kw_sql_base;
+int CodeEditor::Syntax::kw_sql_func;
 
 const Index<String>& CodeEditor::CppKeywords()
 {
 	return keyword[0];
 }
 
-int CodeEditor::InitUpp(const char **q)
+int CodeEditor::Syntax::InitUpp(const char **q)
 {
 	while(*q)
 		kw_upp.Add(*q++);
 	return kw_upp.GetCount();
 }
 
-void CodeEditor::InitKeywords()
+void CodeEditor::Syntax::InitKeywords()
 {
 	static const char *cpp[] = {
 		"namespace", "asm", "__asm", "else", "struct",
@@ -552,7 +552,7 @@ void CodeEditor::InitKeywords()
 	InitUpp(sql_bool);
 }
 
-int CodeEditor::LoadSyntax(const char *keywords[], const char *names[])	// Changed
+int CodeEditor::Syntax::LoadSyntax(const char *keywords[], const char *names[])	// Changed
 {
 	Index <String> &key = keyword.Add()	;
 	while(*keywords)
@@ -565,13 +565,18 @@ int CodeEditor::LoadSyntax(const char *keywords[], const char *names[])	// Chang
 
 void CodeEditor::HighlightLine(int line, Vector<LineEdit::Highlight>& hl, int pos)
 {
+	syntax.HighlightLine(line, hl, pos);
+}
+
+void CodeEditor::Syntax::HighlightLine(int line, Vector<LineEdit::Highlight>& hl, int pos)
+{
 	LTIMING("HighlightLine");
 	if(highlight < 0 || highlight >= keyword.GetCount())
 		return;
 	WString text = GetWLine(line);
-	SyntaxState ss = ScanSyntax(line);
+	bool macro = LineSyntax(line + 1).IsMacro();
+	SyntaxState& ss = LineSyntax(line);
 	ss.Grounding(text.Begin(), text.End());
-	SyntaxState sm = ScanSyntax(line + 1);
 	HlSt hls(hl);
 	const wchar *p = text;
 	const wchar *e = text.End();
@@ -591,11 +596,11 @@ void CodeEditor::HighlightLine(int line, Vector<LineEdit::Highlight>& hl, int po
 	}
 	else
 		hls.SetPaper(0, text.GetLength() + 1,
-		             Nvl(ss.uvscolor, sm.macro ? hl_style[PAPER_MACRO].color : hl_style[PAPER_NORMAL].color));
+		             macro ? hl_style[PAPER_MACRO].color : hl_style[PAPER_NORMAL].color);
 	int block_level = ss.bid.GetCount() - 1;
 	String cppid;
 	if(IsNull(ss.uvscolor) && !uvsn && !ss.comment && highlight != HIGHLIGHT_CALC) {
-		if(!sm.macro) {
+		if(!macro) {
 			int i = 0, bid = 0, pos = 0, tabsz = GetTabSize();
 			while(bid < ss.bid.GetCount() - 1
 			&& (i >= text.GetLength() || text[i] == ' ' || text[i] == '\t')) {
@@ -798,7 +803,7 @@ void CodeEditor::HighlightLine(int line, Vector<LineEdit::Highlight>& hl, int po
 			                              uq < kw_sql_base ? hl_style[INK_SQLBASE] : 
 			                              uq < kw_sql_func ? hl_style[INK_SQLFUNC] :
 			                              hl_style[INK_SQLBOOL] :
-			                    IsUpperString(iid) && !sm.macro ? hl_style[INK_UPPER] :
+			                    IsUpperString(iid) && !macro ? hl_style[INK_UPPER] :
 			                    hl_style[INK_NORMAL]);
 			p = q;
 			if(nq == 0)

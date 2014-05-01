@@ -72,7 +72,7 @@ void EditorBar::Paint(Draw& w)
 		|| editor->highlight == CodeEditor::HIGHLIGHT_JAVA));
 	Vector<CodeEditor::IfState> previf;
 	if(hi_if)
-		previf <<= editor->ScanSyntax(i).ifstack;
+		previf <<= editor->GetIfStack(i);
 	int ptri[2];
 	for(int q = 0; q < 2; q++)
 		ptri[q] = ptrline[q] >= 0 ? GetLineNo(ptrline[q]) : -1;
@@ -105,7 +105,7 @@ void EditorBar::Paint(Draw& w)
 		if(hi_if) {
 			Vector<CodeEditor::IfState> nextif;
 			if(i < li.GetCount())
-				nextif <<= editor->ScanSyntax(i + 1).ifstack;
+				nextif <<= editor->GetIfStack(i + 1);
 			int pifl = previf.GetCount(), nifl = nextif.GetCount();
 			int dif = max(pifl, nifl);
 			if(--dif >= 0) {

@@ -37,7 +37,6 @@ void CodeEditor::SyntaxState::ClearBraces() {
 
 void CodeEditor::SyntaxState::Clear() {
 	ClearBraces();
-	line = 0;
 	linecont = linecomment = comment = string = false;
 	macro = MACRO_OFF;
 	stmtline = endstmtline = seline = -1;
@@ -116,7 +115,7 @@ void CodeEditor::SyntaxState::Grounding(const wchar *b, const wchar *e)
 		ClearBraces();
 }
 
-void CodeEditor::SyntaxState::ScanSyntax(const wchar *ln, const wchar *e, int tab_size)
+void CodeEditor::SyntaxState::ScanSyntax(const wchar *ln, const wchar *e, int line, int tab_size)
 {
 	Grounding(ln, e);
 	if(!linecont) {
@@ -342,30 +341,57 @@ void CodeEditor::SyntaxState::ScanSyntax(const wchar *ln, const wchar *e, int ta
 	}
 }
 
-CodeEditor::SyntaxState CodeEditor::ScanSyntax(int line) {
-	SyntaxState st;
+
+CodeEditor::SyntaxState& CodeEditor::LineSyntax(int line)
+{
 	for(int i = 0; i < 4; i++)
-		if(line >= scache[i].line) {
-			st = scache[i];
+		if(line >= syntax_cache[i].line) {
+			syntax.Set(syntax_cache[i].data);
 			break;
 		}
-	if(st.macro != SyntaxState::MACRO_CONT)
-		st.macro = SyntaxState::MACRO_OFF;
+	syntax.MacroContOff(); // TODO!
 	line = min(line, GetLineCount());
-	while(st.line < line) {
-		if(st.macro != SyntaxState::MACRO_CONT)
-			st.macro = SyntaxState::MACRO_OFF;
-		WString l = GetWLine(st.line);
-		st.ScanSyntax(l, l.End(), GetTabSize());
-		st.line++;
+	int ln = 0;
+	while(ln < line) {
+		syntax.MacroContOff(); // TODO!
+		WString l = GetWLine(ln);
+		syntax.ScanSyntax(l, l.End(), ln, GetTabSize());
+		ln++;
 		static int d[] = { 0, 100, 2000 };
 		for(int i = 0; i < 3; i++)
-			if(st.line == cline - d[i])
-				scache[i] = st;
+			if(ln == cline - d[i]) {
+				syntax_cache[i].data = syntax.Get();
+				syntax_cache[i].line = ln;
+			}
 	}
-	scache[3] = st;
-	return st;
+	syntax_cache[3].data = syntax.Get();
+	syntax_cache[3].line = ln;
+	return syntax;
 }
+
+void CodeEditor::SyntaxState::Serialize(Stream& s)
+{
+	s % comment;
+	s % linecomment;
+	s % string;
+	s % linecont;
+	s % was_namespace;
+	s % macro;
+
+	s % cl % bl % pl;
+
+	s % brk;
+	s % blk;
+	s % bid;
+	s % par;
+	s % ifstack;
+
+	s % stmtline;
+	s % endstmtline;
+	s % seline;
+	s % spar;
+	s % uvscolor;
+};
 
 bool CodeEditor::SyntaxState::MatchHilite(const SyntaxState& st) const
 {

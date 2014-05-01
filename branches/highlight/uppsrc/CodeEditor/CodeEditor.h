@@ -166,7 +166,14 @@ struct FindReplaceDlg : WithIDEFindReplaceLayout<TopWindow> {
 
 	FindReplaceDlg();
 };
+
+class CodeHighlighter {
+	virtual void Serialize(Stream& s);
 	
+	String Get() const;
+	void   Put(const String& s);
+};
+
 class CodeEditor : public LineEdit {
 	friend class EditorBar;
 
@@ -215,6 +222,8 @@ protected:
 	struct Isx : Moveable<Isx> {
 		int    line;
 		int    pos;
+		
+		void Serialize(Stream& s)    { s % line % pos; }
 
 		friend bool operator==(Isx a, Isx b) { return a.line == b.line && a.pos == b.pos; }
 		friend bool operator!=(Isx a, Isx b) { return !(a == b); }
@@ -226,6 +235,8 @@ protected:
 		short   ifline;
 		char    state;
 
+		void Serialize(Stream& s)    { s % iftext % ifline % state; }
+
 		bool operator==(const IfState& b) const {
 			return iftext == b.iftext && state == b.state && ifline == b.ifline;
 		}
@@ -233,9 +244,7 @@ protected:
 		IfState()                         { ifline = state = 0; }
 	};
 
-	struct SyntaxState {
-		int         line;
-
+	class SyntaxState {
 		bool        comment;
 		bool        linecomment;
 		bool        string;
@@ -256,25 +265,49 @@ protected:
 		int         endstmtline;
 		int         seline;
 		int         spar;
-		Color       uvscolor;
 
+	public:
 		void  DropItem(int type);
 		bool  Drop(int type);
 		void  ClearBraces();
 		void  Clear();
 		bool  MatchHilite(const SyntaxState& st) const;
 		void  Grounding(const wchar *ln, const wchar *e);
-		void  ScanSyntax(const wchar *ln, const wchar *e, int tab_size);
+		void  ScanSyntax(const wchar *ln, const wchar *e, int line, int tab_size);
+		
+		void  Serialize(Stream& s);
+		
+		void    Set(const String& s)          { if(s.GetCount() == 0) Clear(); else LoadFromString(*this, s); }
+		String  Get()                         { return StoreAsString(*this); }
+		void    MacroContOff()                { if(macro != SyntaxState::MACRO_CONT) macro = SyntaxState::MACRO_OFF; }
+		
+		bool    IsMacro()                     { return macro; }
+
+		Vector<IfState> GetIfStack() const    { return clone(ifstack); }
 
 		static Color IfColor(char ifstate);
 
 		SyntaxState()                         { Clear(); }
+		
+		friend CodeEditor::Hig
+		
+	//	friend class CodeEditor;
 	};
 
-	friend struct SyntaxState;
+	friend class SyntaxState;
 
-	SyntaxState scache[4];
-	SyntaxState rm_ins;
+	struct SyntaxPos {
+		int    line;
+		String data;
+		
+		void Clear() { line = 0; data.Clear(); }
+	};
+	
+	SyntaxPos syntax_cache[4];
+	SyntaxState syntax;
+	
+//	SyntaxState rm_ins;
+
 	char        rmb;
 	byte        hilite_bracket;
 	int         highlight_bracket_pos0;
@@ -336,13 +369,13 @@ protected:
 	
 	int   replacei;
 
+	SyntaxState& LineSyntax(int line);
+
 	struct HlSt;
 	
 	static int  InitUpp(const char **q);
 
 	const wchar *HlString(HlSt& hls, const wchar *p);
-
-	SyntaxState ScanSyntax(int line);
 
 	void   CancelBracketHighlight(int& pos);
 	void   CheckBracket(int li, int pos, int ppos, int pos0, WString ln, int d, int limit);
@@ -546,6 +579,10 @@ public:
 
 	const char *GetHlName(int i);
 	bool        HasHlFont(int i);
+	
+// HL NEW:
+	Vector<IfState> GetIfStack(int line)              { return LineSyntax(line).GetIfStack(); }
+// ------
 
 	typedef CodeEditor CLASSNAME;
 

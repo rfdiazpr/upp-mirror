@@ -12,8 +12,8 @@ NAMESPACE_UPP
 
 void CodeEditor::DirtyFrom(int line) {
 	for(int i = 0; i < 4; i++)
-		if(scache[i].line >= line)
-			scache[i].Clear();
+		if(syntax_cache[i].line >= line)
+			syntax_cache[i].Clear();
 
 	if(check_edited) {
 		bar.ClearErrors(line);
@@ -27,7 +27,7 @@ inline bool IsComment(int a, int b) {
 
 void CodeEditor::PreInsert(int pos, const WString& text) {
 	if(IsFullRefresh()) return;
-	rm_ins = ScanSyntax(GetLine(pos) + 1);
+//	rm_ins = ScanSyntax(GetLine(pos) + 1);
 }
 
 inline bool RBR(int c) {
@@ -52,6 +52,7 @@ void CodeEditor::PostInsert(int pos, const WString& text) {
 		Refresh();
 	else
 		CheckBraces(text);
+/*
 	// Following code is probable not needed anymore...
 	if(!ScanSyntax(GetLine(pos + text.GetLength()) + 1).MatchHilite(rm_ins)) {
 		if(text.GetLength() == 1 && *text == '(' || *text == '[' || *text == ']' || *text == ')')
@@ -60,6 +61,7 @@ void CodeEditor::PostInsert(int pos, const WString& text) {
 			Refresh();
 		bar.Refresh();
 	}
+*/
 }
 
 void CodeEditor::PreRemove(int pos, int size) {
@@ -68,18 +70,21 @@ void CodeEditor::PreRemove(int pos, int size) {
 		Refresh();
 	else
 		CheckBraces(GetW(pos, size));
+/*
 	// Following code is probable not needed anymore...
 	if(size == 1)
 		rmb = Get(pos, 1)[0];
 	else
 		rmb = 0;
 	rm_ins = ScanSyntax(GetLine(pos + size) + 1);
+*/
 }
 
 void CodeEditor::PostRemove(int pos, int size) {
 	if(check_edited)
 		bar.SetEdited(GetLine(pos));
 	if(IsFullRefresh()) return;
+/*
 	// Following code is probable not needed anymore...
 	if(!ScanSyntax(GetLine(pos) + 1).MatchHilite(rm_ins)) {
 		if(rmb == '(' || rmb == '[' || rmb == ']' || rmb == ')')
@@ -89,6 +94,7 @@ void CodeEditor::PostRemove(int pos, int size) {
 		bar.Refresh();
 	}
 	CheckBrackets();
+*/
 }
 
 void CodeEditor::ClearLines() {

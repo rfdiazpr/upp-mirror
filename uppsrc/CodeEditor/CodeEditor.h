@@ -167,12 +167,7 @@ struct FindReplaceDlg : WithIDEFindReplaceLayout<TopWindow> {
 	FindReplaceDlg();
 };
 
-class CodeHighlighter {
-	virtual void Serialize(Stream& s);
-	
-	String Get() const;
-	void   Put(const String& s);
-};
+#include "Syntax.h"
 
 class CodeEditor : public LineEdit {
 	friend class EditorBar;
@@ -188,13 +183,6 @@ public:
 
 	void         CheckEdited(bool e = true) { check_edited = e; }
 	bool         GetCheckEdited()           { return check_edited; }
-
-	enum HighlightType {
-		HIGHLIGHT_NONE = -1, HIGHLIGHT_CPP = 0, HIGHLIGHT_USC, HIGHLIGHT_JAVA, HIGHLIGHT_T,
-		HIGHLIGHT_CALC, HIGHLIGHT_LAY, HIGHLIGHT_SCH, HIGHLIGHT_SQL, HIGHLIGHT_CS,
-		HIGHLIGHT_JAVASCRIPT, HIGHLIGHT_CSS, HIGHLIGHT_JSON,
-		HIGHLIGHT_COUNT
-	};
 
 protected:
 	virtual void HighlightLine(int line, Vector<Highlight>& h, int pos);
@@ -214,86 +202,6 @@ protected:
 	EditorBar   bar;
 	Vector<int> line2;
 
-	static Vector< Index<String> > keyword;
-	static Vector< Index<String> > name;
-	static Index<String> kw_upp;
-	static int kw_macros, kw_logs, kw_sql_base, kw_sql_func;
-
-	struct Isx : Moveable<Isx> {
-		int    line;
-		int    pos;
-		
-		void Serialize(Stream& s)    { s % line % pos; }
-
-		friend bool operator==(Isx a, Isx b) { return a.line == b.line && a.pos == b.pos; }
-		friend bool operator!=(Isx a, Isx b) { return !(a == b); }
-	};
-
-	struct IfState : Moveable<IfState> {
-		enum        { IF = '0', ELIF, ELSE, ELSE_ERROR, ENDIF_ERROR };
-		WString iftext;
-		short   ifline;
-		char    state;
-
-		void Serialize(Stream& s)    { s % iftext % ifline % state; }
-
-		bool operator==(const IfState& b) const {
-			return iftext == b.iftext && state == b.state && ifline == b.ifline;
-		}
-
-		IfState()                         { ifline = state = 0; }
-	};
-
-	class SyntaxState {
-		bool        comment;
-		bool        linecomment;
-		bool        string;
-		bool        linecont;
-		bool        was_namespace;
-		char        macro;
-		enum        { MACRO_OFF, MACRO_CONT, MACRO_END };
-
-		int         cl, bl, pl;
-
-		WithDeepCopy< Vector<int> > brk;
-		WithDeepCopy< Vector<int> > blk;
-		WithDeepCopy< Vector<int> > bid;
-		WithDeepCopy< Vector<Isx> > par;
-		WithDeepCopy< Vector<IfState> > ifstack;
-
-		int         stmtline;
-		int         endstmtline;
-		int         seline;
-		int         spar;
-
-	public:
-		void  DropItem(int type);
-		bool  Drop(int type);
-		void  ClearBraces();
-		void  Clear();
-		bool  MatchHilite(const SyntaxState& st) const;
-		void  Grounding(const wchar *ln, const wchar *e);
-		void  ScanSyntax(const wchar *ln, const wchar *e, int line, int tab_size);
-		
-		void  Serialize(Stream& s);
-		
-		void    Set(const String& s)          { if(s.GetCount() == 0) Clear(); else LoadFromString(*this, s); }
-		String  Get()                         { return StoreAsString(*this); }
-		void    MacroContOff()                { if(macro != SyntaxState::MACRO_CONT) macro = SyntaxState::MACRO_OFF; }
-		
-		bool    IsMacro()                     { return macro; }
-
-		Vector<IfState> GetIfStack() const    { return clone(ifstack); }
-
-		static Color IfColor(char ifstate);
-
-		SyntaxState()                         { Clear(); }
-		
-		friend CodeEditor::Hig
-		
-	//	friend class CodeEditor;
-	};
-
 	friend class SyntaxState;
 
 	struct SyntaxPos {
@@ -303,20 +211,16 @@ protected:
 		void Clear() { line = 0; data.Clear(); }
 	};
 	
-	SyntaxPos syntax_cache[4];
-	SyntaxState syntax;
-	
+	SyntaxPos   syntax_cache[4];
+
 //	SyntaxState rm_ins;
 
 	char        rmb;
-	byte        hilite_bracket;
 	int         highlight_bracket_pos0;
 	int         highlight_bracket_pos;
 	bool        bracket_flash;
 	int         bracket_start;
 
-	byte    hilite_scope;
-	byte    hilite_ifdef;
 	bool    thousands_separator;
 	bool    indent_spaces : 1;
 	bool    no_parenthesis_indent : 1;
@@ -369,14 +273,10 @@ protected:
 	
 	int   replacei;
 
-	SyntaxState& LineSyntax(int line);
+	One<SyntaxState> GetSyntax(int line);
 
 	struct HlSt;
 	
-	static int  InitUpp(const char **q);
-
-	const wchar *HlString(HlSt& hls, const wchar *p);
-
 	void   CancelBracketHighlight(int& pos);
 	void   CheckBracket(int li, int pos, int ppos, int pos0, WString ln, int d, int limit);
 	void   CheckLeftBracket(int pos);
@@ -403,9 +303,6 @@ protected:
 
 	void   ForwardWhenBreakpoint(int i);
 
-	Color  BlockColor(int level);
-	void   Bracket(int pos, HlSt& hls);
-
 	bool   ToggleSimpleComment(int &start_line, int &end_line, bool usestars = true);
 	void   ToggleLineComments(bool usestars = false);
 	void   ToggleStarComments();
@@ -422,26 +319,6 @@ protected:
 	void   Periodic();
 
 public:
-#define HL_COLOR(x, a, b)      x,
-	enum {
-#include "hl_color.i"
-		HL_COUNT
-	};
-#undef HL_COLOR
-
-	struct HlStyle {
-		Color color;
-		bool  bold;
-		bool  italic;
-		bool  underline;
-	};
-
-private:
-	HlStyle  hl_style[HL_COUNT];
-
-public:
-	static int  LoadSyntax(const char *keywords[], const char *names[]);
-
 	struct MouseTip {
 		int            pos;
 		Value          value;
@@ -464,9 +341,6 @@ public:
 
 	void   Highlight(int h)           { highlight = h; Refresh(); }
 	int    GetHighlight() const       { return highlight; }
-
-	const HlStyle& GetHlStyle(int i);
-	void           SetHlStyle(int i, Color c, bool bold = false, bool italic = false, bool underline = false);
 
 	void   CloseFindReplace();
 	void   FindReplace(bool pick_selection, bool pick_text, bool replace);
@@ -546,10 +420,11 @@ public:
 	void     Renumber2();
 	int      GetLine2(int i) const;
 
-	void     HiliteScope(byte b)                      { hilite_scope = b; Refresh(); }
-	void     HiliteBracket(byte b)                    { hilite_bracket = b; Refresh(); }
-	void     HiliteIfDef(byte b)                      { hilite_ifdef = b; Refresh(); }
+	void     HiliteScope(byte b)                      { SyntaxState::hilite_scope = b; Refresh(); }
+	void     HiliteBracket(byte b)                    { SyntaxState::hilite_bracket = b; Refresh(); }
+	void     HiliteIfDef(byte b)                      { SyntaxState::hilite_ifdef = b; Refresh(); }
 	void     HiliteIfEndif(bool b)                    { bar.HiliteIfEndif(b); }
+
 	void     ThousandsSeparator(bool b)               { thousands_separator = b; Refresh(); }
 	void     IndentSpaces(bool is)                    { indent_spaces = is; }
 	void     IndentAmount(int ia)                     { indent_amount = ia; }
@@ -581,7 +456,7 @@ public:
 	bool        HasHlFont(int i);
 	
 // HL NEW:
-	Vector<IfState> GetIfStack(int line)              { return LineSyntax(line).GetIfStack(); }
+	Vector<IfState> GetIfStack(int line)              { return GetSyntax(line)->PickIfStack(); }
 // ------
 
 	typedef CodeEditor CLASSNAME;
@@ -589,7 +464,6 @@ public:
 	CodeEditor();
 	virtual ~CodeEditor();
 
-	static const Index<String>& CppKeywords();
 	static void InitKeywords();
 };
 

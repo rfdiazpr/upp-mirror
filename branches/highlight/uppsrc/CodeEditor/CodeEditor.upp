@@ -7,10 +7,16 @@ uses
 
 file
 	CodeEditor.h,
+	Syntax readonly separator,
+	Syntax.h,
 	hl_color.i,
-	EditorBar.cpp,
 	Syntax.cpp,
+	HighlightOut.cpp,
+	Style.cpp,
+	Init.cpp,
 	Highlight.cpp,
+	Editor readonly separator,
+	EditorBar.cpp,
 	FindReplace.cpp,
 	Lang.cpp,
 	CodeEditor.cpp,

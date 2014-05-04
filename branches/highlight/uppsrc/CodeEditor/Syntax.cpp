@@ -2,8 +2,6 @@
 
 NAMESPACE_UPP
 
-Color GetUvsHighlight(const wchar *text, int& n);
-
 const wchar *eatstring(const wchar *s) {
 	int delim = *s++;
 	while(*s)
@@ -25,7 +23,7 @@ inline const wchar *strnext(const wchar *p, const wchar *end, int ch) {
 	return NULL;
 }
 
-void CodeEditor::SyntaxState::ClearBraces() {
+void SyntaxState::ClearBraces() {
 	cl = bl = pl = 0;
 	spar = 0;
 	brk.Clear();
@@ -35,12 +33,11 @@ void CodeEditor::SyntaxState::ClearBraces() {
 	par.Clear();
 }
 
-void CodeEditor::SyntaxState::Clear() {
+void SyntaxState::Clear() {
 	ClearBraces();
 	linecont = linecomment = comment = string = false;
 	macro = MACRO_OFF;
 	stmtline = endstmtline = seline = -1;
-	uvscolor = Null;
 	was_namespace = false;
 	ifstack.Clear();
 }
@@ -66,16 +63,16 @@ const wchar *isstmt(const wchar *p) {
 	return NULL;
 }
 
-Color CodeEditor::SyntaxState::IfColor(char c)
+Color SyntaxState::IfColor(char c)
 {
 	switch(c)
 	{
-	case CodeEditor::IfState::IF:          return LtBlue();
-	case CodeEditor::IfState::ELIF:        return Gray();
-	case CodeEditor::IfState::ELSE:        return Green();
-	case CodeEditor::IfState::ELSE_ERROR:  return LtRed();
-	case CodeEditor::IfState::ENDIF_ERROR: return LtMagenta();
-	default:                               return Null;
+	case IfState::IF:          return LtBlue();
+	case IfState::ELIF:        return Gray();
+	case IfState::ELSE:        return Green();
+	case IfState::ELSE_ERROR:  return LtRed();
+	case IfState::ENDIF_ERROR: return LtMagenta();
+	default:                   return Null;
 	}
 }
 
@@ -104,7 +101,7 @@ int LastC(const wchar *b, const wchar *e)
 	return *e;
 }
 
-void CodeEditor::SyntaxState::Grounding(const wchar *b, const wchar *e)
+void SyntaxState::Grounding(const wchar *b, const wchar *e)
 {
 	if(b >= e || comment || !iscib(*b))
 		return;
@@ -115,7 +112,7 @@ void CodeEditor::SyntaxState::Grounding(const wchar *b, const wchar *e)
 		ClearBraces();
 }
 
-void CodeEditor::SyntaxState::ScanSyntax(const wchar *ln, const wchar *e, int line, int tab_size)
+void SyntaxState::ScanSyntax(const wchar *ln, const wchar *e, int line, int tab_size)
 {
 	Grounding(ln, e);
 	if(!linecont) {
@@ -130,12 +127,6 @@ void CodeEditor::SyntaxState::ScanSyntax(const wchar *ln, const wchar *e, int li
 			pos = 0;
 			lindent++;
 		}
-	}
-	int n;
-	Color c = GetUvsHighlight(p, n);
-	if(n) {
-		uvscolor = c;
-		p += n;
 	}
 	if(!comment && *p == '#') {
 		while(++p < e && (*p == ' ' || *p == '\t'))
@@ -341,35 +332,36 @@ void CodeEditor::SyntaxState::ScanSyntax(const wchar *ln, const wchar *e, int li
 	}
 }
 
-
-CodeEditor::SyntaxState& CodeEditor::LineSyntax(int line)
+One<SyntaxState> CodeEditor::GetSyntax(int line)
 {
+	One<SyntaxState> syntax; // SYNTAX:TODO: replace with initial syntax for file type
+	syntax.Create();
 	for(int i = 0; i < 4; i++)
 		if(line >= syntax_cache[i].line) {
-			syntax.Set(syntax_cache[i].data);
+			syntax->Set(syntax_cache[i].data);
 			break;
 		}
-	syntax.MacroContOff(); // TODO!
+	syntax->MacroContOff(); // SYNTAX:TODO!
 	line = min(line, GetLineCount());
 	int ln = 0;
 	while(ln < line) {
-		syntax.MacroContOff(); // TODO!
+		syntax->MacroContOff(); // SYNTAX:TODO!
 		WString l = GetWLine(ln);
-		syntax.ScanSyntax(l, l.End(), ln, GetTabSize());
+		syntax->ScanSyntax(l, l.End(), ln, GetTabSize());
 		ln++;
 		static int d[] = { 0, 100, 2000 };
 		for(int i = 0; i < 3; i++)
 			if(ln == cline - d[i]) {
-				syntax_cache[i].data = syntax.Get();
+				syntax_cache[i].data = syntax->Get();
 				syntax_cache[i].line = ln;
 			}
 	}
-	syntax_cache[3].data = syntax.Get();
+	syntax_cache[3].data = syntax->Get();
 	syntax_cache[3].line = ln;
-	return syntax;
+	return pick(syntax);
 }
 
-void CodeEditor::SyntaxState::Serialize(Stream& s)
+void SyntaxState::Serialize(Stream& s)
 {
 	s % comment;
 	s % linecomment;
@@ -390,10 +382,10 @@ void CodeEditor::SyntaxState::Serialize(Stream& s)
 	s % endstmtline;
 	s % seline;
 	s % spar;
-	s % uvscolor;
 };
 
-bool CodeEditor::SyntaxState::MatchHilite(const SyntaxState& st) const
+/*
+bool SyntaxState::MatchHilite(const SyntaxState& st) const
 {
 	return comment == st.comment
 	    && linecont == st.linecont
@@ -407,9 +399,9 @@ bool CodeEditor::SyntaxState::MatchHilite(const SyntaxState& st) const
 		&& IsEqual(bid, st.bid)
 		&& IsEqual(par, st.par)
 		&& IsEqual(ifstack, st.ifstack)
-		&& uvscolor == st.uvscolor
 		&& seline == st.seline
 		&& spar == st.spar;
 }
+*/
 
 END_UPP_NAMESPACE

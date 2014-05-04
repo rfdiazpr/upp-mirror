@@ -113,20 +113,20 @@ void EditorBar::Paint(Draw& w)
 				char n = (dif < nifl ? nextif[dif].state : 0);
 				int wd = min(2 * (dif + 1), sz.cx);
 				int x = sz.cx - wd;
-				Color cn = CodeEditor::SyntaxState::IfColor(n);
+				Color cn = SyntaxState::IfColor(n);
 				if(p == n)
 					w.DrawRect(x, y, 1, fy, cn);
 				else {
-					Color cp = CodeEditor::SyntaxState::IfColor(p);
+					Color cp = SyntaxState::IfColor(p);
 					w.DrawRect(x, y, 1, hy, cp);
 					w.DrawRect(x, y + hy, wd, 1, Nvl(cn, cp));
 					w.DrawRect(x, y + hy, 1, fy - hy, cn);
 					if(--dif >= 0) {
 						x = sz.cx - min(2 * (dif + 1), sz.cx);
 						if(!p)
-							w.DrawRect(x, y, 1, hy, CodeEditor::SyntaxState::IfColor(dif < pifl ? previf[dif].state : 0));
+							w.DrawRect(x, y, 1, hy, SyntaxState::IfColor(dif < pifl ? previf[dif].state : 0));
 						if(!n)
-							w.DrawRect(x, y + hy, 1, fy - hy, CodeEditor::SyntaxState::IfColor(dif < nifl ? nextif[dif].state : 0));
+							w.DrawRect(x, y + hy, 1, fy - hy, SyntaxState::IfColor(dif < nifl ? nextif[dif].state : 0));
 					}
 				}
 			}

@@ -69,7 +69,7 @@ void HighlightOutput::SetInk(int pos, int count, Color ink)
 
 const wchar *HighlightOutput::CString(const wchar *p)
 {
-	Put(HighlightSetup::hl_style[INK_CONST_STRING]);
+	Put(hl_style[INK_CONST_STRING]);
 	const wchar delim = *p;
 	p++;
 	while(*p && *p != delim)
@@ -81,19 +81,19 @@ const wchar *HighlightOutput::CString(const wchar *p)
 					p++;
 				if(IsXDigit(*p))
 					p++;
-				Put(int(p - t), HighlightSetup::hl_style[INK_CONST_STRINGOP]);
+				Put(int(p - t), hl_style[INK_CONST_STRINGOP]);
 			}
 			else
 			if(*p >= '0' && *p <= '7') {
 				p++;
 				if(*p >= '0' && *p <= '7') p++;
 				if(*p >= '0' && *p <= '7') p++;
-				Put(int(p - t), HighlightSetup::hl_style[INK_CONST_STRINGOP]);
+				Put(int(p - t), hl_style[INK_CONST_STRINGOP]);
 			}
 			else {
-				hls.Put(HighlightSetup::hl_style[INK_CONST_STRINGOP]);
+				Put(hl_style[INK_CONST_STRINGOP]);
 				if(*p) {
-					Put(HighlightSetup::hl_style[INK_CONST_STRINGOP]);
+					Put(hl_style[INK_CONST_STRINGOP]);
 					p++;
 				}
 			}
@@ -101,7 +101,7 @@ const wchar *HighlightOutput::CString(const wchar *p)
 		else
 		if(*p == '%')
 			if(p[1] == '%') {
-				Put(2, HighlightSetup::hl_style[INK_CONST_STRING]);
+				Put(2, hl_style[INK_CONST_STRING]);
 				p += 2;
 			}
 			else {
@@ -110,14 +110,14 @@ const wchar *HighlightOutput::CString(const wchar *p)
 					p++;
 				while(IsAlpha(*p) && *p)
 					p++;
-				Put(int(p - t), HighlightSetup::hl_style[INK_CONST_STRINGOP]);
+				Put(int(p - t), hl_style[INK_CONST_STRINGOP]);
 			}
 		else {
-			Put(HighlightSetup::hl_style[INK_CONST_STRING]);
+			Put(hl_style[INK_CONST_STRING]);
 			p++;
 		}
 	if(*p == delim)	{
-		Put(HighlightSetup::hl_style[INK_CONST_STRING]);
+		Put(hl_style[INK_CONST_STRING]);
 		p++;
 	}
 	return p;

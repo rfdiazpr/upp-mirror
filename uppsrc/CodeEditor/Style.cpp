@@ -2,22 +2,22 @@
 
 NAMESPACE_UPP
 
-const HlStyle& SyntaxState::GetHlStyle(int i)
+const HlStyle& HighlightSetup::GetHlStyle(int i)
 {
 	return hl_style[i];
 }
 
-const char *SyntaxState::GetHlName(int i)
+const char *HighlightSetup::GetHlName(int i)
 {
 	return s_hl_name[i];
 }
 
-bool SyntaxState::HasHlFont(int i)
+bool HighlightSetup::HasHlFont(int i)
 {
 	return s_hl_font[i];
 }
 
-void  SyntaxState::SetHlStyle(int i, Color c, bool bold, bool italic, bool underline)
+void  HighlightSetup::SetHlStyle(int i, Color c, bool bold, bool italic, bool underline)
 {
 	HlStyle& st = hl_style[i];
 	st.color = c;
@@ -32,7 +32,7 @@ void  SyntaxState::SetHlStyle(int i, Color c, bool bold, bool italic, bool under
 	SetColor(LineEdit::PAPER_SELECTED, hl_style[PAPER_SELECTED].color);
 }
 
-void SyntaxState::LoadHlStyles(const char *s)
+void HighlightSetup::LoadHlStyles(const char *s)
 {
 	CParser p(s);
 	try {
@@ -66,7 +66,7 @@ void SyntaxState::LoadHlStyles(const char *s)
 	}
 }
 
-String SyntaxState::StoreHlStyles()
+String HighlightSetup::StoreHlStyles()
 {
 	String r;
 	for(int i = 0; i < HL_COUNT; i++) {
@@ -83,7 +83,7 @@ String SyntaxState::StoreHlStyles()
 	return r;
 }
 
-void SyntaxState::DefaultHlStyles()
+void HighlightSetup::DefaultHlStyles()
 {
 	SetHlStyle(INK_COMMENT, Green, false, true);
 	SetHlStyle(INK_CONST_STRING, Red);

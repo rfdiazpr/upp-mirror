@@ -8,26 +8,6 @@ struct HlStyle {
 	bool  underline;
 };
 
-struct HighlightOutput {
-	Vector<LineEdit::Highlight>& v;
-	LineEdit::Highlight          def;
-	int                          pos;
-
-public:
-	void Set(int pos, int count, const HlStyle& ink);
-	void SetFont(int pos, int count, const HlStyle& f);
-	void SetPaper(int pos, int count, Color paper);
-	void SetInk(int pos, int count, Color ink);
-	void Put(int count, const HlStyle& ink)           { Set(pos, count, ink); pos += count; }
-	void Put(const HlStyle& ink)                      { Put(1, ink); }
-	void Put(const HlStyle& ink, word flags)          { Put(1, ink); v[pos - 1].flags = flags; }
-
-	const wchar *CString(const wchar *p);
-	
-	HighlightOutput(Vector<LineEdit::Highlight>& v);
-	~HighlightOutput();
-};
-
 struct Isx : Moveable<Isx> {
 	int    line;
 	int    pos;
@@ -79,6 +59,29 @@ public:
 	void           LoadHlStyles(const char *s);
 	String         StoreHlStyles();
 	void           DefaultHlStyles();
+
+	const char    *GetHlName(int i);
+	bool           HasHlFont(int i);
+};
+
+struct HighlightOutput : HighlightSetup {
+	Vector<LineEdit::Highlight>& v;
+	LineEdit::Highlight          def;
+	int                          pos;
+
+public:
+	void Set(int pos, int count, const HlStyle& ink);
+	void SetFont(int pos, int count, const HlStyle& f);
+	void SetPaper(int pos, int count, Color paper);
+	void SetInk(int pos, int count, Color ink);
+	void Put(int count, const HlStyle& ink)           { Set(pos, count, ink); pos += count; }
+	void Put(const HlStyle& ink)                      { Put(1, ink); }
+	void Put(const HlStyle& ink, word flags)          { Put(1, ink); v[pos - 1].flags = flags; }
+
+	const wchar *CString(const wchar *p);
+	
+	HighlightOutput(Vector<LineEdit::Highlight>& v);
+	~HighlightOutput();
 };
 
 class SyntaxState : HighlightSetup {

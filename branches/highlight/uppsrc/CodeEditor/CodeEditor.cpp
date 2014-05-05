@@ -1003,29 +1003,21 @@ void CodeEditor::SetLineInfo(const LineInfo& lf)
 	bar.SetLineInfo(lf, GetLineCount());
 }
 
-void CodeEditor::DefaultHlStyles()
+void CodeEditor::HighlightLine(int line, Vector<LineEdit::Highlight>& hl, int pos)
 {
-	SyntaxState::DefaultHlStyles();
+	GetSyntax(line)->Highlight(*this, line, hl, pos);
 }
 
-const HlStyle& CodeEditor::GetHlStyle(int i)
+void CodeEditor::Paint(Draw& w)
 {
-	return SyntaxState::GetHlStyle(i);
-}
-
-const char *CodeEditor::GetHlName(int i)
-{
-	return SyntaxState::GetHlName(i);
-}
-
-bool CodeEditor::HasHlFont(int i)
-{
-	return SyntaxState::HasHlFont(i);
-}
-
-void CodeEditor::HighlightLine(int line, Vector<Highlight>& h, int pos)
-{
-	GetSyntax(line).Highlight(*this, line, hl, pos);
+	SetColor(LineEdit::INK_NORMAL, hl_style[HighlightSetup::INK_NORMAL].color);
+	SetColor(LineEdit::INK_DISABLED, hl_style[HighlightSetup::INK_DISABLED].color);
+	SetColor(LineEdit::INK_SELECTED, hl_style[HighlightSetup::INK_SELECTED].color);
+	SetColor(LineEdit::PAPER_NORMAL, hl_style[HighlightSetup::PAPER_NORMAL].color);
+	SetColor(LineEdit::PAPER_READONLY, hl_style[HighlightSetup::PAPER_READONLY].color);
+	SetColor(LineEdit::PAPER_SELECTED, hl_style[HighlightSetup::PAPER_SELECTED].color);
+	
+	LineEdit::Paint(w);
 }
 
 void CodeEditor::PutI(WithDropChoice<EditString>& edit)

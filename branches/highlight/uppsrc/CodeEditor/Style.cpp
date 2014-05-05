@@ -2,6 +2,30 @@
 
 NAMESPACE_UPP
 
+HlStyle HighlightSetup::hl_style[HL_COUNT];
+byte    HighlightSetup::hilite_scope = 0;
+byte    HighlightSetup::hilite_ifdef = 1;
+byte    HighlightSetup::hilite_bracket = 1;
+bool    HighlightSetup::thousands_separator = true;
+
+#define HL_COLOR(x, a, b)    #x,
+static const char *s_hl_color[] = {
+#include "hl_color.i"
+};
+#undef  HL_COLOR
+
+#define HL_COLOR(a, x, b)    x,
+static const char *s_hl_name[] = {
+#include "hl_color.i"
+};
+#undef  HL_COLOR
+
+#define HL_COLOR(a, b, x)    x,
+static bool s_hl_font[] = {
+#include "hl_color.i"
+};
+#undef  HL_COLOR
+
 const HlStyle& HighlightSetup::GetHlStyle(int i)
 {
 	return hl_style[i];
@@ -24,12 +48,6 @@ void  HighlightSetup::SetHlStyle(int i, Color c, bool bold, bool italic, bool un
 	st.bold = bold;
 	st.italic = italic;
 	st.underline = underline;
-	SetColor(LineEdit::INK_NORMAL, hl_style[INK_NORMAL].color);
-	SetColor(LineEdit::INK_DISABLED, hl_style[INK_DISABLED].color);
-	SetColor(LineEdit::INK_SELECTED, hl_style[INK_SELECTED].color);
-	SetColor(LineEdit::PAPER_NORMAL, hl_style[PAPER_NORMAL].color);
-	SetColor(LineEdit::PAPER_READONLY, hl_style[PAPER_READONLY].color);
-	SetColor(LineEdit::PAPER_SELECTED, hl_style[PAPER_SELECTED].color);
 }
 
 void HighlightSetup::LoadHlStyles(const char *s)

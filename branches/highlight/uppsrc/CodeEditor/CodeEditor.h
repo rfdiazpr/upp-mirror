@@ -169,7 +169,9 @@ struct FindReplaceDlg : WithIDEFindReplaceLayout<TopWindow> {
 
 #include "Syntax.h"
 
-class CodeEditor : public LineEdit {
+class CodeEditor : public LineEdit,
+public HighlightSetup //TODO:SYNTAX
+{
 	friend class EditorBar;
 
 public:
@@ -180,12 +182,13 @@ public:
 	virtual Image CursorImage(Point p, dword keyflags);
 	virtual void  Serialize(Stream& s);
 	virtual void  MouseLeave();
+	virtual void  Paint(Draw& w);
 
 	void         CheckEdited(bool e = true) { check_edited = e; }
 	bool         GetCheckEdited()           { return check_edited; }
 
 protected:
-	virtual void HighlightLine(int line, Vector<Highlight>& h, int pos);
+	virtual void HighlightLine(int line, Vector<LineEdit::Highlight>& h, int pos);
 	virtual void PreInsert(int pos, const WString& s);
 	virtual void PostInsert(int pos, const WString& s);
 	virtual void PreRemove(int pos, int size);
@@ -221,7 +224,6 @@ protected:
 	bool        bracket_flash;
 	int         bracket_start;
 
-	bool    thousands_separator;
 	bool    indent_spaces : 1;
 	bool    no_parenthesis_indent : 1;
 	bool    barline : 1;
@@ -445,16 +447,9 @@ public:
 
 	void     HideBar()                                { bar.Hide(); }
 
-	void     DefaultHlStyles();
-	void     LoadHlStyles(const char *s);
-	String   StoreHlStyles();
-	
 	void     SyncTip();
 	void     CloseTip()                               { if(tip.IsOpen()) tip.Close(); tip.d = NULL;  }
 
-	const char *GetHlName(int i);
-	bool        HasHlFont(int i);
-	
 // HL NEW:
 	Vector<IfState> GetIfStack(int line)              { return GetSyntax(line)->PickIfStack(); }
 // ------

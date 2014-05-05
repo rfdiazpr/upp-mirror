@@ -332,35 +332,6 @@ void SyntaxState::ScanSyntax(const wchar *ln, const wchar *e, int line, int tab_
 	}
 }
 
-One<SyntaxState> CodeEditor::GetSyntax(int line)
-{
-	One<SyntaxState> syntax; // SYNTAX:TODO: replace with initial syntax for file type
-	syntax.Create();
-	for(int i = 0; i < 4; i++)
-		if(line >= syntax_cache[i].line) {
-			syntax->Set(syntax_cache[i].data);
-			break;
-		}
-	syntax->MacroContOff(); // SYNTAX:TODO!
-	line = min(line, GetLineCount());
-	int ln = 0;
-	while(ln < line) {
-		syntax->MacroContOff(); // SYNTAX:TODO!
-		WString l = GetWLine(ln);
-		syntax->ScanSyntax(l, l.End(), ln, GetTabSize());
-		ln++;
-		static int d[] = { 0, 100, 2000 };
-		for(int i = 0; i < 3; i++)
-			if(ln == cline - d[i]) {
-				syntax_cache[i].data = syntax->Get();
-				syntax_cache[i].line = ln;
-			}
-	}
-	syntax_cache[3].data = syntax->Get();
-	syntax_cache[3].line = ln;
-	return pick(syntax);
-}
-
 void SyntaxState::Serialize(Stream& s)
 {
 	s % comment;

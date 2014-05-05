@@ -35,11 +35,11 @@ Color SyntaxState::BlockColor(int level)
 	return GetHlStyle(PAPER_NORMAL).color;
 }
 
-void SyntaxState::Bracket(int pos, HighlightOutput& hls)
+void SyntaxState::Bracket(int pos, HighlightOutput& hls, CodeEditor& editor) // TODO:SYNTAX: Cleanup passing bracket info
 {
-	if(pos == highlight_bracket_pos0 && hilite_bracket
-	   || pos == highlight_bracket_pos && (hilite_bracket == 1 || hilite_bracket == 2 && bracket_flash)) {
-			HlStyle& h = hl_style[pos == highlight_bracket_pos0 ? PAPER_BRACKET0 : PAPER_BRACKET];
+	if(pos == editor.highlight_bracket_pos0 && hilite_bracket
+	   || pos == editor.highlight_bracket_pos && (hilite_bracket == 1 || hilite_bracket == 2 && editor.bracket_flash)) {
+			HlStyle& h = hl_style[pos == editor.highlight_bracket_pos0 ? PAPER_BRACKET0 : PAPER_BRACKET];
 			hls.SetPaper(hls.pos, 1, h.color);
 			hls.SetFont(hls.pos, 1, h);
 	}
@@ -52,17 +52,30 @@ void SyntaxState::Highlight(CodeEditor& editor, int line, Vector<LineEdit::Highl
 	}
 	
 	LTIMING("HighlightLine");
+	int highlight = editor.highlight;
 	if(highlight < 0 || highlight >= keyword.GetCount())
 		return;
 	WString text = editor.GetWLine(line);
 	One<SyntaxState> ss = editor.GetSyntax(line);
-	bool macro = editor.GetSyntax(line + 1)->IsMacro();
+	
+	One<SyntaxState> next;
+	next.Create();
+	DDUMP(ss->Get().GetCount());
+	next->Set(ss->Get());
+	next->MacroContOff();
+	next->ScanSyntax(~text, text.End(), line + 1, editor.GetTabSize());
+	bool macro = next->IsMacro();
+	
+	DDUMP(text);
+	DDUMP(macro);
+//macro = editor.GetSyntax(line + 1)->IsMacro();
+
 	ss->Grounding(text.Begin(), text.End());
-	HlSt hls(hl);
+	HighlightOutput hls(hl);
 	const wchar *p = text;
 	const wchar *e = text.End();
 	if(highlight == HIGHLIGHT_CALC) {
-		if(line == GetLineCount() - 1 || *p == '$')
+		if(line == editor.GetLineCount() - 1 || *p == '$')
 			hls.SetPaper(0, text.GetLength() + 1, hl_style[PAPER_BLOCK1].color);
 	}
 	else
@@ -72,7 +85,7 @@ void SyntaxState::Highlight(CodeEditor& editor, int line, Vector<LineEdit::Highl
 	String cppid;
 	if(!ss->comment && highlight != HIGHLIGHT_CALC) {
 		if(!macro) {
-			int i = 0, bid = 0, pos = 0, tabsz = GetTabSize();
+			int i = 0, bid = 0, pos = 0, tabsz = editor.GetTabSize();
 			while(bid < ss->bid.GetCount() - 1
 			&& (i >= text.GetLength() || text[i] == ' ' || text[i] == '\t')) {
 				hls.SetPaper(i, 1, BlockColor(bid));
@@ -135,7 +148,7 @@ void SyntaxState::Highlight(CodeEditor& editor, int line, Vector<LineEdit::Highl
 			}
 		else
 		if((*p == '\"' || *p == '\'') || ss->linecont && ss->string)
-			p = HlString(hls, p);
+			p = hls.CString(p);
 		else
 		if(pair == MAKELONG('/', '*') && highlight != HIGHLIGHT_JSON) {
 			hls.Put(2, hl_style[INK_COMMENT]);
@@ -146,14 +159,14 @@ void SyntaxState::Highlight(CodeEditor& editor, int line, Vector<LineEdit::Highl
 		else
 		if(*p == '(') {
 			ss->brk.Add(')');
-			Bracket(int(p - text) + pos, hls);
+			Bracket(int(p - text) + pos, hls, editor);
 			hls.Put(hl_style[INK_PAR0 + max(ss->pl++, 0) % 4]);
 			p++;
 		}
 		else
 		if(*p == '{') {
 			ss->brk.Add(ss->was_namespace ? 0 : '}');
-			Bracket(int(p - text) + pos, hls);
+			Bracket(int(p - text) + pos, hls, editor);
 			hls.Put(hl_style[INK_PAR0 + max(ss->cl, 0) % 4]);
 			if(ss->was_namespace)
 				ss->was_namespace = false;
@@ -168,7 +181,7 @@ void SyntaxState::Highlight(CodeEditor& editor, int line, Vector<LineEdit::Highl
 		else
 		if(*p == '[') {
 			ss->brk.Add(']');
-			Bracket(int(p - text) + pos, hls);
+			Bracket(int(p - text) + pos, hls, editor);
 			hls.Put(hl_style[INK_PAR0 + max(ss->bl++, 0) % 4]);
 			p++;
 		}
@@ -178,7 +191,7 @@ void SyntaxState::Highlight(CodeEditor& editor, int line, Vector<LineEdit::Highl
 			int bc = bl ? ss->brk.Pop() : 0;
 			if(*p == '}' && hilite_scope && block_level > 0 && bc)
 				hls.SetPaper(hls.pos, text.GetLength() + 1 - hls.pos, BlockColor(--block_level));
-			Bracket(int(p - text) + pos, hls);
+			Bracket(int(p - text) + pos, hls, editor);
 			int& l = *p == ')' ? ss->pl : *p == '}' ? ss->cl : ss->bl;
 			if(bc && (bc != *p || l <= 0) || bc == 0 && *p != '}') {
 				hls.Put(p == ~text ? hl_style[INK_PAR0] : hl_style[INK_ERROR]);
@@ -238,7 +251,7 @@ void SyntaxState::Highlight(CodeEditor& editor, int line, Vector<LineEdit::Highl
 		if(pair == MAKELONG('t', '_') && p[2] == '(' && p[3] == '\"') {
 			int pos0 = hls.pos;
 			hls.Put(3, hl_style[INK_UPP]);
-			p = HlString(hls, p + 3);
+			p = hls.CString(p + 3);
 			if(*p == ')') {
 				hls.Put(hl_style[INK_UPP]);
 				p++;
@@ -249,7 +262,7 @@ void SyntaxState::Highlight(CodeEditor& editor, int line, Vector<LineEdit::Highl
 		if(pair == MAKELONG('t', 't') && p[3] == '(' && p[4] == '\"') {
 			int pos0 = hls.pos;
 			hls.Put(4, hl_style[INK_UPP]);
-			p = HlString(hls, p + 4);
+			p = hls.CString(p + 4);
 			if(*p == ')') {
 				hls.Put(hl_style[INK_UPP]);
 				p++;

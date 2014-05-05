@@ -70,7 +70,7 @@ void EditorBar::Paint(Draw& w)
 	bool hi_if = (hilite_if_endif && (editor->highlight == CodeEditor::HIGHLIGHT_CPP
 		|| editor->highlight == CodeEditor::HIGHLIGHT_CS
 		|| editor->highlight == CodeEditor::HIGHLIGHT_JAVA));
-	Vector<CodeEditor::IfState> previf;
+	Vector<IfState> previf;
 	if(hi_if)
 		previf <<= editor->GetIfStack(i);
 	int ptri[2];
@@ -103,7 +103,7 @@ void EditorBar::Paint(Draw& w)
 			}
 		}
 		if(hi_if) {
-			Vector<CodeEditor::IfState> nextif;
+			Vector<IfState> nextif;
 			if(i < li.GetCount())
 				nextif <<= editor->GetIfStack(i + 1);
 			int pifl = previf.GetCount(), nifl = nextif.GetCount();

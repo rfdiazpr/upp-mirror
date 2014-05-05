@@ -1,14 +1,14 @@
 #ifndef _CodeEditor_Highlight_h_
 #define _CodeEditor_Highlight_h_
 
-struct HlStyle {
+struct HlStyle { //TODO:SYNTAX Move to class
 	Color color;
 	bool  bold;
 	bool  italic;
 	bool  underline;
 };
 
-struct Isx : Moveable<Isx> {
+struct Isx : Moveable<Isx> { //TODO:SYNTAX Move to class
 	int    line;
 	int    pos;
 	
@@ -18,7 +18,7 @@ struct Isx : Moveable<Isx> {
 	friend bool operator!=(Isx a, Isx b) { return !(a == b); }
 };
 
-struct IfState : Moveable<IfState> {
+struct IfState : Moveable<IfState> { //TODO:SYNTAX Move to class
 	enum        { IF = '0', ELIF, ELSE, ELSE_ERROR, ENDIF_ERROR };
 	WString iftext;
 	short   ifline;
@@ -53,15 +53,16 @@ public:
 	static byte    hilite_scope;
 	static byte    hilite_ifdef;
 	static byte    hilite_bracket;
+	static bool    thousands_separator;
 
-	const HlStyle& GetHlStyle(int i);
-	void           SetHlStyle(int i, Color c, bool bold = false, bool italic = false, bool underline = false);
-	void           LoadHlStyles(const char *s);
-	String         StoreHlStyles();
-	void           DefaultHlStyles();
+	static const HlStyle& GetHlStyle(int i);
+	static void           SetHlStyle(int i, Color c, bool bold = false, bool italic = false, bool underline = false);
+	static void           LoadHlStyles(const char *s);
+	static String         StoreHlStyles();
+	static void           DefaultHlStyles();
 
-	const char    *GetHlName(int i);
-	bool           HasHlFont(int i);
+	static const char    *GetHlName(int i);
+	static bool           HasHlFont(int i);
 };
 
 struct HighlightOutput : HighlightSetup {
@@ -84,7 +85,9 @@ public:
 	~HighlightOutput();
 };
 
-class SyntaxState : HighlightSetup {
+class SyntaxState :
+public HighlightSetup // TODO:SYNTAX
+{
 	bool        comment;
 	bool        linecomment;
 	bool        string;
@@ -108,6 +111,7 @@ class SyntaxState : HighlightSetup {
 
 	static int  LoadSyntax(const char *keywords[], const char *names[]);
 	static int  InitUpp(const char **q);
+	static void InitKeywords();
 
 	static Vector< Index<String> > keyword;
 	static Vector< Index<String> > name;
@@ -115,9 +119,8 @@ class SyntaxState : HighlightSetup {
 	static int kw_macros, kw_logs, kw_sql_base, kw_sql_func;
 
 	
-
-	Color BlockColor(int level);
-	void  Bracket(int pos, HighlightOutput& hls);
+	static Color BlockColor(int level);
+	void Bracket(int pos, HighlightOutput& hls, CodeEditor& editor);
 
 public:
 	void  DropItem(int type);
@@ -126,6 +129,7 @@ public:
 	void  Clear();
 //		bool  MatchHilite(const SyntaxState& st) const;
 	void  Grounding(const wchar *ln, const wchar *e);
+
 	void  ScanSyntax(const wchar *ln, const wchar *e, int line, int tab_size);
 	
 	const Vector<Isx>& Par() const          { return par; }

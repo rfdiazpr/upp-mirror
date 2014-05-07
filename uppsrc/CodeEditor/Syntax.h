@@ -1,6 +1,8 @@
 #ifndef _CodeEditor_Highlight_h_
 #define _CodeEditor_Highlight_h_
 
+#define CTIMING(x) RTIMING(x)
+
 struct HlStyle { //TODO:SYNTAX Move to class
 	Color color;
 	bool  bold;
@@ -8,8 +10,8 @@ struct HlStyle { //TODO:SYNTAX Move to class
 	bool  underline;
 };
 
-struct Isx : Moveable<Isx> { //TODO:SYNTAX Move to class
-	int    line;
+struct Isx : Moveable<Isx> { // '(', '[' position
+	int    line; //TODO:SYNTAX Move to class
 	int    pos;
 	
 	void Serialize(Stream& s)    { s % line % pos; }
@@ -20,11 +22,12 @@ struct Isx : Moveable<Isx> { //TODO:SYNTAX Move to class
 
 struct IfState : Moveable<IfState> { //TODO:SYNTAX Move to class
 	enum        { IF = '0', ELIF, ELSE, ELSE_ERROR, ENDIF_ERROR };
+
 	WString iftext;
 	short   ifline;
 	char    state;
 
-	void Serialize(Stream& s)    { s % iftext % ifline % state; }
+	void Serialize(Stream& s)         { s % iftext % ifline % state; }
 
 	bool operator==(const IfState& b) const {
 		return iftext == b.iftext && state == b.state && ifline == b.ifline;
@@ -88,26 +91,30 @@ public:
 class SyntaxState :
 public HighlightSetup // TODO:SYNTAX
 {
-	bool        comment;
-	bool        linecomment;
-	bool        string;
-	bool        linecont;
-	bool        was_namespace;
-	char        macro;
-	enum        { MACRO_OFF, MACRO_CONT, MACRO_END };
+	bool        comment;       // we are in /* */ block comment
+	bool        linecomment;   // we are in // line comment (because it can be continued by '\')
+	bool        string;        // we are in string (becase it can be continued by '\')
+	bool        linecont;      // line ended with '\'
+	bool        was_namespace; // true if there was 'namespace', until '{' or ';' (not in ( [ brackets)
+	char        macro;         // can be one of:
+	enum        {
+		MACRO_OFF = 0,  // last line was not #define
+	    MACRO_CONT, // last line was #define and ended with '\'
+	    MACRO_END   // last line was a macro, but ended
+	};
 
-	int         cl, bl, pl;
+	int         cl, bl, pl; // levels of { [ (
 
-	Vector<int>     brk;
-	Vector<int>     blk;
-	Vector<int>     bid;
-	Vector<Isx>     par;
+	Vector<int>     brk; // { ( [ stack (contains '{', ')', ']')
+	Vector<int>     blk; // { line stack //TODO:SYNTAX: Join blk and bid
+	Vector<int>     bid; // { indentation stack
+	Vector<Isx>     par; // ( [ position stack
 	Vector<IfState> ifstack;
 
-	int         stmtline;
-	int         endstmtline;
-	int         seline;
-	int         spar;
+	int         stmtline;     // line of latest "if", "else", "while", "do", "for" or -1
+	int         endstmtline;  // line of latest ';' (not in ( [ brackets)
+	int         seline;       // stmtline stored here on ';' (not in ( [ brackets)
+	int         spar;         // ( [ level, reset on "if", "else", "while", "do", "for"
 
 	static int  LoadSyntax(const char *keywords[], const char *names[]);
 	static int  InitUpp(const char **q);
@@ -120,36 +127,34 @@ public HighlightSetup // TODO:SYNTAX
 
 	
 	static Color BlockColor(int level);
+
 	void Bracket(int pos, HighlightOutput& hls, CodeEditor& editor);
 
-public:
-	void  DropItem(int type);
-	bool  Drop(int type);
 	void  ClearBraces();
-	void  Clear();
-//		bool  MatchHilite(const SyntaxState& st) const;
+
 	void  Grounding(const wchar *ln, const wchar *e);
 
+public:
+	void  Clear();
+
 	void  ScanSyntax(const wchar *ln, const wchar *e, int line, int tab_size);
-	
+
+private:
 	const Vector<Isx>& Par() const          { return par; }
 	const Vector<int>& Blk() const          { return blk; }
 	int   GetEndStatementLine() const       { return endstmtline; }
 	int   GetStatementLine() const          { return stmtline; }
 	int   GetSeLine() const                 { return seline; }
-	
+
+public:
 	void  Serialize(Stream& s);
 	
-	void    Set(const String& s)          { if(s.GetCount() == 0) Clear(); else LoadFromString(*this, s); }
-	String  Get()                         { return StoreAsString(*this); }
-	void    MacroContOff()                { if(macro != SyntaxState::MACRO_CONT) macro = SyntaxState::MACRO_OFF; }
+	void    Set(const String& s)          { CTIMING("Set"); if(s.GetCount() == 0) Clear(); else LoadFromString(*this, s); }
+	String  Get()                         { CTIMING("Get"); return StoreAsString(*this); }
 	
-	bool    IsMacro() const               { return macro; }
-
 	bool    IsComment() const             { return comment; } // TODO:SYNTAX Replace with ASSIST logic
 	bool    IsString() const              { return string; }
 	bool    IsLineComment() const         { return linecomment; }
-	
 
 	void    Highlight(CodeEditor& editor, int line, Vector<LineEdit::Highlight>& hl, int pos);
 
@@ -159,7 +164,7 @@ public:
 
 	SyntaxState()                         { Clear(); }
 	
-	friend class CodeEditor;
+//	friend class CodeEditor;
 };
 
 #endif

@@ -114,11 +114,14 @@ void SyntaxState::Grounding(const wchar *b, const wchar *e)
 
 void SyntaxState::ScanSyntax(const wchar *ln, const wchar *e, int line, int tab_size)
 {
+	CTIMING("ScanSyntax");
 	Grounding(ln, e);
 	if(!linecont) {
 		linecomment = false;
 		string = false;
 	}
+	if(macro != SyntaxState::MACRO_CONT)
+		macro = SyntaxState::MACRO_OFF;
 	linecont = e > ln && e[-1] == '\\';
 	const wchar *p = ln;
 	int lindent = 0, pos = 0;
@@ -354,25 +357,5 @@ void SyntaxState::Serialize(Stream& s)
 	s % seline;
 	s % spar;
 };
-
-/*
-bool SyntaxState::MatchHilite(const SyntaxState& st) const
-{
-	return comment == st.comment
-	    && linecont == st.linecont
-	    && linecomment == st.linecomment
-	    && string == st.string
-		&& macro == st.macro
-		&& was_namespace == st.was_namespace
-		&& cl == st.cl && bl == st.bl && pl == st.pl
-		&& IsEqual(brk, st.brk)
-		&& IsEqual(blk, st.blk)
-		&& IsEqual(bid, st.bid)
-		&& IsEqual(par, st.par)
-		&& IsEqual(ifstack, st.ifstack)
-		&& seline == st.seline
-		&& spar == st.spar;
-}
-*/
 
 END_UPP_NAMESPACE

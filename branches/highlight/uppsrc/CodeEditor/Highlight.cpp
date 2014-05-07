@@ -58,18 +58,11 @@ void SyntaxState::Highlight(CodeEditor& editor, int line, Vector<LineEdit::Highl
 	WString text = editor.GetWLine(line);
 	One<SyntaxState> ss = editor.GetSyntax(line);
 	
-	One<SyntaxState> next;
-	next.Create();
-	DDUMP(ss->Get().GetCount());
-	next->Set(ss->Get());
-	next->MacroContOff();
-	next->ScanSyntax(~text, text.End(), line + 1, editor.GetTabSize());
-	bool macro = next->IsMacro();
+	SyntaxState next;
+	next.Set(ss->Get());
+	next.ScanSyntax(~text, text.End(), line + 1, editor.GetTabSize());
+	bool macro = next.macro != MACRO_OFF;
 	
-	DDUMP(text);
-	DDUMP(macro);
-//macro = editor.GetSyntax(line + 1)->IsMacro();
-
 	ss->Grounding(text.Begin(), text.End());
 	HighlightOutput hls(hl);
 	const wchar *p = text;

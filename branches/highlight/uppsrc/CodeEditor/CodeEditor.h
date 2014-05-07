@@ -182,7 +182,6 @@ public:
 	virtual Image CursorImage(Point p, dword keyflags);
 	virtual void  Serialize(Stream& s);
 	virtual void  MouseLeave();
-	virtual void  Paint(Draw& w);
 
 	void         CheckEdited(bool e = true) { check_edited = e; }
 	bool         GetCheckEdited()           { return check_edited; }
@@ -214,7 +213,7 @@ protected:
 		void Clear() { line = 0; data.Clear(); }
 	};
 	
-	SyntaxPos   syntax_cache[4];
+	SyntaxPos   syntax_cache[6];
 
 //	SyntaxState rm_ins;
 
@@ -341,7 +340,7 @@ public:
 
 	void   Clear()                    { LineEdit::Clear(); found = notfoundfw = notfoundbk = false; }
 
-	void   Highlight(int h)           { highlight = h; Refresh(); }
+	void   Highlight(int h);
 	int    GetHighlight() const       { return highlight; }
 
 	void   CloseFindReplace();
@@ -422,6 +421,7 @@ public:
 	void     Renumber2();
 	int      GetLine2(int i) const;
 
+// TODO: Syntax: Remove
 	void     HiliteScope(byte b)                      { SyntaxState::hilite_scope = b; Refresh(); }
 	void     HiliteBracket(byte b)                    { SyntaxState::hilite_bracket = b; Refresh(); }
 	void     HiliteIfDef(byte b)                      { SyntaxState::hilite_ifdef = b; Refresh(); }

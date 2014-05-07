@@ -10,8 +10,51 @@ NAMESPACE_UPP
 #define IMAGEFILE   <CodeEditor/CodeEditor.iml>
 #include <Draw/iml_source.h>
 
+One<SyntaxState> CodeEditor::GetSyntax(int line)
+{
+	CTIMING("GetSyntax");
+	One<SyntaxState> syntax; // SYNTAX:TODO: replace with class factory for proper type
+	syntax.Create();
+	int ln = 0;
+	for(int i = 0; i < __countof(syntax_cache); i++)
+		if(line >= syntax_cache[i].line && syntax_cache[i].line > 0) {
+			syntax->Set(syntax_cache[i].data);
+			ln = syntax_cache[i].line;
+			LLOG("Found " << line << " " << syntax_cache[i].line);
+			break;
+		}
+	line = min(line, GetLineCount());
+	while(ln < line) {
+		WString l = GetWLine(ln);
+		CTIMING("ScanSyntax3");
+		syntax->ScanSyntax(l, l.End(), ln, GetTabSize());
+		ln++;
+		static int d[] = { 0, 100, 2000, 10000, 50000 };
+		for(int i = 0; i < __countof(d); i++)
+			if(ln == cline - d[i]) {
+				syntax_cache[i + 1].data = syntax->Get();
+				syntax_cache[i + 1].line = ln;
+			}
+	}
+	syntax_cache[0].data = syntax->Get();
+	syntax_cache[0].line = ln;
+	return pick(syntax);
+}
+
+void CodeEditor::Highlight(int h)
+{
+	highlight = h;
+	SetColor(LineEdit::INK_NORMAL, hl_style[HighlightSetup::INK_NORMAL].color);
+	SetColor(LineEdit::INK_DISABLED, hl_style[HighlightSetup::INK_DISABLED].color);
+	SetColor(LineEdit::INK_SELECTED, hl_style[HighlightSetup::INK_SELECTED].color);
+	SetColor(LineEdit::PAPER_NORMAL, hl_style[HighlightSetup::PAPER_NORMAL].color);
+	SetColor(LineEdit::PAPER_READONLY, hl_style[HighlightSetup::PAPER_READONLY].color);
+	SetColor(LineEdit::PAPER_SELECTED, hl_style[HighlightSetup::PAPER_SELECTED].color);
+	Refresh();
+}
+
 void CodeEditor::DirtyFrom(int line) {
-	for(int i = 0; i < 4; i++)
+	for(int i = 0; i < __countof(syntax_cache); i++)
 		if(syntax_cache[i].line >= line)
 			syntax_cache[i].Clear();
 
@@ -27,7 +70,6 @@ inline bool IsComment(int a, int b) {
 
 void CodeEditor::PreInsert(int pos, const WString& text) {
 	if(IsFullRefresh()) return;
-//	rm_ins = ScanSyntax(GetLine(pos) + 1);
 }
 
 inline bool RBR(int c) {
@@ -38,7 +80,7 @@ void CodeEditor::CheckBraces(const WString& text)
 {
 	for(const wchar *s = text; *s; s++)
 		if(*s == '{' || *s == '(' || *s == '[' || *s == '/' || *s == '*' ||
-		   *s == '}' || *s == ')' || *s == ']') {
+		   *s == '}' || *s == ')' || *s == ']' || *s == '\\') {
 			Refresh();
 			break;
 		}
@@ -52,16 +94,6 @@ void CodeEditor::PostInsert(int pos, const WString& text) {
 		Refresh();
 	else
 		CheckBraces(text);
-/*
-	// Following code is probable not needed anymore...
-	if(!ScanSyntax(GetLine(pos + text.GetLength()) + 1).MatchHilite(rm_ins)) {
-		if(text.GetLength() == 1 && *text == '(' || *text == '[' || *text == ']' || *text == ')')
-			RefreshChars(RBR);
-		else
-			Refresh();
-		bar.Refresh();
-	}
-*/
 }
 
 void CodeEditor::PreRemove(int pos, int size) {
@@ -70,31 +102,11 @@ void CodeEditor::PreRemove(int pos, int size) {
 		Refresh();
 	else
 		CheckBraces(GetW(pos, size));
-/*
-	// Following code is probable not needed anymore...
-	if(size == 1)
-		rmb = Get(pos, 1)[0];
-	else
-		rmb = 0;
-	rm_ins = ScanSyntax(GetLine(pos + size) + 1);
-*/
 }
 
 void CodeEditor::PostRemove(int pos, int size) {
 	if(check_edited)
 		bar.SetEdited(GetLine(pos));
-	if(IsFullRefresh()) return;
-/*
-	// Following code is probable not needed anymore...
-	if(!ScanSyntax(GetLine(pos) + 1).MatchHilite(rm_ins)) {
-		if(rmb == '(' || rmb == '[' || rmb == ']' || rmb == ')')
-			RefreshChars(RBR);
-		else
-			Refresh();
-		bar.Refresh();
-	}
-	CheckBrackets();
-*/
 }
 
 void CodeEditor::ClearLines() {
@@ -307,15 +319,16 @@ void CodeEditor::IndentEnter(int count) { // TODO:SYNTAX refactor, move logic to
 		InsertChar('\n', 1);
 		int p = GetCursor();
 		int l = GetLinePos(p);
-		bool hassyntax = highlight >= 0 && GetLineLength(l) == p;
-		One<SyntaxState> syntax = GetSyntax(GetCursorLine());
-		if(hassyntax && syntax->Par().GetCount() && syntax->Par().Top().line == cl && !no_parenthesis_indent) {
-			for(int i = 0; i < syntax->Par().Top().pos && i < pl.GetLength(); i++)
+		One<SyntaxState> syntax;
+		if(GetLineLength(l) == p) // At the last char of line
+			syntax = GetSyntax(GetCursorLine());
+		if(syntax && syntax->Par().GetCount() && syntax->Par().Top().line == cl && !no_parenthesis_indent) {
+			for(int i = 0; i < syntax->Par().Top().pos && i < pl.GetLength(); i++) // Indent e.g. next line of if(
 				InsertChar(pl[i] == '\t' ? '\t' : ' ', 1);
 			return;
 		}
 		int seline = syntax->GetSeLine();
-		if(hassyntax && syntax->GetEndStatementLine() == cl && seline >= 0 && seline < GetLineCount())
+		if(syntax && syntax->GetEndStatementLine() == cl && seline >= 0 && seline < GetLineCount())
 			pl = GetWLine(seline);
 		else {
 			int i;
@@ -340,6 +353,7 @@ void CodeEditor::IndentEnter(int count) { // TODO:SYNTAX refactor, move logic to
 
 void CodeEditor::IndentInsert(int chr) {
 	if(InsertRS(chr)) return;
+	// {, } inserted on line alone should be moved left sometimes
 	int cl = GetCursorLine();
 	WString l = GetWLine(cl);
 	if(chr != '{' && chr != '}') {
@@ -1005,19 +1019,8 @@ void CodeEditor::SetLineInfo(const LineInfo& lf)
 
 void CodeEditor::HighlightLine(int line, Vector<LineEdit::Highlight>& hl, int pos)
 {
+	CTIMING("HighlightLine");
 	GetSyntax(line)->Highlight(*this, line, hl, pos);
-}
-
-void CodeEditor::Paint(Draw& w)
-{
-	SetColor(LineEdit::INK_NORMAL, hl_style[HighlightSetup::INK_NORMAL].color);
-	SetColor(LineEdit::INK_DISABLED, hl_style[HighlightSetup::INK_DISABLED].color);
-	SetColor(LineEdit::INK_SELECTED, hl_style[HighlightSetup::INK_SELECTED].color);
-	SetColor(LineEdit::PAPER_NORMAL, hl_style[HighlightSetup::PAPER_NORMAL].color);
-	SetColor(LineEdit::PAPER_READONLY, hl_style[HighlightSetup::PAPER_READONLY].color);
-	SetColor(LineEdit::PAPER_SELECTED, hl_style[HighlightSetup::PAPER_SELECTED].color);
-	
-	LineEdit::Paint(w);
 }
 
 void CodeEditor::PutI(WithDropChoice<EditString>& edit)
@@ -1056,7 +1059,7 @@ CodeEditor::CodeEditor() {
 	bar.WhenAnnotationMove = Proxy(WhenAnnotationMove);
 	bar.WhenAnnotationClick = Proxy(WhenAnnotationClick);
 	bar.WhenAnnotationRightClick = Proxy(WhenAnnotationRightClick);
-	highlight = HIGHLIGHT_NONE;
+	Highlight(HIGHLIGHT_NONE);
 	barline = true;
 	thousands_separator = true;
 	indent_spaces = false;

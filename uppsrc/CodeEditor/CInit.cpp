@@ -2,22 +2,22 @@
 
 NAMESPACE_UPP
 
-Vector <Index<String> > SyntaxState::keyword;
-Vector <Index<String> > SyntaxState::name;
-Index<String>           SyntaxState::kw_upp;
-int                     SyntaxState::kw_macros;
-int                     SyntaxState::kw_logs;
-int                     SyntaxState::kw_sql_base;
-int                     SyntaxState::kw_sql_func;
+Vector <Index<String> > CSyntax::keyword;
+Vector <Index<String> > CSyntax::name;
+Index<String>           CSyntax::kw_upp;
+int                     CSyntax::kw_macros;
+int                     CSyntax::kw_logs;
+int                     CSyntax::kw_sql_base;
+int                     CSyntax::kw_sql_func;
 
-int SyntaxState::InitUpp(const char **q)
+int CSyntax::InitUpp(const char **q)
 {
 	while(*q)
 		kw_upp.Add(*q++);
 	return kw_upp.GetCount();
 }
 
-void SyntaxState::InitKeywords()
+void CSyntax::InitKeywords()
 {
 	static const char *cpp[] = {
 		"namespace", "asm", "__asm", "else", "struct",
@@ -323,7 +323,7 @@ void SyntaxState::InitKeywords()
 	InitUpp(sql_bool);
 }
 
-int SyntaxState::LoadSyntax(const char *keywords[], const char *names[])	// Changed
+int CSyntax::LoadSyntax(const char *keywords[], const char *names[])	// Changed
 {
 	Index <String> &key = keyword.Add()	;
 	while(*keywords)

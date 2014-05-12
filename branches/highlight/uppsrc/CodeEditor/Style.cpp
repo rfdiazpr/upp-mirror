@@ -8,6 +8,10 @@ byte    HighlightSetup::hilite_ifdef = 1;
 byte    HighlightSetup::hilite_bracket = 1;
 bool    HighlightSetup::thousands_separator = true;
 
+bool    HighlightSetup::indent_spaces = false;
+bool    HighlightSetup::no_parenthesis_indent = false;
+int     HighlightSetup::indent_amount = 4;
+
 #define HL_COLOR(x, a, b)    #x,
 static const char *s_hl_color[] = {
 #include "hl_color.i"

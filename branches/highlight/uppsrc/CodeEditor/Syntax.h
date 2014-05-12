@@ -3,7 +3,7 @@
 
 #define CTIMING(x) RTIMING(x)
 
-struct HlStyle { //TODO:SYNTAX Move to class
+struct HlStyle {
 	Color color;
 	bool  bold;
 	bool  italic;
@@ -11,7 +11,7 @@ struct HlStyle { //TODO:SYNTAX Move to class
 };
 
 struct Isx : Moveable<Isx> { // '(', '[' position
-	int    line; //TODO:SYNTAX Move to class
+	int    line;
 	int    pos;
 	
 	void Serialize(Stream& s)    { s % line % pos; }
@@ -20,7 +20,7 @@ struct Isx : Moveable<Isx> { // '(', '[' position
 	friend bool operator!=(Isx a, Isx b) { return !(a == b); }
 };
 
-struct IfState : Moveable<IfState> { //TODO:SYNTAX Move to class
+struct IfState : Moveable<IfState> {
 	enum        { IF = '0', ELIF, ELSE, ELSE_ERROR, ENDIF_ERROR };
 
 	WString iftext;
@@ -38,13 +38,6 @@ struct IfState : Moveable<IfState> { //TODO:SYNTAX Move to class
 
 struct HighlightSetup { // Global highlighting settings
 public:
-	enum HighlightType {
-		HIGHLIGHT_NONE = -1, HIGHLIGHT_CPP = 0, HIGHLIGHT_USC, HIGHLIGHT_JAVA, HIGHLIGHT_T,
-		HIGHLIGHT_CALC, HIGHLIGHT_LAY, HIGHLIGHT_SCH, HIGHLIGHT_SQL, HIGHLIGHT_CS,
-		HIGHLIGHT_JAVASCRIPT, HIGHLIGHT_CSS, HIGHLIGHT_JSON,
-		HIGHLIGHT_COUNT
-	};
-
 #define HL_COLOR(x, a, b)      x,
 	enum {
 #include "hl_color.i"
@@ -57,6 +50,9 @@ public:
 	static byte    hilite_ifdef;
 	static byte    hilite_bracket;
 	static bool    thousands_separator;
+	static bool    indent_spaces;
+	static int     indent_amount;
+	static bool    no_parenthesis_indent;
 
 	static const HlStyle& GetHlStyle(int i);
 	static void           SetHlStyle(int i, Color c, bool bold = false, bool italic = false, bool underline = false);
@@ -88,9 +84,39 @@ public:
 	~HighlightOutput();
 };
 
-class SyntaxState :
-public HighlightSetup // TODO:SYNTAX
-{
+class EditorSyntax : public HighlightSetup { // Inheriting to make static members available
+	struct SyntaxDef {
+		Gate1<One<EditorSyntax>&> factory;
+		String                    exts;
+		String                    description;
+	};
+	
+	static ArrayMap<String, SyntaxDef>& defs();
+	
+public:
+	virtual void            Clear();
+	virtual void            ScanSyntax(const wchar *ln, const wchar *e, int line, int tab_size);
+	virtual void            Serialize(Stream& s);
+	virtual void            IndentInsert(CodeEditor& editor, int chr, int count);
+	virtual bool            CheckBrackets(CodeEditor& e, int& bpos0, int& bpos);
+	virtual bool            CanAssist() const;
+	virtual void            Highlight(CodeEditor& editor, int line, Vector<LineEdit::Highlight>& hl, int pos);
+	virtual Vector<IfState> PickIfStack();
+
+	static Color IfColor(char ifstate);
+
+	void    Set(const String& s)           { CTIMING("Set"); if(s.GetCount() == 0) Clear(); else LoadFromString(*this, s); }
+	String  Get()                          { CTIMING("Get"); return StoreAsString(*this); }
+
+	EditorSyntax()                         { Clear(); }
+
+	static void Register(const char *id, Gate1<One<EditorSyntax>&> factory,
+	                     const char *exts, const char *description);
+	static One<EditorSyntax> Create(const char *id);
+	static String            GetSyntaxForExtension(const char *ext);
+};
+
+class CSyntax : public EditorSyntax {
 	bool        comment;       // we are in /* */ block comment
 	bool        linecomment;   // we are in // line comment (because it can be continued by '\')
 	bool        string;        // we are in string (becase it can be continued by '\')
@@ -115,6 +141,8 @@ public HighlightSetup // TODO:SYNTAX
 	int         endstmtline;  // line of latest ';' (not in ( [ brackets)
 	int         seline;       // stmtline stored here on ';' (not in ( [ brackets)
 	int         spar;         // ( [ level, reset on "if", "else", "while", "do", "for"
+	
+	int         highlight;    // subtype (temporary) TODO
 
 	static int  LoadSyntax(const char *keywords[], const char *names[]);
 	static int  InitUpp(const char **q);
@@ -134,23 +162,32 @@ public HighlightSetup // TODO:SYNTAX
 
 	void  Grounding(const wchar *ln, const wchar *e);
 
+	bool CheckBracket(CodeEditor& e, int li, int pos, int ppos, int pos0, WString ln, int d, int limit, int& bpos0, int& bpos);
+	bool CheckLeftBracket(CodeEditor& e, int pos, int& bpos0, int& bpos);
+	bool CheckRightBracket(CodeEditor& e, int pos, int& bpos0, int& bpos);
+	
 public:
-	void  Clear();
+	enum HighlightType {
+		HIGHLIGHT_NONE = -1, HIGHLIGHT_CPP = 0, HIGHLIGHT_USC, HIGHLIGHT_JAVA, HIGHLIGHT_T,
+		HIGHLIGHT_CALC, HIGHLIGHT_LAY, HIGHLIGHT_SCH, HIGHLIGHT_SQL, HIGHLIGHT_CS,
+		HIGHLIGHT_JAVASCRIPT, HIGHLIGHT_CSS, HIGHLIGHT_JSON,
+		HIGHLIGHT_COUNT
+	};
+	
+	void    SetHighlight(int h)           { highlight = h; }
 
-	void  ScanSyntax(const wchar *ln, const wchar *e, int line, int tab_size);
+	void    Clear();
 
-private:
-	const Vector<Isx>& Par() const          { return par; }
-	const Vector<int>& Blk() const          { return blk; }
-	int   GetEndStatementLine() const       { return endstmtline; }
-	int   GetStatementLine() const          { return stmtline; }
-	int   GetSeLine() const                 { return seline; }
+	void    ScanSyntax(const wchar *ln, const wchar *e, int line, int tab_size);
 
-public:
-	void  Serialize(Stream& s);
+	void    Serialize(Stream& s);
 	
 	void    Set(const String& s)          { CTIMING("Set"); if(s.GetCount() == 0) Clear(); else LoadFromString(*this, s); }
 	String  Get()                         { CTIMING("Get"); return StoreAsString(*this); }
+	
+	void    IndentInsert(CodeEditor& editor, int chr, int count);
+
+	bool    CheckBrackets(CodeEditor& e, int& bpos0, int& bpos);
 	
 	bool    IsComment() const             { return comment; } // TODO:SYNTAX Replace with ASSIST logic
 	bool    IsString() const              { return string; }
@@ -158,13 +195,9 @@ public:
 
 	void    Highlight(CodeEditor& editor, int line, Vector<LineEdit::Highlight>& hl, int pos);
 
-	Vector<IfState> PickIfStack()         { return pick(ifstack); }
+	Vector<IfState> PickIfStack()         { return pick(ifstack); } // TODO:SYNTAX refactor?
 
-	static Color IfColor(char ifstate);
-
-	SyntaxState()                         { Clear(); }
-	
-//	friend class CodeEditor;
+	CSyntax()                             { Clear(); }
 };
 
 #endif

@@ -204,8 +204,6 @@ protected:
 	EditorBar   bar;
 	Vector<int> line2;
 
-	friend class SyntaxState;
-
 	struct SyntaxPos {
 		int    line;
 		String data;
@@ -215,7 +213,7 @@ protected:
 	
 	SyntaxPos   syntax_cache[6];
 
-//	SyntaxState rm_ins;
+//	EditorSyntax rm_ins;
 
 	char        rmb;
 	int         highlight_bracket_pos0;
@@ -223,10 +221,7 @@ protected:
 	bool        bracket_flash;
 	int         bracket_start;
 
-	bool    indent_spaces : 1;
-	bool    no_parenthesis_indent : 1;
 	bool    barline : 1;
-	int     indent_amount;
 	double  stat_edit_time;
 	Time    last_key_time;
 
@@ -258,7 +253,7 @@ protected:
 
 	int    iwc;
 
-	int    highlight;
+	String highlight;
 	
 	struct Tip : Ctrl {
 		Value v;
@@ -274,14 +269,9 @@ protected:
 	
 	int   replacei;
 
-	One<SyntaxState> GetSyntax(int line);
-
 	struct HlSt;
 	
 	void   CancelBracketHighlight(int& pos);
-	void   CheckBracket(int li, int pos, int ppos, int pos0, WString ln, int d, int limit);
-	void   CheckLeftBracket(int pos);
-	void   CheckRightBracket(int pos);
 	void   CheckBrackets();
 	void   OpenNormalFindReplace(bool replace);
 	void   FindReplaceAddHistory();
@@ -298,9 +288,8 @@ protected:
 	WString GetReplaceText(WString replace, bool wildcards, bool samecase);
 
 	bool   InsertRS(int chr, int count = 1);
-	void   IndentEnter(int count = 1);
-	void   SyntaxIndent(const SyntaxState& st, bool ndnt);
-	void   IndentInsert(int chr);
+
+	void   IndentInsert(int chr, int count);
 
 	void   ForwardWhenBreakpoint(int i);
 
@@ -340,8 +329,8 @@ public:
 
 	void   Clear()                    { LineEdit::Clear(); found = notfoundfw = notfoundbk = false; }
 
-	void   Highlight(int h);
-	int    GetHighlight() const       { return highlight; }
+	void   Highlight(const String& h);
+	String GetHighlight() const       { return highlight; }
 
 	void   CloseFindReplace();
 	void   FindReplace(bool pick_selection, bool pick_text, bool replace);
@@ -422,15 +411,16 @@ public:
 	int      GetLine2(int i) const;
 
 // TODO: Syntax: Remove
-	void     HiliteScope(byte b)                      { SyntaxState::hilite_scope = b; Refresh(); }
-	void     HiliteBracket(byte b)                    { SyntaxState::hilite_bracket = b; Refresh(); }
-	void     HiliteIfDef(byte b)                      { SyntaxState::hilite_ifdef = b; Refresh(); }
+	void     HiliteScope(byte b)                      { EditorSyntax::hilite_scope = b; Refresh(); }
+	void     HiliteBracket(byte b)                    { EditorSyntax::hilite_bracket = b; Refresh(); }
+	void     HiliteIfDef(byte b)                      { EditorSyntax::hilite_ifdef = b; Refresh(); }
 	void     HiliteIfEndif(bool b)                    { bar.HiliteIfEndif(b); }
 
 	void     ThousandsSeparator(bool b)               { thousands_separator = b; Refresh(); }
 	void     IndentSpaces(bool is)                    { indent_spaces = is; }
 	void     IndentAmount(int ia)                     { indent_amount = ia; }
 	void     NoParenthesisIndent(bool b)              { no_parenthesis_indent = b; }
+
 	void     LineNumbers(bool b)                      { bar.LineNumbers(b); }
 	void     MarkLines(bool b)                        { mark_lines = b; }
 	bool     GetMarkLines()                           { return mark_lines; }
@@ -451,7 +441,13 @@ public:
 	void     CloseTip()                               { if(tip.IsOpen()) tip.Close(); tip.d = NULL;  }
 
 // HL NEW:
+	One<EditorSyntax> GetSyntax(int line);
+	bool IsCursorBracket(int pos) const;
+	bool IsMatchingBracket(int pos) const;
+
+// TODO: Do we really need this ?
 	Vector<IfState> GetIfStack(int line)              { return GetSyntax(line)->PickIfStack(); }
+
 // ------
 
 	typedef CodeEditor CLASSNAME;

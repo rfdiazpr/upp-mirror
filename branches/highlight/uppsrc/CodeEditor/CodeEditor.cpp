@@ -10,10 +10,10 @@ NAMESPACE_UPP
 #define IMAGEFILE   <CodeEditor/CodeEditor.iml>
 #include <Draw/iml_source.h>
 
-One<SyntaxState> CodeEditor::GetSyntax(int line)
+One<EditorSyntax> CodeEditor::GetSyntax(int line)
 {
 	CTIMING("GetSyntax");
-	One<SyntaxState> syntax; // SYNTAX:TODO: replace with class factory for proper type
+	One<EditorSyntax> syntax = EditorSyntax::Create(highlight);
 	syntax.Create();
 	int ln = 0;
 	for(int i = 0; i < __countof(syntax_cache); i++)
@@ -141,89 +141,28 @@ void CodeEditor::NewScrollPos() {
 	bar.Scroll();
 }
 
-bool NotEscape(int pos, const WString& s)
+bool CodeEditor::IsCursorBracket(int pos) const
 {
-	return pos == 0 || s[pos - 1] != '\\' ? true : !NotEscape(pos - 1, s);
+	return pos == highlight_bracket_pos0 && hilite_bracket;
 }
 
-void CodeEditor::CheckBracket(int li, int pos, int ppos, int pos0, WString ln, int d, int limit)
+bool CodeEditor::IsMatchingBracket(int pos) const
 {
-	int li0 = li;
-	int lvl = 1;
-	pos += d;
-	ppos += d;
-	for(;;) {
-		int c;
-		for(;;) {
-			while(pos < 0 || pos >= ln.GetLength()) {
-				li += d;
-				if(d * li >= d * limit)
-					return;
-				ln = GetWLine(li);
-				int q = ln.Find("//");
-				if(q >= 0)
-					ln = ln.Mid(0, q) + WString(' ', ln.GetCount() - q);
-				pos = d < 0 ? ln.GetLength() - 1 : 0;
-				ppos += d;
-			}
-			c = ln[pos];
-			if((c == '\"' || c == '\'') && (pos > 0 && NotEscape(pos, ln) && ln[pos - 1] != '\'')) {
-				pos += d;
-				ppos += d;
-				int lc = c;
-				while(pos < ln.GetLength() && pos > 0) {
-					if(ln[pos] == lc && NotEscape(pos, ln)) {
-						pos += d;
-						ppos += d;
-						break;
-					}
-					pos += d;
-					ppos += d;
-				}
-			}
-			else
-				break;
-		}
-		if(islbrkt(c))
-			lvl += d;
-		if(isrbrkt(c))
-			lvl -= d;
-		if(lvl <= 0) {
-			highlight_bracket_pos0 = pos0;
-			highlight_bracket_pos = ppos;
-			RefreshLine(li);
-			RefreshLine(li0);
+	return pos == highlight_bracket_pos && (hilite_bracket == 1 || hilite_bracket == 2 && bracket_flash);
+}
+
+void CodeEditor::CheckBrackets()
+{
+	CancelBracketHighlight(highlight_bracket_pos0);
+	CancelBracketHighlight(highlight_bracket_pos);
+	if(!IsSelection()) {
+		if(GetSyntax(GetCursorLine())->CheckBrackets(*this, highlight_bracket_pos0, highlight_bracket_pos)) {
+			RefreshLine(GetLine(highlight_bracket_pos0));
+			RefreshLine(GetLine(highlight_bracket_pos));
 			bracket_start = GetTimeClick();
-			return;
 		}
-		pos += d;
-		ppos += d;
 	}
-}
-
-void CodeEditor::CheckLeftBracket(int pos)
-{
-	LTIMING("CheckLeftBracket");
-	if(pos < 0 || pos >= GetLength())
-		return;
-	int ppos = pos;
-	int li = GetLinePos(pos);
-	WString ln = GetWLine(li);
-	if(islbrkt(ln[pos]))
-		CheckBracket(li, pos, ppos, ppos, ln, 1, min(li + 3000, GetLineCount()));
-}
-
-void CodeEditor::CheckRightBracket(int pos)
-{
-	LTIMING("CheckRightBracket");
-	if(pos < 0 || pos >= GetLength())
-		return;
-	int ppos = pos;
-	int li = GetLinePos(pos);
-	WString ln = GetWLine(li);
-	int c = ln[pos];
-	if(c == ')' || c == '}' || c == ']')
-		CheckBracket(li, pos, ppos, ppos, ln, -1, max(li - 3000, 0));
+	WhenSelection();
 }
 
 void CodeEditor::CopyWord() {
@@ -264,7 +203,7 @@ void CodeEditor::CancelBracketHighlight(int& pos)
 void CodeEditor::Periodic()
 {
 	bool b = (((GetTimeClick() - bracket_start) >> 8) & 1) == 0;
-	if(b != bracket_flash && SyntaxState::hilite_bracket == 2) {
+	if(b != bracket_flash && EditorSyntax::hilite_bracket == 2) {
 		bracket_flash = b;
 		if(highlight_bracket_pos0 >= 0)
 			RefreshLine(GetLine(highlight_bracket_pos0));
@@ -285,22 +224,6 @@ void CodeEditor::SelectionChanged()
 	bar.Refresh();
 }
 
-void CodeEditor::CheckBrackets()
-{
-	CancelBracketHighlight(highlight_bracket_pos0);
-	CancelBracketHighlight(highlight_bracket_pos);
-	if(!IsSelection()) {
-		CheckLeftBracket(GetCursor());
-		if(highlight_bracket_pos < 0)
-			CheckRightBracket(GetCursor());
-		if(highlight_bracket_pos < 0)
-			CheckLeftBracket(GetCursor() - 1);
-		if(highlight_bracket_pos < 0)
-			CheckRightBracket(GetCursor() - 1);
-	}
-	WhenSelection();
-}
-
 bool CodeEditor::InsertRS(int chr, int count) {
 	if(IsReadOnly()) return true;
 	if(IsSelection()) {
@@ -310,81 +233,13 @@ bool CodeEditor::InsertRS(int chr, int count) {
 	return false;
 }
 
-void CodeEditor::IndentEnter(int count) { // TODO:SYNTAX refactor, move logic to Syntax
-	if(InsertRS('\n', count)) return;
-	while(count--) {
-		int pp = GetCursor();
-		int cl = GetLinePos(pp);
-		WString pl = GetWLine(cl);
-		InsertChar('\n', 1);
-		int p = GetCursor();
-		int l = GetLinePos(p);
-		One<SyntaxState> syntax;
-		if(GetLineLength(l) == p) // At the last char of line
-			syntax = GetSyntax(GetCursorLine());
-		if(syntax && syntax->Par().GetCount() && syntax->Par().Top().line == cl && !no_parenthesis_indent) {
-			for(int i = 0; i < syntax->Par().Top().pos && i < pl.GetLength(); i++) // Indent e.g. next line of if(
-				InsertChar(pl[i] == '\t' ? '\t' : ' ', 1);
-			return;
-		}
-		int seline = syntax->GetSeLine();
-		if(syntax && syntax->GetEndStatementLine() == cl && seline >= 0 && seline < GetLineCount())
-			pl = GetWLine(seline);
-		else {
-			int i;
-			for(i = 0; i < pl.GetLength(); i++) {
-				if(pl[i] != ' ' && pl[i] != '\t')
-					break;
-			}
-			if(pp < i)
-				return;
-		}
-		const wchar *s = pl;
-		while(*s == '\t' || *s == ' ')
-			InsertChar(*s++, 1);
-		if(syntax->GetStatementLine() == cl || syntax->Blk().GetCount() && syntax->Blk().Top() == cl) {
-			if(indent_spaces || (s > pl && s[-1] == ' '))
-				InsertChar(' ', indent_amount);
-			else
-				InsertChar('\t', 1);
-		}
-	}
-}
-
-void CodeEditor::IndentInsert(int chr) {
+void CodeEditor::IndentInsert(int chr, int count) {
 	if(InsertRS(chr)) return;
-	// {, } inserted on line alone should be moved left sometimes
-	int cl = GetCursorLine();
-	WString l = GetWLine(cl);
-	if(chr != '{' && chr != '}') {
-		InsertChar(chr, 1, true);
-		return;
-	}
-	const wchar *s;
-	for(s = l; s < l.End(); s++)
-		if(*s != ' ' && *s != '\t') {
-			InsertChar(chr, 1);
-			return;
-		}
-	int len = l.GetLength();
-	One<SyntaxState> st = GetSyntax(cl); // TODO:SYNTAX refactor, move logic to Syntax
-	WString tl;
-	int pos = GetPos(cl);
-	if(chr == '{' && cl > 0 && st->GetStatementLine() == cl - 1 && highlight >= 0)
-		tl = GetWLine(cl - 1);
+	One<EditorSyntax> s = GetSyntax(GetCursorLine());
+	if(s)
+		s->IndentInsert(*this, chr, count);
 	else
-	if(chr == '}' && st->Blk().GetCount() && highlight >= 0)
-		tl = GetWLine(st->Blk().Top());
-	else {
-		InsertChar(chr, 1);
-		return;
-	}
-	SetCursor(pos);
-	Remove(pos, len);
-	s = tl;
-	while(*s == '\t' || *s == ' ')
-		InsertChar(*s++, 1);
-	InsertChar(chr, 1);
+		InsertChar(chr, count);
 }
 
 void CodeEditor::Make(Callback1<String&> op)
@@ -911,7 +766,7 @@ bool CodeEditor::Key(dword code, int count) {
 	case K_SHIFT_CTRL_TAB:
 		return LineEdit::Key(K_TAB, count);
 	case K_ENTER:
-		IndentEnter(count);
+		IndentInsert('\n', count);
 		return true;
 	}
 	bool sel = code & K_SHIFT;
@@ -985,7 +840,7 @@ bool CodeEditor::Key(dword code, int count) {
 			}
 		}
 		if(code >= 32 && code < 128 && count == 1) {
-			IndentInsert(code);
+			IndentInsert(code, 1);
 			return true;
 		}
 		if(code == 9 && IsSelection())
@@ -1061,10 +916,6 @@ CodeEditor::CodeEditor() {
 	bar.WhenAnnotationRightClick = Proxy(WhenAnnotationRightClick);
 	Highlight(HIGHLIGHT_NONE);
 	barline = true;
-	thousands_separator = true;
-	indent_spaces = false;
-	indent_amount = GetTabSize();
-	no_parenthesis_indent = false;
 	sb.WithSizeGrip();
 	DefaultHlStyles();
 	sb.y.NoAutoHide();

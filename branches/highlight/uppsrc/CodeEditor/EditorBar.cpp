@@ -67,9 +67,8 @@ void EditorBar::Paint(Draw& w)
 	int y = 0;
 	int i = editor->GetScrollPos().y;
 	int cy = GetSize().cy;
-	bool hi_if = (hilite_if_endif && (editor->highlight == CodeEditor::HIGHLIGHT_CPP
-		|| editor->highlight == CodeEditor::HIGHLIGHT_CS
-		|| editor->highlight == CodeEditor::HIGHLIGHT_JAVA));
+	String hl = editor.GetHighlight();
+	bool hi_if = (hilite_if_endif && findarg(hl, "cpp", "cs", "java") >= 0);
 	Vector<IfState> previf;
 	if(hi_if)
 		previf <<= editor->GetIfStack(i);
@@ -113,20 +112,20 @@ void EditorBar::Paint(Draw& w)
 				char n = (dif < nifl ? nextif[dif].state : 0);
 				int wd = min(2 * (dif + 1), sz.cx);
 				int x = sz.cx - wd;
-				Color cn = SyntaxState::IfColor(n);
+				Color cn = EditorSyntax::IfColor(n);
 				if(p == n)
 					w.DrawRect(x, y, 1, fy, cn);
 				else {
-					Color cp = SyntaxState::IfColor(p);
+					Color cp = EditorSyntax::IfColor(p);
 					w.DrawRect(x, y, 1, hy, cp);
 					w.DrawRect(x, y + hy, wd, 1, Nvl(cn, cp));
 					w.DrawRect(x, y + hy, 1, fy - hy, cn);
 					if(--dif >= 0) {
 						x = sz.cx - min(2 * (dif + 1), sz.cx);
 						if(!p)
-							w.DrawRect(x, y, 1, hy, SyntaxState::IfColor(dif < pifl ? previf[dif].state : 0));
+							w.DrawRect(x, y, 1, hy, EditorSyntax::IfColor(dif < pifl ? previf[dif].state : 0));
 						if(!n)
-							w.DrawRect(x, y + hy, 1, fy - hy, SyntaxState::IfColor(dif < nifl ? nextif[dif].state : 0));
+							w.DrawRect(x, y + hy, 1, fy - hy, EditorSyntax::IfColor(dif < nifl ? nextif[dif].state : 0));
 					}
 				}
 			}

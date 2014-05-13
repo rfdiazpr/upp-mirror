@@ -67,7 +67,7 @@ void EditorBar::Paint(Draw& w)
 	int y = 0;
 	int i = editor->GetScrollPos().y;
 	int cy = GetSize().cy;
-	String hl = editor.GetHighlight();
+	String hl = editor->GetHighlight();
 	bool hi_if = (hilite_if_endif && findarg(hl, "cpp", "cs", "java") >= 0);
 	Vector<IfState> previf;
 	if(hi_if)

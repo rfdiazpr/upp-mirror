@@ -19,6 +19,7 @@ file
 	CInit.cpp,
 	CHighlight.cpp,
 	CLogic.cpp,
+	CRegister.icpp,
 	Editor readonly separator,
 	EditorBar.cpp,
 	FindReplace.cpp,

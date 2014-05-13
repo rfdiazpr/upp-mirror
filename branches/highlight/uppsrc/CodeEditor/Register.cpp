@@ -2,17 +2,18 @@
 
 NAMESPACE_UPP
 
-ArrayMap<String, SyntaxDef>& EditorSyntax::defs()
+ArrayMap<String, EditorSyntax::SyntaxDef>& EditorSyntax::defs()
 {
 	static ArrayMap<String, SyntaxDef> d;
 	return d;
 }
 
-void EditorSyntax::Register(const char *id, Gate1<One<EditorSyntax>&> factory, const char *exts, const char *description)
+void EditorSyntax::Register(const char *id, Callback1<One<EditorSyntax>&> factory,
+                            const char *exts, const char *description)
 {
 	SyntaxDef& f = defs().GetAdd(id);
 	f.factory = factory;
-	f.exts = exts;
+	f.patterns = exts;
 	f.description = description;
 }
 
@@ -27,8 +28,12 @@ One<EditorSyntax> EditorSyntax::Create(const char *id)
 	return s;
 }
 
-String EditorSyntax::GetSyntaxForExtension(const char *ext)
+String EditorSyntax::GetSyntaxForFilename(const char *fn)
 {
+	ArrayMap<String, SyntaxDef>& d = defs();
+	for(int i = 0; i < d.GetCount(); i++)
+		if(PatternMatchMulti(d[i].patterns, fn))
+			return d.GetKey(i);
 	return Null;
 }
 

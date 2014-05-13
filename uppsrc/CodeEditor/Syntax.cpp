@@ -50,4 +50,6 @@ Color EditorSyntax::IfColor(char c)
 	}
 }
 
+EditorSyntax::~EditorSyntax() {}
+
 END_UPP_NAMESPACE

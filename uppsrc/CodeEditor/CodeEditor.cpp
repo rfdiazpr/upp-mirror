@@ -14,7 +14,6 @@ One<EditorSyntax> CodeEditor::GetSyntax(int line)
 {
 	CTIMING("GetSyntax");
 	One<EditorSyntax> syntax = EditorSyntax::Create(highlight);
-	syntax.Create();
 	int ln = 0;
 	for(int i = 0; i < __countof(syntax_cache); i++)
 		if(line >= syntax_cache[i].line && syntax_cache[i].line > 0) {
@@ -41,7 +40,7 @@ One<EditorSyntax> CodeEditor::GetSyntax(int line)
 	return pick(syntax);
 }
 
-void CodeEditor::Highlight(int h)
+void CodeEditor::Highlight(const String& h)
 {
 	highlight = h;
 	SetColor(LineEdit::INK_NORMAL, hl_style[HighlightSetup::INK_NORMAL].color);
@@ -914,7 +913,7 @@ CodeEditor::CodeEditor() {
 	bar.WhenAnnotationMove = Proxy(WhenAnnotationMove);
 	bar.WhenAnnotationClick = Proxy(WhenAnnotationClick);
 	bar.WhenAnnotationRightClick = Proxy(WhenAnnotationRightClick);
-	Highlight(HIGHLIGHT_NONE);
+	Highlight(Null);
 	barline = true;
 	sb.WithSizeGrip();
 	DefaultHlStyles();

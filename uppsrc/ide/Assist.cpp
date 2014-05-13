@@ -717,10 +717,10 @@ bool AssistEditor::InCode()
 {
 	int pos = GetCursor();
 	int line = GetLinePos(pos);
-	One<SyntaxState> st = GetSyntax(line);
+	One<EditorSyntax> st = GetSyntax(line);
 	WString l = GetWLine(line);
 	st->ScanSyntax(l, ~l + pos, line, GetTabSize());
-	return !st->IsComment() && !st->IsString() && !st->IsLineComment();
+	return st->CanAssist();
 }
 
 bool AssistEditor::Key(dword key, int count)

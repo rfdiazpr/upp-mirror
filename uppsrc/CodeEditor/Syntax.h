@@ -86,9 +86,9 @@ public:
 
 class EditorSyntax : public HighlightSetup { // Inheriting to make static members available
 	struct SyntaxDef {
-		Gate1<One<EditorSyntax>&> factory;
-		String                    exts;
-		String                    description;
+		Callback1<One<EditorSyntax>&> factory;
+		String                        patterns;
+		String                        description;
 	};
 	
 	static ArrayMap<String, SyntaxDef>& defs();
@@ -102,6 +102,7 @@ public:
 	virtual bool            CanAssist() const;
 	virtual void            Highlight(CodeEditor& editor, int line, Vector<LineEdit::Highlight>& hl, int pos);
 	virtual Vector<IfState> PickIfStack();
+	virtual ~EditorSyntax();
 
 	static Color IfColor(char ifstate);
 
@@ -110,13 +111,16 @@ public:
 
 	EditorSyntax()                         { Clear(); }
 
-	static void Register(const char *id, Gate1<One<EditorSyntax>&> factory,
+	static void Register(const char *id, Callback1<One<EditorSyntax>&> factory,
 	                     const char *exts, const char *description);
 	static One<EditorSyntax> Create(const char *id);
-	static String            GetSyntaxForExtension(const char *ext);
+	static String            GetSyntaxForFilename(const char *fn);
+	static int               GetSyntaxCount()             { return defs().GetCount(); }
+	static String            GetSyntax(int i)             { return defs().GetKey(i); }
+	static String            GetSyntaxDescription(int i)  { return defs()[i].description; }
 };
 
-class CSyntax : public EditorSyntax {
+class CSyntax : public EditorSyntax { // Curly braces languages (C++, Java, C#, Javascript...) common support
 	bool        comment;       // we are in /* */ block comment
 	bool        linecomment;   // we are in // line comment (because it can be continued by '\')
 	bool        string;        // we are in string (becase it can be continued by '\')

@@ -1,0 +1,36 @@
+description "The source files edit, derived from CtrlLib's LineEdit\377";
+
+optimize_speed;
+
+uses
+	CtrlLib;
+
+file
+	CodeEditor.h,
+	Syntax readonly separator,
+	Syntax.h,
+	hl_color.i,
+	Register.cpp,
+	HighlightOut.cpp,
+	Syntax.cpp,
+	Style.cpp,
+	CSyntax readonly separator,
+	CSyntax.h,
+	CSyntax.cpp,
+	CInit.cpp,
+	CHighlight.cpp,
+	CLogic.cpp,
+	CRegister.icpp,
+	TagSyntax readonly separator,
+	TagSyntax.h,
+	TagSyntax.cpp,
+	Editor readonly separator,
+	EditorBar.cpp,
+	FindReplace.cpp,
+	Lang.cpp,
+	CodeEditor.cpp,
+	CodeEditor.lay,
+	CodeEditor.iml,
+	Info readonly separator,
+	Copying;
+

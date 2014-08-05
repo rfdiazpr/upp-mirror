@@ -104,7 +104,7 @@ bool Pdb::Create(One<Host> local, const String& exefile, const String& cmdline)
 	Buffer<char> env(local->GetEnvironment().GetCount() + 1);
 	memcpy(env, ~local->GetEnvironment(), local->GetEnvironment().GetCount() + 1);
 	bool h = CreateProcess(exefile, cmd, NULL, NULL, TRUE,
-	                       NORMAL_PRIORITY_CLASS|CREATE_NEW_CONSOLE|DEBUG_ONLY_THIS_PROCESS|DEBUG_PROCESS,
+	                       /*NORMAL_PRIORITY_CLASS|CREATE_NEW_CONSOLE|*/DEBUG_ONLY_THIS_PROCESS/*|DEBUG_PROCESS*/,
 	                       ~env, NULL, &si, &pi);
 	if(!h) {
 		Exclamation("Error creating process&[* " + DeQtf(exefile) + "]&" +
@@ -112,6 +112,13 @@ bool Pdb::Create(One<Host> local, const String& exefile, const String& cmdline)
 		return false;
 	}
 	hProcess = pi.hProcess;
+
+#ifdef CPU_64
+	BOOL _64;
+	win64 = IsWow64Process(hProcess, &_64) && !_64;
+	DDUMP(win64);
+#endif
+	
 	CloseHandle(pi.hThread);
 
 	IdeSetBottom(*this);
@@ -133,7 +140,6 @@ bool Pdb::Create(One<Host> local, const String& exefile, const String& cmdline)
 	running = true;
 
 	RunToException();
-//	Sync();
 
 	return !terminated;
 }
@@ -160,6 +166,7 @@ void Pdb::SerializeSession(Stream& s)
 
 Pdb::Pdb()
 {
+	hWnd = NULL;
 	hProcess = INVALID_HANDLE_VALUE;
 
 	CtrlLayout(regs);

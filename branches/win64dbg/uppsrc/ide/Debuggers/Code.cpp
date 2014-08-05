@@ -2,7 +2,7 @@
 
 #ifdef COMPILER_MSC
 
-#define LLOG(x) // LOG(x)
+#define LLOG(x)  LOG(x)
 
 int Pdb::Disassemble(adr_t ip)
 {
@@ -16,7 +16,7 @@ int Pdb::Disassemble(adr_t ip)
 			break;
 		code[i] = q;
 	}
-	int sz = NDisassemble(out, code, ip);
+	int sz = NDisassemble(out, code, ip, win64);
 	if(sz > i)
 		return -1;
 	disas.Add(ip, out, Null);
@@ -44,41 +44,53 @@ bool Pdb::IsValidFrame(adr_t eip)
 	return false;
 }
 
+adr_t Pdb::GetIP()
+{
+#ifdef CPU_64
+	if(win64)
+		return threads.Get((int)~threadlist).context64.Rip;
+#endif
+	return threads.Get((int)~threadlist).context32.Eip;
+}
+
+adr_t Pdb::GetBP()
+{
+#ifdef CPU_64
+	if(win64)
+		return threads.Get((int)~threadlist).context64.Rbp;
+#endif
+	return threads.Get((int)~threadlist).context32.Ebp;
+}
+
 void Pdb::Sync0()
 {
 	stop = false;
-	const CONTEXT& context = threads.Get((int)~threadlist).context;
-#ifdef CPU_32
-	adr_t eip = context.Eip;
-	adr_t ebp = context.Ebp;
-#else
-	adr_t eip = context.Rip;
-	adr_t ebp = context.Rbp;
-#endif
+	adr_t ip = GetIP();
+	adr_t bp = GetBP();
 	adr_t spmax = threads.Get(event.dwThreadId).sp;
 	framelist.Clear();
 	frame.Clear();
 	int ndx = 0;
-	FnInfo fn = GetFnInfo(eip);
+	FnInfo fn = GetFnInfo(ip);
 	int c = -1;
-	for(;;) {
+	for(;;) { // Scan through stack frames
 		Frame& f = frame.Add();
-		f.reip = eip;
-		f.rebp = ebp;
+		f.reip = ip;
+		f.rebp = bp;
 		f.fn = fn;
 		String r;
 		if(IsNull(fn.name)) {
 			r = Sprintf("0x%08x", f.reip);
 			for(int i = 0; i < module.GetCount(); i++) {
 				const ModuleInfo& f = module[i];
-				if(eip >= f.base && eip < f.base + f.size) {
+				if(ip >= f.base && ip < f.base + f.size) {
 					r << " (" << GetFileName(f.path) << ")";
 					break;
 				}
 			}
 		}
 		else {
-			GetLocals(eip, ebp, f.param, f.local);
+			GetLocals(ip, bp, f.param, f.local);
 			r = fn.name;
 			r << '(';
 			for(int i = 0; i < f.param.GetCount(); i++) {
@@ -93,22 +105,22 @@ void Pdb::Sync0()
 		framelist.Add(frame.GetCount() - 1, r);
 		int q = 0;
 		for(;;) {
-			if(ebp > spmax || ++q > 1024 * 64)
+			if(bp > spmax || ++q > 1024 * 64)
 				goto end;
-			adr_t neip, nebp;
-			if(!Copy(ebp, &nebp, 4))
+			adr_t nip, nbp;
+			if(!Copy(bp, &nbp, 4))
 				goto end;
-			if(!Copy(ebp + 4, &neip, 4))
+			if(!Copy(bp + 4, &nip, 4))
 				goto end;
-			if(nebp >= ebp && nebp < spmax && IsValidFrame(neip)) {
-				fn = GetFnInfo(neip);
+			if(nbp >= bp && nbp < spmax && IsValidFrame(nip)) {
+				fn = GetFnInfo(nip);
 				if(!IsNull(fn.name)) {
-					eip = neip;
-					ebp = nebp;
+					ip = nip;
+					bp = nbp;
 					break;
 				}
 			}
-			ebp += 4;
+			bp += 4;
 		}
 	}
 end:
@@ -171,26 +183,19 @@ void Pdb::SetFrame()
 		}
 		disas.SetCursor(f.reip);
 		disas.SetIp(f.reip, ptrimg);
-		const CONTEXT& context = threads.Get((int)~threadlist).context;
-		#ifdef CPU_32
-		Reg(regs.eax, context.Eax);
-		Reg(regs.ebx, context.Ebx);
-		Reg(regs.ecx, context.Ecx);
-		Reg(regs.edx, context.Edx);
-		Reg(regs.esi, context.Esi);
-		Reg(regs.edi, context.Edi);
-		Reg(regs.ebp, context.Ebp);
-		Reg(regs.esp, context.Esp);
-		#else
-		Reg(regs.eax, context.Rax);
-		Reg(regs.ebx, context.Rbx);
-		Reg(regs.ecx, context.Rcx);
-		Reg(regs.edx, context.Rdx);
-		Reg(regs.esi, context.Rsi);
-		Reg(regs.edi, context.Rdi);
-		Reg(regs.ebp, context.Rbp);
-		Reg(regs.esp, context.Rsp);
-		#endif
+	
+//TODO: Fix, refactor this
+#ifdef CPU_32
+		const CONTEXT& context32 = threads.Get((int)~threadlist).context32;
+		Reg(regs.eax, context32.Eax);
+		Reg(regs.ebx, context32.Ebx);
+		Reg(regs.ecx, context32.Ecx);
+		Reg(regs.edx, context32.Edx);
+		Reg(regs.esi, context32.Esi);
+		Reg(regs.edi, context32.Edi);
+		Reg(regs.ebp, context32.Ebp);
+		Reg(regs.esp, context32.Esp);
+#endif
 		if(df)
 			disas.SetFocus();
 		Data();
@@ -230,16 +235,13 @@ adr_t Pdb::CursorAdr()
 
 bool Pdb::RunTo()
 {
+	LLOG("== RunTo");
 	adr_t a = CursorAdr();
 	if(!a)
 		return false;
 	if(!SingleStep())
 		return false;
-		#ifdef CPU_32
-		if(context.Eip != a) {
-		#else
-		if(context.Rip != a) {
-		#endif
+	if(GetIP() != a) {
 		SetBreakpoints();
 		AddBp(a);
 		if(!Continue())
@@ -251,10 +253,14 @@ bool Pdb::RunTo()
 
 void Pdb::Run()
 {
+	LLOG("== Run");
 	SingleStep();
 	SetBreakpoints();
-	if(!Continue())
+	if(!Continue()) {
+		DLOG("Run: !Continue");
 		return;
+	}
+	DLOG("Run: Sync");
 	Sync();
 }
 
@@ -263,11 +269,12 @@ void Pdb::SetIp()
 	adr_t a = CursorAdr();
 	if(!a)
 		return;
-	#ifdef CPU_32
-	context.Eip = a;
-	#else
-	context.Rip = a;
-	#endif
+#ifdef CPU_64
+	if(win64)
+		context64.Rip = a;
+	else
+#endif
+		context32.Eip = (DWORD)a;
 	WriteContext();
 	frame[0].reip = a;
 	framelist <<= 0;
@@ -276,44 +283,34 @@ void Pdb::SetIp()
 
 bool Pdb::Step(bool over)
 {
+	LLOG("== Step over: " << over);
 	TimeStop ts;
-	#ifdef CPU_32
-	byte b = Byte(context.Eip);
-	byte b1 = (Byte(context.Eip + 1) >> 3) & 7;
-	#else
-	byte b = Byte(context.Rip);
-	byte b1 = (Byte(context.Rip + 1) >> 3) & 7;
-	#endif
-	if(b == 0xe8 || b == 0x9a || b == 0xff && (b1 == 2 || b1 == 3)) {
+	adr_t ip = GetIP();
+	adr_t bp = GetBP();
+	byte b = Byte(ip);
+	byte b1 = (Byte(ip + 1) >> 3) & 7;
+	if(b == 0xe8 || b == 0x9a || b == 0xff && (b1 == 2 || b1 == 3)) { // Various CALL forms
 		if(over) {
 			int l = 5;
 			if(b != 0xe8) {
 				char out[256];
 				byte code[32];
 				memset(code, 0, 32);
+				adr_t ip = GetIP();
 				for(int i = 0; i < 32; i++) {
-					#ifdef CPU_32
-					int q = Byte(context.Eip + i);
-					#else
-					int q = Byte(context.Rip + i);
-					#endif
+					int q = Byte(ip + i);
 					if(q < 0)
 						break;
 					code[i] = q;
 				}
-				#ifdef CPU_32
-				l = NDisassemble(out, code, context.Eip);
-				#else
-				l = NDisassemble(out, code, context.Rip);
-				#endif
+#ifdef CPU_64
+				l = NDisassemble(out, code, GetIP(), win64); // TODO Win64 offset?!
+#else
+				l = NDisassemble(out, code, GetIP());
+#endif
 			}
-			#ifdef CPU_32
-			adr_t bp0 = context.Eip;
-			adr_t bp = context.Eip + l;
-			#else
-			adr_t bp0 = context.Rip;
-			adr_t bp = context.Rip + l;
-			#endif
+			adr_t bp0 = GetIP();
+			adr_t bp = bp0 + l;
 			int lvl = 0;
 			Lock();
 			for(;;) {
@@ -331,18 +328,10 @@ bool Pdb::Step(bool over)
 					Unlock();
 					return false;
 				}
-				#ifdef CPU_32
-				if(context.Eip == bp0)
-				#else
-				if(context.Rip == bp0)
-				#endif
+				if(GetIP() == bp0)
 					lvl++;
 				else
-				#ifdef CPU_32
-				if(context.Eip == bp) {
-				#else
-				if(context.Rip == bp) {
-				#endif
+				if(GetIP() == bp) {
 					if(lvl <= 0) {
 						Unlock();
 						return true;
@@ -360,11 +349,7 @@ bool Pdb::Step(bool over)
 		else {
 			if(!SingleStep())
 				return false;
-			#ifdef CPU_32
-			byte b = Byte(context.Eip);
-			#else
-			byte b = Byte(context.Rip);
-			#endif
+			byte b = Byte(GetIP());
 			if(b == 0xeb || b == 0xe9)
 				return SingleStep();
 			return true;
@@ -376,11 +361,8 @@ bool Pdb::Step(bool over)
 
 void Pdb::Trace(bool over)
 {
-	#ifdef CPU_32
-	adr_t ip0 = context.Eip;
-	#else
-	adr_t ip0 = context.Rip;
-	#endif
+	LLOG("== Trace over: " << over);
+	adr_t ip0 = GetIP();
 	FilePos p0 = GetFilePos(ip0);
 	if(IsNull(p0.path) || disas.HasFocus()) {
 		if(!Step(over))
@@ -402,13 +384,9 @@ void Pdb::Trace(bool over)
 		if(!Step(over))
 			break;
 
-		#ifdef CPU_32
-		FilePos p = GetFilePos(context.Eip);
-		if(context.Eip < ip0 || p.path != p0.path || p.line != p0.line || stop) {
-		#else
-		FilePos p = GetFilePos(context.Rip);
-		if(context.Rip < ip0 || p.path != p0.path || p.line != p0.line || stop) {
-		#endif
+		adr_t ip = GetIP();
+		FilePos p = GetFilePos(ip);
+		if(ip < ip0 || p.path != p0.path || p.line != p0.line || stop) {
 			Sync();
 			break;
 		}
@@ -419,14 +397,12 @@ void Pdb::Trace(bool over)
 
 void Pdb::StepOut()
 {
+	LLOG("== StepOut");
 	Lock();
 	TimeStop ts;
 	for(;;) {
-		#ifdef CPU_32
-		if(Byte(context.Eip) == 0xc2 || Byte(context.Eip) == 0xc3) {
-		#else
-		if(Byte(context.Rip) == 0xc2 || Byte(context.Rip) == 0xc3) {
-		#endif
+		adr_t ip = GetIP();
+		if(Byte(ip) == 0xc2 || Byte(ip) == 0xc3) {
 			if(!SingleStep())
 				break;
 			Sync();

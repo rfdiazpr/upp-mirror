@@ -722,7 +722,8 @@ String GetErrorMessage(DWORD dwError) {
 }
 
 String GetLastErrorMessage() {
-	return GetErrorMessage(GetLastError());
+	int err_no = GetLastError();
+	return GetErrorMessage(err_no) + " [" + AsString(err_no) + "]";
 }
 
 #endif

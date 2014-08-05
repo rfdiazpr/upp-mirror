@@ -109,7 +109,7 @@ struct Pdb : Debugger, ParentCtrl {
 	};
 
 	struct Frame : Moveable<Frame> {
-		adr_t               reip, rebp;
+		adr_t                  reip, rebp;
 		FnInfo                 fn;
 		VectorMap<String, Val> param;
 		VectorMap<String, Val> local;
@@ -142,7 +142,14 @@ struct Pdb : Debugger, ParentCtrl {
 	struct Thread {
 		HANDLE  hThread;
 		adr_t   sp;
-		CONTEXT context;
+	#ifdef CPU_64
+		union {
+			CONTEXT context64;
+			WOW64_CONTEXT context32;
+		};
+	#else
+		CONTEXT context32;
+	#endif
 	};
 
 	int                      	lock;
@@ -157,12 +164,21 @@ struct Pdb : Debugger, ParentCtrl {
 	DEBUG_EVENT              	event;
 	HWND                     	hWnd;
 	VectorMap<adr_t, byte>      bp_set;
-	CONTEXT                  	context;
+
+#ifdef CPU_64
+	bool                        win64; // debugee is 64-bit
+	union {
+		CONTEXT context64;
+		WOW64_CONTEXT context32;
+	};
+#else
+	CONTEXT                  	context32;
+#endif
 
 	Index<adr_t>            	invalidpage;
 	VectorMap<adr_t, MemPg> 	mempage;
 
-	Index<adr_t>                 breakpoint;
+	Index<adr_t>                breakpoint;
 
 	ArrayMap<int, Type>     	type;
 
@@ -233,7 +249,10 @@ struct Pdb : Debugger, ParentCtrl {
 	void       SaveForeground();
 	void       RestoreForeground();
 
-	const CONTEXT& CurrentContext();
+	adr_t      GetIP();
+	adr_t      GetBP();
+
+//	const CONTEXT& CurrentContext();
 	void           WriteContext(dword cf = CONTEXT_CONTROL);
 
 // mem

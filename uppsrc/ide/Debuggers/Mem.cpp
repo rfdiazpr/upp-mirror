@@ -2,7 +2,7 @@
 
 #ifdef COMPILER_MSC
 
-#define LLOG(x) // LOG(x)
+#define LLOG(x)  LOG(x)
 
 int    Pdb::Byte(adr_t addr)
 {
@@ -20,7 +20,7 @@ int    Pdb::Byte(adr_t addr)
 		memcpy(mempage.Add(page).data, data, 1024);
 		return (byte)data[pos];
 	}
-	LLOG("ReadProcessMemory: " << GetLastErrorMessage());
+	LLOG("ReadProcessMemory " << Hex(addr) << ": " << GetLastErrorMessage());
 	invalidpage.Add(page);
 	return -1;
 }

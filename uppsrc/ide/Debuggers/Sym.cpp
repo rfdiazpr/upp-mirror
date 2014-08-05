@@ -2,7 +2,7 @@
 
 #ifdef COMPILER_MSC
 
-#define LLOG(x) // LOG(x)
+#define LLOG(x)  LOG(x)
 
 #ifdef _DEBUG
 char * SymTagAsString( DWORD symTag )
@@ -61,7 +61,7 @@ adr_t Pdb::GetAddress(FilePos p)
 	char h[MAX_PATH];
 	strcpy(h, p.path);
 	if(SymGetLineFromName(hProcess, NULL, h, p.line + 1, &dummy, &ln)) {
-		LLOG("GetAddress " << p.path << "(" << p.line << "): " << FormatIntHex(ln.Address));
+		LLOG("GetAddress " << p.path << "(" << p.line << "): " << Hex(ln.Address));
 		return ln.Address;
 	}
 	LLOG("GetAddress " << p.path << "(" << p.line << "): ??");
@@ -80,7 +80,7 @@ Pdb::FilePos Pdb::GetFilePos(adr_t address)
 		fp.path = ln.FileName;
 		fp.address = ln.Address;
 	}
-	LLOG("GetFilePos(" << FormatIntHex(address) << "): " << fp.path << ": " << fp.line);
+	LLOG("GetFilePos(" << Hex(address) << "): " << fp.path << ": " << fp.line);
 	return fp;
 }
 

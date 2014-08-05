@@ -9,7 +9,7 @@ file
 	lib/ndisasm readonly separator,
 	lib\Authors,
 	lib\compiler.h,
-	lib\disasm.c,
+	lib\disasm.c tabsize 8,
 	lib\disasm.h,
 	lib\exprlib.c,
 	lib\insns.h,

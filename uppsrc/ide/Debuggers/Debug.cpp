@@ -2,7 +2,14 @@
 
 #ifdef COMPILER_MSC
 
-#define LLOG(x)  //  DLOG(x)
+#define STATUS_WX86_CONTINUE             0x4000001D
+#define STATUS_WX86_SINGLE_STEP          0x4000001E
+#define STATUS_WX86_BREAKPOINT           0x4000001F
+#define STATUS_WX86_EXCEPTION_CONTINUE   0x40000020
+#define STATUS_WX86_EXCEPTION_LASTCHANCE 0x40000021
+#define STATUS_WX86_EXCEPTION_CHAIN      0x40000022
+
+#define LLOG(x)    DLOG(x)
 
 String Pdb::Hex(adr_t a)
 {
@@ -78,7 +85,7 @@ void Pdb::LoadModuleInfo()
 				f.path = of.path;
 				f.symbols = of.symbols;
 				of.symbols = false;
-				LLOG("Stable " << FormatIntHex(f.base) << " (" << Hex(f.size) << "): " << f.path);
+				LLOG("Stable " << Hex(f.base) << " (" << Hex(f.size) << "): " << f.path);
 			}
 			else {
 				char name[MAX_PATH];
@@ -87,7 +94,7 @@ void Pdb::LoadModuleInfo()
 					if(FileExists(ForceExt(f.path, ".pdb"))) {
 						adr_t w = (adr_t)SymLoadModule64(hProcess, NULL, name, 0, f.base, f.size);
 						if(w) {
-							LLOG("Loading symbols " << Hex(f.base) << '/' << hProcess << " returned base " << FormatIntHex(w));
+							LLOG("Loading symbols " << Hex(f.base) << '/' << hProcess << " returned base " << Hex(w));
 							f.symbols = true;
 						#if 0
 							TimeStop t;
@@ -108,6 +115,7 @@ void Pdb::LoadModuleInfo()
 bool Pdb::AddBp(adr_t address)
 {
 	LLOG("AddBp: " << Hex(address));
+	LLOG("AddBp: " << Hex((adr_t)(LPVOID) address));
 	if(bp_set.Find(address) >= 0)
 		return true;
 	byte prev;
@@ -118,7 +126,7 @@ bool Pdb::AddBp(adr_t address)
 	if(!WriteProcessMemory(hProcess, (LPVOID) address, &int3, 1, NULL))
 		return false;
 	LLOG("WriteProcessMemory OK");
-	FlushInstructionCache (hProcess, (LPCVOID)address, 1);
+//	FlushInstructionCache (hProcess, (LPCVOID)address, 1);
 	bp_set.Put(address, prev);
 	return true;
 }
@@ -180,15 +188,28 @@ void Pdb::AddThread(dword dwThreadId, HANDLE hThread)
 {
 	if(threads.Find(dwThreadId) >= 0)
 		return;
+	Thread& f = threads.GetAdd(dwThreadId);
+	// Retrive "base-level" stack-pointer, to have limit for stackwalks:
+#ifdef CPU_64
+	if(win64) {
+		CONTEXT ctx;
+		ctx.ContextFlags = CONTEXT_FULL;
+		if(!GetThreadContext(hThread, &ctx))
+			DLOG("GetThreadContext failed: " << GetLastErrorMessage());
+		f.sp = ctx.Rsp;
+	}
+	else {
+		WOW64_CONTEXT ctx;
+		ctx.ContextFlags = CONTEXT_FULL;
+		Wow64GetThreadContext(hThread, &ctx);
+		f.sp = ctx.Esp;
+	}
+#else
 	CONTEXT ctx;
 	ctx.ContextFlags = CONTEXT_FULL;
 	GetThreadContext(hThread, &ctx);
-	Thread& f = threads.GetAdd(dwThreadId);
-	#ifdef CPU_32
 	f.sp = ctx.Esp;
-	#else
-	f.sp = ctx.Rsp;
-	#endif
+#endif
 	f.hThread = hThread;
 	LLOG("Adding thread " << dwThreadId << ", Thread SP: " << Hex(f.sp) << ", handle: " << FormatIntHex((dword)(hThread)));
 }
@@ -248,7 +269,7 @@ void Pdb::SaveForeground()
 		GetWindowThreadProcessId(hwnd, &pid);
 		if(pid == processid) {
 			hWnd = hwnd;
-			LLOG("Saved foreground window: " << FormatIntHex((adr_t)hWnd));
+			LLOG("Saved foreground window: " << Hex((adr_t)hWnd));
 		}
 	}
 }
@@ -275,21 +296,36 @@ bool Pdb::RunToException()
 			running = false;
 			switch(event.dwDebugEventCode) {
 			case EXCEPTION_DEBUG_EVENT: {
+				LLOG("EXCEPTION_DEBUG_EVENT");
+				LLOG("Exception: " << FormatIntHex(event.u.Exception.ExceptionRecord.ExceptionCode) <<
+				     " at: " << FormatIntHex(event.u.Exception.ExceptionRecord.ExceptionAddress) <<
+				     " first: " << event.u.Exception.dwFirstChance);
 				SaveForeground();
 				const EXCEPTION_RECORD& x = event.u.Exception.ExceptionRecord;
-				if(x.ExceptionCode != EXCEPTION_BREAKPOINT && x.ExceptionCode != EXCEPTION_SINGLE_STEP) {
+				DDUMP(Hex(x.ExceptionCode));
+				DDUMP(findarg(x.ExceptionCode, EXCEPTION_BREAKPOINT, EXCEPTION_SINGLE_STEP,
+				              STATUS_WX86_BREAKPOINT, STATUS_WX86_SINGLE_STEP));
+				if(findarg(x.ExceptionCode, EXCEPTION_BREAKPOINT, EXCEPTION_SINGLE_STEP,
+				                            STATUS_WX86_BREAKPOINT, STATUS_WX86_SINGLE_STEP) < 0)
+				{
+					DLOG("EXCEPTION AAAA");
 					if(event.u.Exception.dwFirstChance) {
 						LLOG("First chance " << FormatIntHex(x.ExceptionCode));
+
+						__declspec( align(64) ) CONTEXT context;
+						if(!GetThreadContext(threads[0].hThread, &context))
+							DLOG("GetThreadContext failed " << GetLastErrorMessage());
+						DDUMP(Hex(context.Rip));
 						break;
 					}
-					String desc = Format("Exception: [* %X] at [* %08X]&",
+					String desc = Format("Exception: [* %lX] at [* %08llX]&",
 					                     (int64)x.ExceptionCode, (int64)x.ExceptionAddress);
 					for(int i = 0; i < __countof(ex_desc); i++)
 						if(ex_desc[i].code == x.ExceptionCode)
 							desc << "[* " << DeQtf(ex_desc[i].text) << "]&";
 					if(x.ExceptionCode == EXCEPTION_ACCESS_VIOLATION) {
 						desc << (x.ExceptionInformation[0] ? "[*@3 writing]" : "[*@4 reading]");
-						desc << Format(" at [* %08X]", (int)x.ExceptionInformation[1]);
+						desc << Format(" at [* %08llX]", (int64)x.ExceptionInformation[1]);
 					}
 					PromptOK(desc);// better owner!!!
 				}
@@ -306,24 +342,56 @@ bool Pdb::RunToException()
 					LoadModuleInfo();
 				LLOG("event.dwThreadId = " << event.dwThreadId);
 				for(int i = 0; i < threads.GetCount(); i++) {
-					CONTEXT& c = threads[i].context;
+				#ifdef CPU_64
+					if(win64) {
+						LLOG("Reading context64 " << i);
+						CONTEXT& c = threads[i].context64;
+						c.ContextFlags = CONTEXT_ALL;
+						__declspec( align(64) ) CONTEXT context;
+						if(!GetThreadContext(threads[i].hThread, &context))
+							DLOG("GetThreadContext failed " << GetLastErrorMessage());
+						DDUMP(Hex(context.Rip));
+						c = context;
+						DDUMP(Hex(c.Rip));
+						if(event.dwThreadId == threads.GetKey(i)) {
+							LLOG("Setting current context");
+							context64 = c;
+						}
+					}
+					else {
+						LLOG("Reading context32 " << i);
+						WOW64_CONTEXT& c = threads[i].context32;
+						c.ContextFlags = CONTEXT_FULL;
+						if(!Wow64GetThreadContext(threads[i].hThread, &c)) {
+							DLOG("Wow64GetThreadContext failed: " << GetLastErrorMessage());
+						}
+						if(event.dwThreadId == threads.GetKey(i)) {
+							LLOG("Setting current context");
+							context32 = c;
+						}
+					}
+				#else
+					CONTEXT& c = threads[i].context32;
 					c.ContextFlags = CONTEXT_FULL;
 					GetThreadContext(threads[i].hThread, &c);
 					if(event.dwThreadId == threads.GetKey(i))
-						context = c;
+						context32 = c;
+				#endif
 				}
-				if(event.u.Exception.ExceptionRecord.ExceptionCode == EXCEPTION_BREAKPOINT
-				&& bp_set.Find((adr_t)event.u.Exception.ExceptionRecord.ExceptionAddress) >= 0)
-					#ifdef CPU_32
-					context.Eip = (adr_t)event.u.Exception.ExceptionRecord.ExceptionAddress;
-					#else
-					context.Rip = (adr_t)event.u.Exception.ExceptionRecord.ExceptionAddress;
-					#endif
+				DDUMP(Hex((adr_t)event.u.Exception.ExceptionRecord.ExceptionAddress));
+				DDUMP(Hex(context64.Rip));
+				if(findarg(event.u.Exception.ExceptionRecord.ExceptionCode, EXCEPTION_BREAKPOINT, STATUS_WX86_BREAKPOINT) >= 0
+				   && bp_set.Find((adr_t)event.u.Exception.ExceptionRecord.ExceptionAddress) >= 0)
+				   // We have stopped at breakpoint, need to move address back for retry
+			#ifdef CPU_64
+					if(win64)
+						context64.Rip = (adr_t)event.u.Exception.ExceptionRecord.ExceptionAddress;
+					else
+			#endif
+						context32.Eip = (DWORD)event.u.Exception.ExceptionRecord.ExceptionAddress;
 
+				DDUMP(Hex(context64.Rip));
 				RemoveBp();
-				LLOG("Exception: " << FormatIntHex(event.u.Exception.ExceptionRecord.ExceptionCode) <<
-				     " at: " << FormatIntHex(event.u.Exception.ExceptionRecord.ExceptionAddress) <<
-				     " first: " << event.u.Exception.dwFirstChance);
 				return true;
 			}
 			case CREATE_THREAD_DEBUG_EVENT:
@@ -393,34 +461,62 @@ bool Pdb::RunToException()
 	}
 }
 
+/*
 const CONTEXT& Pdb::CurrentContext()
 {
 	return threads.Get((int)~threadlist).context;
 }
+*/
 
 void Pdb::WriteContext(dword cf)
 {
-	context.ContextFlags = cf;
+	DLOG("WriteContext");
 	HANDLE hThread = threads.Get(event.dwThreadId).hThread;
-	SetThreadContext(hThread, &context);
+#if CPU_64
+	if(win64) {
+		context64.ContextFlags = CONTEXT_ALL;
+		__declspec( align(64) ) CONTEXT context; // CONTEXT has special alignment!
+		memcpy(&context, &context64, sizeof(CONTEXT));
+		DDUMP(Hex(context.Rip));
+		if(!SetThreadContext(hThread, &context))
+			DLOG("Failed to set context: " << GetLastErrorMessage() << " " << GetLastError());
+	}
+	else {
+		context32.ContextFlags = cf;
+		Wow64SetThreadContext(hThread, &context32);
+	}
+#else
+	SetThreadContext(hThread, &context32);
+#endif
 }
 
 bool Pdb::SingleStep()
 {
 	LLOG("SINGLE STEP 0");
-	context.EFlags |= 0x100;
+#if CPU_64
+	if(win64)
+		context64.EFlags |= 0x100;
+	else
+#endif
+		context32.EFlags |= 0x100;
 	WriteContext();
 	running = true;
 	ContinueDebugEvent(event.dwProcessId, event.dwThreadId, DBG_CONTINUE);
 	if(!RunToException())
 		return false;
-	context.EFlags &= ~0x100;
+#if CPU_64
+	if(win64)
+		context64.EFlags &= ~0x100;
+	else
+#endif
+		context32.EFlags &= ~0x100;
 	WriteContext();
 	return true;
 }
 
 bool Pdb::Continue()
 {
+	LLOG("** Continue");
 	running = true;
 	ContinueDebugEvent(event.dwProcessId, event.dwThreadId, DBG_CONTINUE);
 	return RunToException();
@@ -433,7 +529,7 @@ void Pdb::SetBreakpoints()
 		AddBp(breakpoint[i]);
 }
 
-void Pdb::BreakRunning()
+void Pdb::BreakRunning() //TODO: Fix in wow64?
 {
 	stop = true;
 	if(running) {

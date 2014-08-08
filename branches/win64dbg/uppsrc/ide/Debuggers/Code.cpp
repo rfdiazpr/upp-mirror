@@ -271,10 +271,10 @@ void Pdb::SetIp()
 		return;
 #ifdef CPU_64
 	if(win64)
-		context64.Rip = a;
+		context.context64.Rip = a;
 	else
 #endif
-		context32.Eip = (DWORD)a;
+		context.context32.Eip = (DWORD)a;
 	WriteContext();
 	frame[0].reip = a;
 	framelist <<= 0;

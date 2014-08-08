@@ -184,31 +184,68 @@ void Pdb::Unlock()
 	}
 }
 
-void Pdb::AddThread(dword dwThreadId, HANDLE hThread)
+Pdb::Context Pdb::ReadContext(HANDLE hThread)
 {
-	if(threads.Find(dwThreadId) >= 0)
-		return;
-	Thread& f = threads.GetAdd(dwThreadId);
-	// Retrive "base-level" stack-pointer, to have limit for stackwalks:
+	Context r;
 #ifdef CPU_64
 	if(win64) {
 		CONTEXT ctx;
 		ctx.ContextFlags = CONTEXT_FULL;
 		if(!GetThreadContext(hThread, &ctx))
 			DLOG("GetThreadContext failed: " << GetLastErrorMessage());
-		f.sp = ctx.Rsp;
+		memcpy(&r.context64, &ctx, sizeof(CONTEXT));
 	}
 	else {
 		WOW64_CONTEXT ctx;
 		ctx.ContextFlags = CONTEXT_FULL;
 		Wow64GetThreadContext(hThread, &ctx);
-		f.sp = ctx.Esp;
+		memcpy(&r.context32, &ctx, sizeof(WOW64_CONTEXT));
 	}
 #else
 	CONTEXT ctx;
 	ctx.ContextFlags = CONTEXT_FULL;
 	GetThreadContext(hThread, &ctx);
-	f.sp = ctx.Esp;
+	memcpy(&r.context32, &ctx, sizeof(CONTEXT));
+#endif
+	return r;
+}
+
+void Pdb::WriteContext(HANDLE hThread, Context& context)
+{
+#ifdef CPU_64
+	if(win64) {
+		CONTEXT ctx;
+		memcpy(&ctx, &context.context64, sizeof(CONTEXT));
+		ctx.ContextFlags = CONTEXT_FULL;
+		if(!SetThreadContext(hThread, &ctx))
+			DLOG("SetThreadContext failed: " << GetLastErrorMessage());
+		_DBG_	if(GetThreadContext(hThread, &ctx)) DDUMP(Hex(ctx.Rip));
+	}
+	else {
+		WOW64_CONTEXT ctx;
+		memcpy(&ctx, &context.context32, sizeof(WOW64_CONTEXT));
+		ctx.ContextFlags = CONTEXT_FULL;
+		Wow64SetThreadContext(hThread, &ctx);
+	}
+#else
+	CONTEXT ctx;
+	memcpy(&ctx, &context.context32, sizeof(WOW64_CONTEXT));
+	ctx.ContextFlags = CONTEXT_FULL;
+	SetThreadContext(hThread, &ctx);
+#endif
+}
+
+void Pdb::AddThread(dword dwThreadId, HANDLE hThread)
+{
+	if(threads.Find(dwThreadId) >= 0)
+		return;
+	Thread& f = threads.GetAdd(dwThreadId);
+	// Retrive "base-level" stack-pointer, to have limit for stackwalks:
+	Context c = ReadContext(hThread);
+#ifdef CPU_64
+	f.sp = win64 ? c.context64.Rsp : c.context32.Esp;
+#else
+	f.sp = c.context32.Esp;
 #endif
 	f.hThread = hThread;
 	LLOG("Adding thread " << dwThreadId << ", Thread SP: " << Hex(f.sp) << ", handle: " << FormatIntHex((dword)(hThread)));
@@ -308,14 +345,11 @@ bool Pdb::RunToException()
 				if(findarg(x.ExceptionCode, EXCEPTION_BREAKPOINT, EXCEPTION_SINGLE_STEP,
 				                            STATUS_WX86_BREAKPOINT, STATUS_WX86_SINGLE_STEP) < 0)
 				{
-					DLOG("EXCEPTION AAAA");
+					DLOG("EXCEPTION");
 					if(event.u.Exception.dwFirstChance) {
 						LLOG("First chance " << FormatIntHex(x.ExceptionCode));
-
-						__declspec( align(64) ) CONTEXT context;
-						if(!GetThreadContext(threads[0].hThread, &context))
-							DLOG("GetThreadContext failed " << GetLastErrorMessage());
-						DDUMP(Hex(context.Rip));
+						Context c = ReadContext(threads[0].hThread);
+						DDUMP(Hex(c.context64.Rip)); _DBG_
 						break;
 					}
 					String desc = Format("Exception: [* %lX] at [* %08llX]&",
@@ -342,55 +376,26 @@ bool Pdb::RunToException()
 					LoadModuleInfo();
 				LLOG("event.dwThreadId = " << event.dwThreadId);
 				for(int i = 0; i < threads.GetCount(); i++) {
-				#ifdef CPU_64
-					if(win64) {
-						LLOG("Reading context64 " << i);
-						CONTEXT& c = threads[i].context64;
-						c.ContextFlags = CONTEXT_ALL;
-						__declspec( align(64) ) CONTEXT context;
-						if(!GetThreadContext(threads[i].hThread, &context))
-							DLOG("GetThreadContext failed " << GetLastErrorMessage());
-						DDUMP(Hex(context.Rip));
-						c = context;
-						DDUMP(Hex(c.Rip));
-						if(event.dwThreadId == threads.GetKey(i)) {
-							LLOG("Setting current context");
-							context64 = c;
-						}
+					(Context&)threads[i] = ReadContext(threads[i].hThread);
+					DDUMP(Hex(threads[i].context64.Rip));
+					if(event.dwThreadId == threads.GetKey(i)) {
+						LLOG("Setting current context");
+						context = threads[i];
 					}
-					else {
-						LLOG("Reading context32 " << i);
-						WOW64_CONTEXT& c = threads[i].context32;
-						c.ContextFlags = CONTEXT_FULL;
-						if(!Wow64GetThreadContext(threads[i].hThread, &c)) {
-							DLOG("Wow64GetThreadContext failed: " << GetLastErrorMessage());
-						}
-						if(event.dwThreadId == threads.GetKey(i)) {
-							LLOG("Setting current context");
-							context32 = c;
-						}
-					}
-				#else
-					CONTEXT& c = threads[i].context32;
-					c.ContextFlags = CONTEXT_FULL;
-					GetThreadContext(threads[i].hThread, &c);
-					if(event.dwThreadId == threads.GetKey(i))
-						context32 = c;
-				#endif
 				}
 				DDUMP(Hex((adr_t)event.u.Exception.ExceptionRecord.ExceptionAddress));
-				DDUMP(Hex(context64.Rip));
+				DDUMP(Hex(context.context64.Rip));
 				if(findarg(event.u.Exception.ExceptionRecord.ExceptionCode, EXCEPTION_BREAKPOINT, STATUS_WX86_BREAKPOINT) >= 0
 				   && bp_set.Find((adr_t)event.u.Exception.ExceptionRecord.ExceptionAddress) >= 0)
 				   // We have stopped at breakpoint, need to move address back for retry
 			#ifdef CPU_64
 					if(win64)
-						context64.Rip = (adr_t)event.u.Exception.ExceptionRecord.ExceptionAddress;
+						context.context64.Rip = (adr_t)event.u.Exception.ExceptionRecord.ExceptionAddress;
 					else
 			#endif
-						context32.Eip = (DWORD)event.u.Exception.ExceptionRecord.ExceptionAddress;
+						context.context32.Eip = (DWORD)event.u.Exception.ExceptionRecord.ExceptionAddress;
 
-				DDUMP(Hex(context64.Rip));
+				DDUMP(Hex(context.context64.Rip));
 				RemoveBp();
 				return true;
 			}
@@ -471,23 +476,7 @@ const CONTEXT& Pdb::CurrentContext()
 void Pdb::WriteContext(dword cf)
 {
 	DLOG("WriteContext");
-	HANDLE hThread = threads.Get(event.dwThreadId).hThread;
-#if CPU_64
-	if(win64) {
-		context64.ContextFlags = CONTEXT_ALL;
-		__declspec( align(64) ) CONTEXT context; // CONTEXT has special alignment!
-		memcpy(&context, &context64, sizeof(CONTEXT));
-		DDUMP(Hex(context.Rip));
-		if(!SetThreadContext(hThread, &context))
-			DLOG("Failed to set context: " << GetLastErrorMessage() << " " << GetLastError());
-	}
-	else {
-		context32.ContextFlags = cf;
-		Wow64SetThreadContext(hThread, &context32);
-	}
-#else
-	SetThreadContext(hThread, &context32);
-#endif
+	WriteContext(threads.Get(event.dwThreadId).hThread, context);
 }
 
 bool Pdb::SingleStep()
@@ -495,10 +484,10 @@ bool Pdb::SingleStep()
 	LLOG("SINGLE STEP 0");
 #if CPU_64
 	if(win64)
-		context64.EFlags |= 0x100;
+		context.context64.EFlags |= 0x100;
 	else
 #endif
-		context32.EFlags |= 0x100;
+		context.context32.EFlags |= 0x100;
 	WriteContext();
 	running = true;
 	ContinueDebugEvent(event.dwProcessId, event.dwThreadId, DBG_CONTINUE);
@@ -506,10 +495,10 @@ bool Pdb::SingleStep()
 		return false;
 #if CPU_64
 	if(win64)
-		context64.EFlags &= ~0x100;
+		context.context64.EFlags &= ~0x100;
 	else
 #endif
-		context32.EFlags &= ~0x100;
+		context.context32.EFlags &= ~0x100;
 	WriteContext();
 	return true;
 }

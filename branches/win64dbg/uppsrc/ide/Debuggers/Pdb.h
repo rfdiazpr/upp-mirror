@@ -138,10 +138,8 @@ struct Pdb : Debugger, ParentCtrl {
 		virtual void Paint(Draw& w, const Rect& r, const Value& q,
 	                       Color ink, Color paper, dword style) const;
 	};
-
-	struct Thread {
-		HANDLE  hThread;
-		adr_t   sp;
+	
+	struct Context {
 	#ifdef CPU_64
 		union {
 			CONTEXT context64;
@@ -150,6 +148,11 @@ struct Pdb : Debugger, ParentCtrl {
 	#else
 		CONTEXT context32;
 	#endif
+	};
+
+	struct Thread : Context {
+		HANDLE  hThread;
+		adr_t   sp;
 	};
 
 	int                      	lock;
@@ -167,13 +170,8 @@ struct Pdb : Debugger, ParentCtrl {
 
 #ifdef CPU_64
 	bool                        win64; // debugee is 64-bit
-	union {
-		CONTEXT context64;
-		WOW64_CONTEXT context32;
-	};
-#else
-	CONTEXT                  	context32;
 #endif
+	Context                     context;
 
 	Index<adr_t>            	invalidpage;
 	VectorMap<adr_t, MemPg> 	mempage;
@@ -229,6 +227,8 @@ struct Pdb : Debugger, ParentCtrl {
 	String     Hex(adr_t);
 
 // debug
+	Context    ReadContext(HANDLE hThread);
+	void       WriteContext(HANDLE hThread, Context& context);
 	void       LoadModuleInfo();
 	int        FindModuleIndex(adr_t base);
 	void       UnloadModuleSymbols();

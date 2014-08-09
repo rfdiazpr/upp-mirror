@@ -290,8 +290,8 @@ struct Pdb : Debugger, ParentCtrl {
 	adr_t                 GetAddress(FilePos p);
 	FilePos               GetFilePos(adr_t address);
 	FnInfo                GetFnInfo(adr_t address);
-//	FnInfo                GetFnInfo(String name);
-	void                  GetLocals(adr_t ip, adr_t bp, VectorMap<String, Pdb::Val>& param,
+	void                  GetLocals(Frame& frame, Context& context,
+	                                VectorMap<String, Pdb::Val>& param,
 	                                VectorMap<String, Pdb::Val>& local);
 	String                TypeAsString(int ti, bool deep = true);
 
@@ -320,6 +320,7 @@ struct Pdb : Debugger, ParentCtrl {
 	Visual     Visualise(const String& rexp);
 
 // code
+	Thread&    Current();
 	int        Disassemble(adr_t ip);
 	bool       IsValidFrame(adr_t eip);
 	void       Sync0();

@@ -117,6 +117,7 @@ bool Pdb::Create(One<Host> local, const String& exefile, const String& cmdline)
 	BOOL _64;
 	win64 = IsWow64Process(hProcess, &_64) && !_64;
 	DDUMP(win64);
+	disas.Mode64(win64);
 #endif
 	
 	CloseHandle(pi.hThread);

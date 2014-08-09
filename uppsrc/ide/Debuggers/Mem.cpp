@@ -17,6 +17,7 @@ int    Pdb::Byte(adr_t addr)
 		mempage.Clear();
 	byte data[1024];
 	if(ReadProcessMemory(hProcess, (LPCVOID) (addr & ~1023), data, 1024, NULL)) {
+		LLOG("ReadProcessMemory " << Hex(addr) << " OK");
 		memcpy(mempage.Add(page).data, data, 1024);
 		return (byte)data[pos];
 	}

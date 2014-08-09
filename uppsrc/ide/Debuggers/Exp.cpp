@@ -63,6 +63,7 @@ case q: { \
 
 Pdb::Val Pdb::GetRVal(Pdb::Val v)
 {
+	DDUMP(Hex(v.address));
 	if(v.rvalue)
 		return v;
 	v.rvalue = true;

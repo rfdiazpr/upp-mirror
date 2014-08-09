@@ -2,7 +2,7 @@
 
 #ifdef COMPILER_MSC
 
-#define LLOG(x)  LOG(x)
+#define LLOG(x)  DLOG(x)
 
 #ifdef _DEBUG
 char * SymTagAsString( DWORD symTag )
@@ -104,11 +104,11 @@ Pdb::FnInfo Pdb::GetFnInfo(adr_t address)
 		LLOG("GetFnInfo " << f->Name
 		     << ", type index: " << f->TypeIndex
 		     << ", Flags: " << FormatIntHex(f->Flags)
-		     << ", Address: " << FormatIntHex((dword)f->Address)
+		     << ", Address: " << Hex((dword)f->Address)
 		     << ", Size: " << FormatIntHex((dword)f->Size)
 		     << ", Tag: " << SymTagAsString(f->Tag));
 		fn.name = f->Name;
-		fn.address = (dword)f->Address;
+		fn.address = f->Address;
 		fn.size = f->Size;
 		fn.pdbtype = f->TypeIndex;
 	}
@@ -146,7 +146,7 @@ void Pdb::TypeVal(Pdb::Val& v, int typeId, adr_t modbase)
 		tag = GetSymInfo(modbase, typeId, TI_GET_SYMTAG);
 		if(tag == SymTagPointerType) {
 			v.ref++;
-			const Type& tptr = GetTypeId(modbase, typeId);
+			const Type& tptr = GetTypeId(modbase, typeId); // What is this?
 		}
 		else
 		if(tag == SymTagArrayType)
@@ -188,7 +188,7 @@ void Pdb::TypeVal(Pdb::Val& v, int typeId, adr_t modbase)
 }
 
 struct Pdb::LocalsCtx {
-	adr_t                       ebp;
+	adr_t                       bp;
 	VectorMap<String, Pdb::Val> param;
 	VectorMap<String, Pdb::Val> local;
 	Pdb                        *pdb;
@@ -201,26 +201,32 @@ BOOL CALLBACK Pdb::EnumLocals(PSYMBOL_INFO pSym, ULONG SymbolSize, PVOID UserCon
 	if(pSym->Tag == SymTagFunction)
 		return TRUE;
 
-	if(pSym->Flags & IMAGEHLP_SYMBOL_INFO_REGISTER)
+	if(pSym->Flags & IMAGEHLP_SYMBOL_INFO_REGISTER) {
+		DLOG("Register " << pSym->Name << ": " << pSym->Register);
 		return TRUE;
+	}
 
 	Val& v = (pSym->Flags & IMAGEHLP_SYMBOL_INFO_PARAMETER ? c.param : c.local).GetAdd(pSym->Name);
 	v.address = (adr_t)pSym->Address;
+	DLOG("EnumLocals " << v.address);
 	if(pSym->Flags & IMAGEHLP_SYMBOL_INFO_REGRELATIVE)
-		v.address += c.ebp;
+		v.address += c.bp;
 	c.pdb->TypeVal(v, pSym->TypeIndex, (adr_t)pSym->ModBase);
 	return TRUE;
 }
 
-void Pdb::GetLocals(adr_t eip, adr_t ebp, VectorMap<String, Pdb::Val>& param,
+void Pdb::GetLocals(adr_t ip, adr_t bp, VectorMap<String, Pdb::Val>& param,
                     VectorMap<String, Pdb::Val>& local)
 {
 	static IMAGEHLP_STACK_FRAME f;
-	f.InstructionOffset = eip;
+	f.InstructionOffset = ip;
 	SymSetContext(hProcess, &f, 0);
 	LocalsCtx c;
-	c.ebp = ebp;
+	c.bp = bp;
 	c.pdb = this;
+	DLOG("GetLocals");
+	DDUMP(Hex(bp));
+	DDUMP(Hex(ip));
 	SymEnumSymbols(hProcess, 0, 0, &EnumLocals, &c);
 	param = c.param;
 	local = c.local;

@@ -21,6 +21,7 @@ void DbgDisas::Paint(Draw& w)
 	Size box = GetBox();
 	int i = sb;
 	int y = 0;
+	DDUMP(cursor);
 	while(i < inst.GetCount() && y < sz.cy) {
 		Inst& n = inst[i];
 		Color ink = HasFocus() && i == cursor ? SColorPaper : SColorText;
@@ -119,7 +120,10 @@ void DbgDisas::Scroll()
 
 void DbgDisas::SetCursor(adr_t adr)
 {
+	DUMP(addr);
+	DUMP(adr);
 	cursor = addr.Find(adr);
+	DLOG("Set cursor " << cursor);
 	if(cursor >= 0)
 		sb.ScrollInto(cursor);
 	Refresh();

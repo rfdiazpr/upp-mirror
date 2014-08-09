@@ -188,10 +188,11 @@ void Pdb::TypeVal(Pdb::Val& v, int typeId, adr_t modbase)
 }
 
 struct Pdb::LocalsCtx {
-	adr_t                       bp;
+	adr_t                       frame;
 	VectorMap<String, Pdb::Val> param;
 	VectorMap<String, Pdb::Val> local;
 	Pdb                        *pdb;
+	Context                    *context;
 };
 
 BOOL CALLBACK Pdb::EnumLocals(PSYMBOL_INFO pSym, ULONG SymbolSize, PVOID UserContext)
@@ -201,32 +202,37 @@ BOOL CALLBACK Pdb::EnumLocals(PSYMBOL_INFO pSym, ULONG SymbolSize, PVOID UserCon
 	if(pSym->Tag == SymTagFunction)
 		return TRUE;
 
-	if(pSym->Flags & IMAGEHLP_SYMBOL_INFO_REGISTER) {
-		DLOG("Register " << pSym->Name << ": " << pSym->Register);
-		return TRUE;
-	}
+	DDUMP(Format64Hex(pSym->Flags));
 
 	Val& v = (pSym->Flags & IMAGEHLP_SYMBOL_INFO_PARAMETER ? c.param : c.local).GetAdd(pSym->Name);
 	v.address = (adr_t)pSym->Address;
-	DLOG("EnumLocals " << v.address);
-	if(pSym->Flags & IMAGEHLP_SYMBOL_INFO_REGRELATIVE)
-		v.address += c.bp;
+	DLOG("EnumLocals: " << pSym->Name << " adr: " << Format64Hex(v.address));
+	if(pSym->Flags & IMAGEHLP_SYMBOL_INFO_REGRELATIVE) {
+		DLOG("REGRELATIVE " << pSym->Register);
+		v.address += c.pdb->GetCpuRegister(*c.context, pSym->Register);
+	}
+	if(pSym->Flags & IMAGEHLP_SYMBOL_INFO_FRAMERELATIVE) {
+		DLOG("FRAMERELATIVE");
+		v.address += c.frame;
+	}
+	if(pSym->Flags & IMAGEHLP_SYMBOL_INFO_REGISTER) {
+		DLOG("Register " << pSym->Name << ": " << pSym->Register);
+		v.address = pSym->Register;
+	}
 	c.pdb->TypeVal(v, pSym->TypeIndex, (adr_t)pSym->ModBase);
 	return TRUE;
 }
 
-void Pdb::GetLocals(adr_t ip, adr_t bp, VectorMap<String, Pdb::Val>& param,
+void Pdb::GetLocals(Frame& frame, Context& context, VectorMap<String, Pdb::Val>& param,
                     VectorMap<String, Pdb::Val>& local)
 {
 	static IMAGEHLP_STACK_FRAME f;
-	f.InstructionOffset = ip;
+	f.InstructionOffset = frame.pc;
 	SymSetContext(hProcess, &f, 0);
 	LocalsCtx c;
-	c.bp = bp;
+	c.frame = frame.frame;
 	c.pdb = this;
-	DLOG("GetLocals");
-	DDUMP(Hex(bp));
-	DDUMP(Hex(ip));
+	c.context = &context;
 	SymEnumSymbols(hProcess, 0, 0, &EnumLocals, &c);
 	param = c.param;
 	local = c.local;

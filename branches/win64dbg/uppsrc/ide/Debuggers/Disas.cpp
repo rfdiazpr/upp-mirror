@@ -7,7 +7,10 @@ void DbgDisas::MouseWheel(Point, int zdelta, dword)
 
 Size DbgDisas::GetBox() const
 {
-	return GetTextSize("12345678", Courier(12));
+	Size sz = GetTextSize("12345678", Courier(12));
+	if(mode64)
+		sz.cx *= 2;
+	return sz;
 }
 
 void DbgDisas::Layout()
@@ -21,7 +24,6 @@ void DbgDisas::Paint(Draw& w)
 	Size box = GetBox();
 	int i = sb;
 	int y = 0;
-	DDUMP(cursor);
 	while(i < inst.GetCount() && y < sz.cy) {
 		Inst& n = inst[i];
 		Color ink = HasFocus() && i == cursor ? SColorPaper : SColorText;
@@ -29,7 +31,7 @@ void DbgDisas::Paint(Draw& w)
 		w.DrawRect(0, y, sz.cx, box.cy, i == cursor ? HasFocus() ? SColorHighlight : SColorFace
 		                                            : SColorPaper);
 		if(sz.cx > 3 * box.cx) {
-			w.DrawText(0, y, Sprintf("%08X", addr[i]), Courier(12),
+			w.DrawText(0, y, mode64 ? Sprintf("%16llX", addr[i]) : Sprintf("%08X", addr[i]), Courier(12),
 			           HasFocus() && i == cursor ? SColorPaper
 			                                     : taddr.Find(addr[i]) >= 0 ? LtRed : SColorText);
 			x += box.cx;
@@ -162,4 +164,5 @@ DbgDisas::DbgDisas()
 	AddFrame(sb);
 	sb.WhenScroll = THISBACK(Scroll);
 	low = high = 0;
+	mode64 = false;
 }

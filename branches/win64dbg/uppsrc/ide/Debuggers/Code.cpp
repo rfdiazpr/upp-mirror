@@ -19,7 +19,6 @@ int Pdb::Disassemble(adr_t ip)
 	int sz = NDisassemble(out, code, ip, win64);
 	if(sz > i)
 		return -1;
-	DLOG("Disassemble " << Hex(ip));
 	disas.Add(ip, out, Null);
 	return sz;
 }
@@ -100,7 +99,6 @@ void Pdb::SetFrame()
 				h = ip + 1024;
 			}
 			while(ip < h) {
-				DDUMP(Hex(ip));
 				int sz = Disassemble(ip);
 				if(sz < 0)
 					break;
@@ -109,7 +107,6 @@ void Pdb::SetFrame()
 		}
 		disas.SetCursor(f.pc);
 		disas.SetIp(f.pc, ptrimg);
-		DDUMP(Hex(f.pc));
 
 		if(df)
 			disas.SetFocus();

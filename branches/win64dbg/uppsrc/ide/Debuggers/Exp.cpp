@@ -46,6 +46,9 @@ int Pdb::SizeOfType(int ti)
 #define READINT(q, type) \
 case q: { \
 	type x; \
+	if(v.address < 10000) \
+		x = (type)GetCpuRegister(Current(), (int)v.address); \
+	else \
 	if(!Copy(v.address, &x, sizeof(x))) \
 		ThrowError("??"); \
 	v.ival = x; \
@@ -63,7 +66,6 @@ case q: { \
 
 Pdb::Val Pdb::GetRVal(Pdb::Val v)
 {
-	DDUMP(Hex(v.address));
 	if(v.rvalue)
 		return v;
 	v.rvalue = true;

@@ -2,9 +2,14 @@
 
 #define LLOG(x) DLOG(x)
 
+Pdb::Thread& Pdb::Current()
+{
+	return threads.Get((int)~threadlist);
+}
+
 void Pdb::Sync0()
 {
-	Thread& ctx = threads.Get((int)~threadlist);
+	Thread& ctx = Current();
 	const VectorMap<int, CpuRegister>& reg = Pdb::GetRegisterList();
 	cpu.Clear();
 	for(int i = 0; i < reg.GetCount(); i++) {
@@ -71,7 +76,7 @@ void Pdb::Sync0()
 			}
 		}
 		else {
-			GetLocals(f.pc, f.frame, f.param, f.local);
+			GetLocals(f, ctx, f.param, f.local);
 			r = f.fn.name;
 			r << '(';
 			for(int i = 0; i < f.param.GetCount(); i++) {
@@ -87,42 +92,3 @@ void Pdb::Sync0()
 	}
 	framelist <<= max(fc, 0);
 }
-
-
-/*
-	adr_t ip = GetIP();
-	adr_t bp = GetBP();
-	adr_t spmax = threads.Get(event.dwThreadId).sp;
-	framelist.Clear();
-	frame.Clear();
-	int ndx = 0;
-	FnInfo fn = GetFnInfo(ip);
-	int c = -1;
-	for(;;) { // Scan through stack frames
-		Frame& f = frame.Add();
-		f.reip = ip;
-		f.rebp = bp;
-		f.fn = fn;
-		String r;
-		int q = 0;
-		for(;;) {
-			if(bp > spmax || ++q > 1024 * 64)
-				goto end;
-			adr_t nip, nbp;
-			if(!Copy(bp, &nbp, 4))
-				goto end;
-			if(!Copy(bp + 4, &nip, 4))
-				goto end;
-			if(nbp >= bp && nbp < spmax && IsValidFrame(nip)) {
-				fn = GetFnInfo(nip);
-				if(!IsNull(fn.name)) {
-					ip = nip;
-					bp = nbp;
-					break;
-				}
-			}
-			bp += 4;
-		}
-	}
-}
-*/

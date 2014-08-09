@@ -47,6 +47,7 @@ private:
 	int          cursor;
 	int          ip;
 	Image        ipimg;
+	bool         mode64;
 
 	Size GetBox() const;
 	void Scroll();
@@ -68,6 +69,7 @@ public:
 	void  SetCursor(adr_t adr);
 	adr_t GetCursor() const             { return cursor >= 0 ? addr[cursor] : 0; }
 	void  SetIp(adr_t adr, const Image& img);
+	void  Mode64(bool b)                { mode64 = b; }
 
 	DbgDisas();
 };

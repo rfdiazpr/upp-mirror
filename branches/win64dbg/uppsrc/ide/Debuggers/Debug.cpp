@@ -197,7 +197,7 @@ Pdb::Context Pdb::ReadContext(HANDLE hThread)
 	}
 	else {
 		WOW64_CONTEXT ctx;
-		ctx.ContextFlags = CONTEXT_FULL;
+		ctx.ContextFlags = WOW64_CONTEXT_FULL;
 		Wow64GetThreadContext(hThread, &ctx);
 		memcpy(&r.context32, &ctx, sizeof(WOW64_CONTEXT));
 	}
@@ -376,25 +376,22 @@ bool Pdb::RunToException()
 					LoadModuleInfo();
 				LLOG("event.dwThreadId = " << event.dwThreadId);
 				for(int i = 0; i < threads.GetCount(); i++) {
-					(Context&)threads[i] = ReadContext(threads[i].hThread);
-					DDUMP(Hex(threads[i].context64.Rip));
+					Thread& t = threads[i];
+					(Context&)t = ReadContext(threads[i].hThread);
 					if(event.dwThreadId == threads.GetKey(i)) {
 						LLOG("Setting current context");
-						context = threads[i];
+						if(findarg(event.u.Exception.ExceptionRecord.ExceptionCode, EXCEPTION_BREAKPOINT, STATUS_WX86_BREAKPOINT) >= 0
+						   && bp_set.Find((win64 ? t.context64.Rip : t.context32.Eip) - 1) >= 0)
+						   // We have stopped at breakpoint, need to move address back for retry
+					#ifdef CPU_64
+							if(win64)
+								t.context64.Rip--;
+							else
+					#endif
+								t.context32.Eip--;
+						context = t;
 					}
 				}
-				DDUMP(Hex((adr_t)event.u.Exception.ExceptionRecord.ExceptionAddress));
-				DDUMP(Hex(context.context64.Rip));
-				if(findarg(event.u.Exception.ExceptionRecord.ExceptionCode, EXCEPTION_BREAKPOINT, STATUS_WX86_BREAKPOINT) >= 0
-				   && bp_set.Find((adr_t)event.u.Exception.ExceptionRecord.ExceptionAddress) >= 0)
-				   // We have stopped at breakpoint, need to move address back for retry
-			#ifdef CPU_64
-					if(win64)
-						context.context64.Rip = (adr_t)event.u.Exception.ExceptionRecord.ExceptionAddress;
-					else
-			#endif
-						context.context32.Eip = (DWORD)event.u.Exception.ExceptionRecord.ExceptionAddress;
-
 				DDUMP(Hex(context.context64.Rip));
 				RemoveBp();
 				return true;

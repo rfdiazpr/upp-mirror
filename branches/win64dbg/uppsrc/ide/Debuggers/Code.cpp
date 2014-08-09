@@ -19,19 +19,9 @@ int Pdb::Disassemble(adr_t ip)
 	int sz = NDisassemble(out, code, ip, win64);
 	if(sz > i)
 		return -1;
+	DLOG("Disassemble " << Hex(ip));
 	disas.Add(ip, out, Null);
 	return sz;
-}
-
-void Pdb::Reg(Label& reg, adr_t val)
-{
-	String h = Sprintf("%08X", val);
-	if(h != reg.GetText()) {
-		reg.SetLabel(h);
-		reg.SetInk(LtRed);
-	}
-	else
-		reg.SetInk(SColorText);
 }
 
 bool Pdb::IsValidFrame(adr_t eip)
@@ -62,71 +52,6 @@ adr_t Pdb::GetBP()
 	return threads.Get((int)~threadlist).context32.Ebp;
 }
 
-void Pdb::Sync0()
-{
-	stop = false;
-	adr_t ip = GetIP();
-	adr_t bp = GetBP();
-	adr_t spmax = threads.Get(event.dwThreadId).sp;
-	framelist.Clear();
-	frame.Clear();
-	int ndx = 0;
-	FnInfo fn = GetFnInfo(ip);
-	int c = -1;
-	for(;;) { // Scan through stack frames
-		Frame& f = frame.Add();
-		f.reip = ip;
-		f.rebp = bp;
-		f.fn = fn;
-		String r;
-		if(IsNull(fn.name)) {
-			r = Sprintf("0x%08x", f.reip);
-			for(int i = 0; i < module.GetCount(); i++) {
-				const ModuleInfo& f = module[i];
-				if(ip >= f.base && ip < f.base + f.size) {
-					r << " (" << GetFileName(f.path) << ")";
-					break;
-				}
-			}
-		}
-		else {
-			GetLocals(ip, bp, f.param, f.local);
-			r = fn.name;
-			r << '(';
-			for(int i = 0; i < f.param.GetCount(); i++) {
-				if(i)
-					r << ", ";
-				r << f.param.GetKey(i) << "=" << Visualise(f.param[i]).GetString();
-			}
-			r << ')';
-			if(c < 0)
-				c = frame.GetCount() - 1;
-		}
-		framelist.Add(frame.GetCount() - 1, r);
-		int q = 0;
-		for(;;) {
-			if(bp > spmax || ++q > 1024 * 64)
-				goto end;
-			adr_t nip, nbp;
-			if(!Copy(bp, &nbp, 4))
-				goto end;
-			if(!Copy(bp + 4, &nip, 4))
-				goto end;
-			if(nbp >= bp && nbp < spmax && IsValidFrame(nip)) {
-				fn = GetFnInfo(nip);
-				if(!IsNull(fn.name)) {
-					ip = nip;
-					bp = nbp;
-					break;
-				}
-			}
-			bp += 4;
-		}
-	}
-end:
-	framelist <<= max(c, 0);
-}
-
 void Pdb::Sync()
 {
 	threadlist.Clear();
@@ -152,50 +77,40 @@ void Pdb::SetThread()
 
 void Pdb::SetFrame()
 {
-	int q = ~framelist;
-	if(q >= 0 && q < frame.GetCount()) {
-		Frame& f = frame[q];
-		Image ptrimg = q == 0 ? DbgImg::IpLinePtr() : DbgImg::FrameLinePtr();
+	int fi = ~framelist;
+	if(fi >= 0 && fi < frame.GetCount()) {
+		Frame& f = frame[fi];
 		bool df = disas.HasFocus();
-		FilePos fp = GetFilePos(f.reip);
+		FilePos fp = GetFilePos(f.pc);
 		IdeHidePtr();
 		autotext.Clear();
+		Image ptrimg = fi == 0 ? DbgImg::IpLinePtr() : DbgImg::FrameLinePtr();
 		if(fp) {
 			IdeSetDebugPos(fp.path, fp.line, ptrimg, 0);
 			autotext = IdeGetLine(fp.line - 1) + ' ' + IdeGetLine(fp.line)
 			           + ' ' + IdeGetLine(fp.line + 1);
 		}
-		if(!disas.InRange(f.reip) || f.fn.name != disas_name) {
+		if(!disas.InRange(f.pc) || f.fn.name != disas_name) {
 			disas_name = f.fn.name;
 			disas.Clear();
 			adr_t ip = f.fn.address;
 			adr_t h = f.fn.address + f.fn.size;
-			if(f.reip < ip || f.reip >= h) {
-				ip = f.reip;
+			if(f.pc < ip || f.pc >= h) {
+				ip = f.pc;
 				h = ip + 1024;
 			}
 			while(ip < h) {
-				int q = Disassemble(ip);
-				if(q < 0)
+				DDUMP(Hex(ip));
+				int sz = Disassemble(ip);
+				if(sz < 0)
 					break;
-				ip += q;
+				ip += sz;
 			}
 		}
-		disas.SetCursor(f.reip);
-		disas.SetIp(f.reip, ptrimg);
-	
-//TODO: Fix, refactor this
-#ifdef CPU_32
-		const CONTEXT& context32 = threads.Get((int)~threadlist).context32;
-		Reg(regs.eax, context32.Eax);
-		Reg(regs.ebx, context32.Ebx);
-		Reg(regs.ecx, context32.Ecx);
-		Reg(regs.edx, context32.Edx);
-		Reg(regs.esi, context32.Esi);
-		Reg(regs.edi, context32.Edi);
-		Reg(regs.ebp, context32.Ebp);
-		Reg(regs.esp, context32.Esp);
-#endif
+		disas.SetCursor(f.pc);
+		disas.SetIp(f.pc, ptrimg);
+		DDUMP(Hex(f.pc));
+
 		if(df)
 			disas.SetFocus();
 		Data();
@@ -276,7 +191,7 @@ void Pdb::SetIp()
 #endif
 		context.context32.Eip = (DWORD)a;
 	WriteContext();
-	frame[0].reip = a;
+	frame[0].pc = a;
 	framelist <<= 0;
 	SetFrame();
 }

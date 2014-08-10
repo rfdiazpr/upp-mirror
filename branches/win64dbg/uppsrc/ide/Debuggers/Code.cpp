@@ -2,7 +2,7 @@
 
 #ifdef COMPILER_MSC
 
-#define LLOG(x)  LOG(x)
+#define LLOG(x) // DLOG(x)
 
 int Pdb::Disassemble(adr_t ip)
 {
@@ -16,10 +16,23 @@ int Pdb::Disassemble(adr_t ip)
 			break;
 		code[i] = q;
 	}
+#ifdef CPU_64
 	int sz = NDisassemble(out, code, ip, win64);
+#else
+	int sz = NDisassemble(out, code, ip);
+#endif
 	if(sz > i)
 		return -1;
-	disas.Add(ip, out, Null);
+	disas.Add(ip, out, Null, String(code, sz));
+	CParser p(out);
+	while(!p.IsEof()) {
+		try {
+			if(p.Char2('0', 'x'))
+				disas.AddT((adr_t)p.ReadNumber64(16));
+		}
+		catch(CParser::Error) {}
+		p.SkipTerm();
+	}
 	return sz;
 }
 
@@ -37,18 +50,9 @@ adr_t Pdb::GetIP()
 {
 #ifdef CPU_64
 	if(win64)
-		return threads.Get((int)~threadlist).context64.Rip;
+		return context.context64.Rip;
 #endif
-	return threads.Get((int)~threadlist).context32.Eip;
-}
-
-adr_t Pdb::GetBP()
-{
-#ifdef CPU_64
-	if(win64)
-		return threads.Get((int)~threadlist).context64.Rbp;
-#endif
-	return threads.Get((int)~threadlist).context32.Ebp;
+	return context.context32.Eip;
 }
 
 void Pdb::Sync()
@@ -86,8 +90,9 @@ void Pdb::SetFrame()
 		Image ptrimg = fi == 0 ? DbgImg::IpLinePtr() : DbgImg::FrameLinePtr();
 		if(fp) {
 			IdeSetDebugPos(fp.path, fp.line, ptrimg, 0);
-			autotext = IdeGetLine(fp.line - 1) + ' ' + IdeGetLine(fp.line)
-			           + ' ' + IdeGetLine(fp.line + 1);
+			autotext.Clear();
+			for(int i = -4; i < 4; i++)
+				autotext << ' ' << IdeGetLine(fp.line + i);
 		}
 		if(!disas.InRange(f.pc) || f.fn.name != disas_name) {
 			disas_name = f.fn.name;
@@ -95,7 +100,7 @@ void Pdb::SetFrame()
 			adr_t ip = f.fn.address;
 			adr_t h = f.fn.address + f.fn.size;
 			if(f.pc < ip || f.pc >= h) {
-				ip = f.pc;
+				ip = f.pc - 64;
 				h = ip + 1024;
 			}
 			while(ip < h) {
@@ -169,10 +174,10 @@ void Pdb::Run()
 	SingleStep();
 	SetBreakpoints();
 	if(!Continue()) {
-		DLOG("Run: !Continue");
+		LLOG("Run: !Continue");
 		return;
 	}
-	DLOG("Run: Sync");
+	LLOG("Run: Sync");
 	Sync();
 }
 
@@ -198,10 +203,10 @@ bool Pdb::Step(bool over)
 	LLOG("== Step over: " << over);
 	TimeStop ts;
 	adr_t ip = GetIP();
-	adr_t bp = GetBP();
 	byte b = Byte(ip);
 	byte b1 = (Byte(ip + 1) >> 3) & 7;
 	if(b == 0xe8 || b == 0x9a || b == 0xff && (b1 == 2 || b1 == 3)) { // Various CALL forms
+		LLOG("Stepping over CALL");
 		if(over) {
 			int l = 5;
 			if(b != 0xe8) {
@@ -216,7 +221,7 @@ bool Pdb::Step(bool over)
 					code[i] = q;
 				}
 #ifdef CPU_64
-				l = NDisassemble(out, code, GetIP(), win64); // TODO Win64 offset?!
+				l = NDisassemble(out, code, GetIP(), win64);
 #else
 				l = NDisassemble(out, code, GetIP());
 #endif
@@ -226,11 +231,11 @@ bool Pdb::Step(bool over)
 			int lvl = 0;
 			Lock();
 			for(;;) {
-				if(!SingleStep()) {
+				if(!SingleStep()) { // Step into function
 					Unlock();
 					return false;
 				}
-				SetBreakpoints();
+				SetBreakpoints(); // Note: Do we really want to do this? (activates breakpoints)
 				if(breakpoint.Find(bp0) < 0)
 					AddBp(bp0);
 				else
@@ -241,17 +246,17 @@ bool Pdb::Step(bool over)
 					return false;
 				}
 				if(GetIP() == bp0)
-					lvl++;
+					lvl++; // Recursive call
 				else
 				if(GetIP() == bp) {
 					if(lvl <= 0) {
-						Unlock();
+						Unlock(); // Base level - stepping ended
 						return true;
 					}
 					lvl--;
 				}
 				else {
-					Unlock();
+					Unlock(); // Any other breakpoint
 					return true;
 				}
 				if(ts.Elapsed() > 100)
@@ -262,7 +267,7 @@ bool Pdb::Step(bool over)
 			if(!SingleStep())
 				return false;
 			byte b = Byte(GetIP());
-			if(b == 0xeb || b == 0xe9)
+			if(b == 0xeb || b == 0xe9) // Step over JMP following CALL (windows jump tables)
 				return SingleStep();
 			return true;
 		}

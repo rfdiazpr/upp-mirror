@@ -1,6 +1,6 @@
 #include "Debuggers.h"
 
-#define LLOG(x) DLOG(x)
+#define LLOG(x) // DLOG(x)
 
 Pdb::Thread& Pdb::Current()
 {
@@ -14,10 +14,8 @@ void Pdb::Sync0()
 	cpu.Clear();
 	for(int i = 0; i < reg.GetCount(); i++) {
 		const CpuRegister& r = reg[i];
-		if(r.name) {
-			DLOG(r.name << " = 0x" << Hex(GetCpuRegister(ctx, r.sym)));
+		if(r.name)
 			cpu.Add(String().Cat() << r.name << "|0x" << Hex(GetCpuRegister(ctx, r.sym)));
-		}
 	}
 
 	stop = false;
@@ -47,8 +45,6 @@ void Pdb::Sync0()
 		c = &ctx.context32;
 	}
 
-	DDUMP(Hex(stackFrame.AddrPC.Offset));
-
 	DWORD64 lastFrame = 0; // Prevent loops with optimised stackframes
 	int fc = -1;
 	while(::StackWalk64(machineType, hProcess, ctx.hThread, &stackFrame, c,
@@ -58,7 +54,7 @@ void Pdb::Sync0()
 	      	break;
 	    }
 		lastFrame = stackFrame.AddrFrame.Offset;
-		DLOG("PC: " << Hex(stackFrame.AddrPC.Offset));
+		LLOG("PC: " << Hex(stackFrame.AddrPC.Offset));
 		Frame& f = frame.Add();
 		f.pc = stackFrame.AddrPC.Offset;
 		f.frame = stackFrame.AddrFrame.Offset;

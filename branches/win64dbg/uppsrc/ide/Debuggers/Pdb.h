@@ -170,6 +170,7 @@ struct Pdb : Debugger, ParentCtrl {
 	bool                     	running;
 	bool                     	stop;
 	HANDLE                   	hProcess;
+	HANDLE                      mainThread;
 	DWORD                    	processid;
 	ArrayMap<dword, Thread>     threads;
 	bool                     	terminated;
@@ -177,7 +178,7 @@ struct Pdb : Debugger, ParentCtrl {
 	Vector<ModuleInfo>       	module;
 	DEBUG_EVENT              	event;
 	HWND                     	hWnd;
-	VectorMap<adr_t, byte>      bp_set;
+	VectorMap<adr_t, byte>      bp_set; // breakpoints active for single RunToException
 
 #ifdef CPU_64
 	bool                        win64; // debugee is 64-bit
@@ -228,8 +229,10 @@ struct Pdb : Debugger, ParentCtrl {
 
 	Index<String>          noglobal;
 	VectorMap<String, Val> global;
+	
+	bool       break_running; // Needed for Wow64 BreakRunning to avoid ignoring breakpoint
 
-	void       Error();
+	void       Error(const char *s = NULL);
 	
 	String     Hex(adr_t);
 
@@ -251,6 +254,7 @@ struct Pdb : Debugger, ParentCtrl {
 	void       RemoveThread(dword dwThreadId);
 	void       Lock();
 	void       Unlock();
+	void       ToForeground();
 	bool       RunToException();
 	bool       AddBp(adr_t address);
 	bool       RemoveBp(adr_t address);
@@ -264,10 +268,8 @@ struct Pdb : Debugger, ParentCtrl {
 	void       RestoreForeground();
 
 	adr_t      GetIP();
-	adr_t      GetBP();
 
-//	const CONTEXT& CurrentContext();
-	void           WriteContext(dword cf = CONTEXT_CONTROL);
+	void       WriteContext();
 
 // mem
 	int        Byte(adr_t addr);

@@ -56,11 +56,7 @@ void Pdb::Visualise(Visual& result, Pdb::Val val, int expandptr, int slen)
 	if(val.ref > 0 || val.type < 0)
 		val = GetRVal(val);
 	if(val.ref > 0) {
-	#ifdef CPU_32
-		result.Cat(FormatIntHex(val.address, 0), LtMagenta);
-	#else
 		result.Cat(Hex(val.address), LtMagenta);
-	#endif
 		if(val.type == UINT1 || val.type == SINT1) {
 			if(Byte(val.address) < 0)
 				result.Cat("??", SColorDisabled);

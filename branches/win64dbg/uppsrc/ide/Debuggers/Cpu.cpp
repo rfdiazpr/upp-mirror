@@ -21,7 +21,6 @@ uint64 Pdb::GetRegister64(const Context& ctx, int sym)
 		#include "amd64.cpu"
 #undef CPU_REG
 	}
-	DLOG("UNKNOWN");
 	return 0;
 }
 #endif
@@ -37,7 +36,6 @@ const VectorMap<int, Pdb::CpuRegister>& Pdb::GetRegisterList()
 #ifdef CPU_64
 	static VectorMap<int, CpuRegister> r64;
 	ONCELOCK {
-		DLOG("INIT!");
 #define CPU_REG(sym_, context_var, kind, name_, flags_) { CpuRegister& r = r64.Add(sym_); r.sym = sym_; r.name = name_; r.flags = flags_; }
 		#include "amd64.cpu"
 #undef CPU_REG

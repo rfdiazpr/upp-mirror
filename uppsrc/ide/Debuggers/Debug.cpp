@@ -9,21 +9,20 @@
 #define STATUS_WX86_EXCEPTION_LASTCHANCE 0x40000021
 #define STATUS_WX86_EXCEPTION_CHAIN      0x40000022
 
-#define LLOG(x)    DLOG(x)
+#define LLOG(x)   // DLOG(x)
 
 String Pdb::Hex(adr_t a)
 {
-#ifdef CPU_64
 	return Format64Hex(a);
-#else
-	return FormatIntHex(a);
-#endif
 }
 
-void Pdb::Error()
+void Pdb::Error(const char *s)
 {
+	String txt = "Error!&";
+	if(s)
+		txt << s << "&";
 	LLOG("ERROR: " << DeQtf(GetLastErrorMessage()));
-	Exclamation("Error!&" + DeQtf(GetLastErrorMessage()));
+	Exclamation(txt + DeQtf(GetLastErrorMessage()));
 	running = false;
 	Stop();
 }
@@ -192,19 +191,21 @@ Pdb::Context Pdb::ReadContext(HANDLE hThread)
 		CONTEXT ctx;
 		ctx.ContextFlags = CONTEXT_FULL;
 		if(!GetThreadContext(hThread, &ctx))
-			DLOG("GetThreadContext failed: " << GetLastErrorMessage());
+			Error("GetThreadContext failed");
 		memcpy(&r.context64, &ctx, sizeof(CONTEXT));
 	}
 	else {
 		WOW64_CONTEXT ctx;
 		ctx.ContextFlags = WOW64_CONTEXT_FULL;
-		Wow64GetThreadContext(hThread, &ctx);
+		if(!Wow64GetThreadContext(hThread, &ctx))
+			Error("Wow64GetThreadContext failed");
 		memcpy(&r.context32, &ctx, sizeof(WOW64_CONTEXT));
 	}
 #else
 	CONTEXT ctx;
 	ctx.ContextFlags = CONTEXT_FULL;
-	GetThreadContext(hThread, &ctx);
+	if(!GetThreadContext(hThread, &ctx))
+			Error("GetThreadContext failed");
 	memcpy(&r.context32, &ctx, sizeof(CONTEXT));
 #endif
 	return r;
@@ -218,20 +219,21 @@ void Pdb::WriteContext(HANDLE hThread, Context& context)
 		memcpy(&ctx, &context.context64, sizeof(CONTEXT));
 		ctx.ContextFlags = CONTEXT_FULL;
 		if(!SetThreadContext(hThread, &ctx))
-			DLOG("SetThreadContext failed: " << GetLastErrorMessage());
-		_DBG_	if(GetThreadContext(hThread, &ctx)) DDUMP(Hex(ctx.Rip));
+			Error("SetThreadContext failed");
 	}
 	else {
 		WOW64_CONTEXT ctx;
 		memcpy(&ctx, &context.context32, sizeof(WOW64_CONTEXT));
 		ctx.ContextFlags = CONTEXT_FULL;
-		Wow64SetThreadContext(hThread, &ctx);
+		if(!Wow64SetThreadContext(hThread, &ctx))
+			Error("Wow64SetThreadContext failed");
 	}
 #else
 	CONTEXT ctx;
 	memcpy(&ctx, &context.context32, sizeof(WOW64_CONTEXT));
 	ctx.ContextFlags = CONTEXT_FULL;
-	SetThreadContext(hThread, &ctx);
+	if(!SetThreadContext(hThread, &ctx))
+		Error("SetThreadContext failed");
 #endif
 }
 
@@ -311,6 +313,15 @@ void Pdb::SaveForeground()
 	}
 }
 
+void Pdb::ToForeground()
+{
+	TopWindow *w = GetTopWindow();
+	if(w && !w->IsForeground()) {
+		LLOG("Setting theide as foreground");
+		w->SetForeground();
+	}
+}
+
 bool Pdb::RunToException()
 {
 	LLOG("RUN TO EXCEPTION");
@@ -333,26 +344,20 @@ bool Pdb::RunToException()
 			running = false;
 			switch(event.dwDebugEventCode) {
 			case EXCEPTION_DEBUG_EVENT: {
-				LLOG("EXCEPTION_DEBUG_EVENT");
 				LLOG("Exception: " << FormatIntHex(event.u.Exception.ExceptionRecord.ExceptionCode) <<
 				     " at: " << FormatIntHex(event.u.Exception.ExceptionRecord.ExceptionAddress) <<
 				     " first: " << event.u.Exception.dwFirstChance);
 				SaveForeground();
 				const EXCEPTION_RECORD& x = event.u.Exception.ExceptionRecord;
-				DDUMP(Hex(x.ExceptionCode));
-				DDUMP(findarg(x.ExceptionCode, EXCEPTION_BREAKPOINT, EXCEPTION_SINGLE_STEP,
-				              STATUS_WX86_BREAKPOINT, STATUS_WX86_SINGLE_STEP));
 				if(findarg(x.ExceptionCode, EXCEPTION_BREAKPOINT, EXCEPTION_SINGLE_STEP,
 				                            STATUS_WX86_BREAKPOINT, STATUS_WX86_SINGLE_STEP) < 0)
 				{
-					DLOG("EXCEPTION");
+					LLOG("Non-debug EXCEPTION");
 					if(event.u.Exception.dwFirstChance) {
 						LLOG("First chance " << FormatIntHex(x.ExceptionCode));
-						Context c = ReadContext(threads[0].hThread);
-						DDUMP(Hex(c.context64.Rip)); _DBG_
 						break;
 					}
-					String desc = Format("Exception: [* %lX] at [* %08llX]&",
+					String desc = Format("Exception: [* %lX] at [* %16llX]&",
 					                     (int64)x.ExceptionCode, (int64)x.ExceptionAddress);
 					for(int i = 0; i < __countof(ex_desc); i++)
 						if(ex_desc[i].code == x.ExceptionCode)
@@ -361,13 +366,15 @@ bool Pdb::RunToException()
 						desc << (x.ExceptionInformation[0] ? "[*@3 writing]" : "[*@4 reading]");
 						desc << Format(" at [* %08llX]", (int64)x.ExceptionInformation[1]);
 					}
-					PromptOK(desc);// better owner!!!
+					ToForeground();
+					PromptOK(desc);
 				}
-				TopWindow *w = GetTopWindow();
-				if(w && !w->IsForeground()) {
-					LLOG("Setting theide as foreground");
-					GetTopWindow()->SetForeground();
-				}
+#ifdef CPU_64
+				if(!win64 && x.ExceptionCode == EXCEPTION_BREAKPOINT && !break_running) // Ignore x64 breakpoint in wow64
+					break;
+#endif
+				break_running = false;
+				ToForeground();
 				if(disasfocus)
 					disas.SetFocus();
 				if(locked)
@@ -375,14 +382,19 @@ bool Pdb::RunToException()
 				if(refreshmodules)
 					LoadModuleInfo();
 				LLOG("event.dwThreadId = " << event.dwThreadId);
+				bool isbreakpoint = findarg(x.ExceptionCode, EXCEPTION_BREAKPOINT, STATUS_WX86_BREAKPOINT) >= 0;
 				for(int i = 0; i < threads.GetCount(); i++) {
 					Thread& t = threads[i];
 					(Context&)t = ReadContext(threads[i].hThread);
 					if(event.dwThreadId == threads.GetKey(i)) {
 						LLOG("Setting current context");
-						if(findarg(event.u.Exception.ExceptionRecord.ExceptionCode, EXCEPTION_BREAKPOINT, STATUS_WX86_BREAKPOINT) >= 0
-						   && bp_set.Find((win64 ? t.context64.Rip : t.context32.Eip) - 1) >= 0)
-						   // We have stopped at breakpoint, need to move address back for retry
+						if(isbreakpoint
+#ifdef CPU_64
+						   && bp_set.Find((win64 ? t.context64.Rip : t.context32.Eip) - 1) >= 0
+#else
+						   && bp_set.Find(t.context32.Eip - 1) >= 0
+#endif
+						) // We have stopped at breakpoint, need to move address back
 					#ifdef CPU_64
 							if(win64)
 								t.context64.Rip--;
@@ -392,7 +404,6 @@ bool Pdb::RunToException()
 						context = t;
 					}
 				}
-				DDUMP(Hex(context.context64.Rip));
 				RemoveBp();
 				return true;
 			}
@@ -470,9 +481,8 @@ const CONTEXT& Pdb::CurrentContext()
 }
 */
 
-void Pdb::WriteContext(dword cf)
+void Pdb::WriteContext()
 {
-	DLOG("WriteContext");
 	WriteContext(threads.Get(event.dwThreadId).hThread, context);
 }
 
@@ -522,20 +532,13 @@ void Pdb::BreakRunning() //TODO: Fix in wow64?
 		BOOL (WINAPI *debugbreak)(HANDLE Process);
 		debugbreak = (BOOL (WINAPI *)(HANDLE))
 		             GetProcAddress(GetModuleHandle("kernel32.dll"), "DebugBreakProcess");
-		if(debugbreak)
+		if(debugbreak) {
+			LLOG("=== DebugBreakProcess");
+			break_running = true;
 			(*debugbreak)(hProcess);
+		}
 		else
-			for(int i = 0; i < threads.GetCount(); i++) {
-				HANDLE hThread = threads[i].hThread;
-				SuspendThread(hThread);
-				CONTEXT ctx;
-				ctx.ContextFlags = CONTEXT_CONTROL;
-				GetThreadContext(hThread, &ctx);
-				ctx.EFlags |= 0x100;
-				SetThreadContext(hThread, &ctx);
-				GetThreadContext(hThread, &ctx);
-				ResumeThread(hThread);
-			}
+			Exclamation("Operation is not supported on this OS");
 	}
 }
 

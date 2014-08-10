@@ -2,7 +2,7 @@
 
 #ifdef COMPILER_MSC
 
-#define LLOG(x)  DLOG(x)
+#define LLOG(x)   // DLOG(x)
 
 #ifdef _DEBUG
 char * SymTagAsString( DWORD symTag )
@@ -75,7 +75,7 @@ Pdb::FilePos Pdb::GetFilePos(adr_t address)
 	IMAGEHLP_LINE ln;
 	ln.SizeOfStruct = sizeof(ln);
 	fp.address = address;
-	if(SymGetLineFromAddr(hProcess, address, &dummy, &ln) && FileExists(ln.FileName)) {
+	if(SymGetLineFromAddr(hProcess, (uintptr_t)address, &dummy, &ln) && FileExists(ln.FileName)) {
 		fp.line = ln.LineNumber - 1;
 		fp.path = ln.FileName;
 		fp.address = ln.Address;
@@ -108,7 +108,7 @@ Pdb::FnInfo Pdb::GetFnInfo(adr_t address)
 		     << ", Size: " << FormatIntHex((dword)f->Size)
 		     << ", Tag: " << SymTagAsString(f->Tag));
 		fn.name = f->Name;
-		fn.address = f->Address;
+		fn.address = (adr_t)f->Address;
 		fn.size = f->Size;
 		fn.pdbtype = f->TypeIndex;
 	}
@@ -202,24 +202,26 @@ BOOL CALLBACK Pdb::EnumLocals(PSYMBOL_INFO pSym, ULONG SymbolSize, PVOID UserCon
 	if(pSym->Tag == SymTagFunction)
 		return TRUE;
 
-	DDUMP(Format64Hex(pSym->Flags));
-
 	Val& v = (pSym->Flags & IMAGEHLP_SYMBOL_INFO_PARAMETER ? c.param : c.local).GetAdd(pSym->Name);
 	v.address = (adr_t)pSym->Address;
-	DLOG("EnumLocals: " << pSym->Name << " adr: " << Format64Hex(v.address));
 	if(pSym->Flags & IMAGEHLP_SYMBOL_INFO_REGRELATIVE) {
-		DLOG("REGRELATIVE " << pSym->Register);
-		v.address += c.pdb->GetCpuRegister(*c.context, pSym->Register);
+		if(pSym->Register == CV_ALLREG_VFRAME) {
+		#ifdef CPU_64
+			if(c.pdb->win64)
+				v.address += c.pdb->GetCpuRegister(*c.context, CV_AMD64_RBP);
+			else
+		#endif
+				v.address += (adr_t)c.pdb->GetCpuRegister(*c.context, CV_REG_EBP);
+		}
+		else
+			v.address += (adr_t)c.pdb->GetCpuRegister(*c.context, pSym->Register);
 	}
-	if(pSym->Flags & IMAGEHLP_SYMBOL_INFO_FRAMERELATIVE) {
-		DLOG("FRAMERELATIVE");
+	if(pSym->Flags & IMAGEHLP_SYMBOL_INFO_FRAMERELATIVE)
 		v.address += c.frame;
-	}
-	if(pSym->Flags & IMAGEHLP_SYMBOL_INFO_REGISTER) {
-		DLOG("Register " << pSym->Name << ": " << pSym->Register);
+	if(pSym->Flags & IMAGEHLP_SYMBOL_INFO_REGISTER)
 		v.address = pSym->Register;
-	}
 	c.pdb->TypeVal(v, pSym->TypeIndex, (adr_t)pSym->ModBase);
+	LLOG("LOCAL " << pSym->Name << ": " << Format64Hex(v.address));
 	return TRUE;
 }
 

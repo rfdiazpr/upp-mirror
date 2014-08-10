@@ -12,7 +12,7 @@
 #define  LAYOUTFILE    <ide/Debuggers/Gdb.lay>
 #include <CtrlCore/lay.h>
 
-typedef uintptr_t adr_t;
+typedef uint64 adr_t;
 
 String CreateDebugTTY();
 void   KillDebugTTY();
@@ -35,6 +35,7 @@ public:
 private:
 	Index<adr_t> addr;
 	struct Inst : Moveable<Inst> {
+		String bytes;
 		String code;
 		String args;
 	};
@@ -48,6 +49,7 @@ private:
 	int          ip;
 	Image        ipimg;
 	bool         mode64;
+	Font         opfont;
 
 	Size GetBox() const;
 	void Scroll();
@@ -59,7 +61,7 @@ public:
 	Callback WhenFocus;
 
 	void  Clear();
-	void  Add(adr_t adr, const String& code, const String& args);
+	void  Add(adr_t adr, const String& code, const String& args, const String& bytes = Null);
 	void  AddT(adr_t tadr)              { taddr.Add(tadr); }
 
 	void  WriteClipboard();

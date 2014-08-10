@@ -24,23 +24,38 @@ void DbgDisas::Paint(Draw& w)
 	Size box = GetBox();
 	int i = sb;
 	int y = 0;
+	Font hexfont = Courier(12);
+	int maxb = 0;
+	for(int i = 0; i < inst.GetCount(); i++)
+		maxb = max(inst[i].bytes.GetCount(), maxb);
+	int bcx = GetTextSize("00", hexfont).cx + HorzLayoutZoom(2);
+	Color lblink = HighlightSetup::GetHlStyle(HighlightSetup::INK_KEYWORD).color;
+	Color lblpaper = HighlightSetup::GetHlStyle(HighlightSetup::PAPER_BRACKET).color;
 	while(i < inst.GetCount() && y < sz.cy) {
 		Inst& n = inst[i];
 		Color ink = HasFocus() && i == cursor ? SColorPaper : SColorText;
 		int x = 0;
 		w.DrawRect(0, y, sz.cx, box.cy, i == cursor ? HasFocus() ? SColorHighlight : SColorFace
-		                                            : SColorPaper);
-		if(sz.cx > 3 * box.cx) {
-			w.DrawText(0, y, mode64 ? Sprintf("%16llX", addr[i]) : Sprintf("%08X", addr[i]), Courier(12),
-			           HasFocus() && i == cursor ? SColorPaper
-			                                     : taddr.Find(addr[i]) >= 0 ? LtRed : SColorText);
+		                                            : i & 1 ? Blend(SColorMark, SColorPaper, 220) : SColorPaper());
+		if(sz.cx > bcx * 15) {
+			bool lbl = taddr.Find(addr[i]) >= 0;
+			if(lbl)
+				w.DrawRect(0, y, box.cx, box.cy, lblpaper);
+			w.DrawText(0, y, mode64 ? Sprintf("%16llX", (uint64)addr[i]) : Sprintf("%08X", (uint32)addr[i]),
+			           hexfont,
+			           HasFocus() && i == cursor ? SColorPaper : lbl ? lblink : SColorText);
 			x += box.cx;
 		}
 		if(i == ip)
-			DrawHighlightImage(w, x + 2, y + (box.cy - 12) / 2, ipimg);
-		x += 18;
-		w.DrawText(x, y, n.code, StdFont(12), ink);
-		w.DrawText(x + codecx, y, n.args, StdFont(12), ink);
+			DrawHighlightImage(w, x + 2, y + (box.cy - HorzLayoutZoom(12)) / 2, ipimg);
+		x += HorzLayoutZoom(18);
+		if(sz.cx - x - (maxb + 1) * bcx > bcx * 12) {
+			for(int i = 0; i < min(n.bytes.GetCount(), maxb); i++)
+				w.DrawText(x + i * bcx, y, Sprintf("%02X", (byte)n.bytes[i]), hexfont, ink);
+			x += (maxb + 1) * bcx;
+		}
+		w.DrawText(x, y, n.code, opfont, ink);
+		w.DrawText(x + codecx, y, n.args, opfont, ink);
 		y += box.cy;
 		i++;
 	}
@@ -95,10 +110,11 @@ void DbgDisas::Clear()
 	inst.Clear();
 	taddr.Clear();
 	addr.Clear();
-	codecx = GetTextSize("movlmo", StdFont(12)).cx;
+	opfont = StdFont(12);
+	codecx = GetTextSize("movlmo", opfont).cx;
 }
 
-void  DbgDisas::Add(adr_t adr, const String& code, const String& args)
+void  DbgDisas::Add(adr_t adr, const String& code, const String& args, const String& bytes)
 {
 	if(adr < low)
 		low = adr;
@@ -108,9 +124,10 @@ void  DbgDisas::Add(adr_t adr, const String& code, const String& args)
 	Inst& n = inst.Add();
 	n.code = code;
 	n.args = args;
+	n.bytes = bytes;
 	sb.SetTotal(inst.GetCount());
 	Refresh();
-	int cx = GetTextSize(n.code, StdFont(12)).cx;
+	int cx = GetTextSize(n.code, opfont).cx;
 	if(cx > codecx)
 		codecx = cx;
 }
@@ -122,10 +139,7 @@ void DbgDisas::Scroll()
 
 void DbgDisas::SetCursor(adr_t adr)
 {
-	DUMP(addr);
-	DUMP(adr);
 	cursor = addr.Find(adr);
-	DLOG("Set cursor " << cursor);
 	if(cursor >= 0)
 		sb.ScrollInto(cursor);
 	Refresh();

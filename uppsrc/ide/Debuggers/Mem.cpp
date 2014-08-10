@@ -2,7 +2,7 @@
 
 #ifdef COMPILER_MSC
 
-#define LLOG(x)  LOG(x)
+#define LLOG(x)  // DLOG(x)
 
 int    Pdb::Byte(adr_t addr)
 {

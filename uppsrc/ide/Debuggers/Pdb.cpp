@@ -112,11 +112,12 @@ bool Pdb::Create(One<Host> local, const String& exefile, const String& cmdline)
 		return false;
 	}
 	hProcess = pi.hProcess;
+	mainThread = pi.hThread;
 
 #ifdef CPU_64
 	BOOL _64;
 	win64 = IsWow64Process(hProcess, &_64) && !_64;
-	DDUMP(win64);
+	LLOG("Win64 app: " << win64);
 	disas.Mode64(win64);
 #endif
 	
@@ -139,6 +140,8 @@ bool Pdb::Create(One<Host> local, const String& exefile, const String& cmdline)
 	terminated = false;
 
 	running = true;
+	
+	break_running = false;
 
 	RunToException();
 

@@ -188,17 +188,20 @@ ValueType<T, type, B>::operator ValueTypeRef()
 
 class ValueArray : public ValueType<ValueArray, VALUEARRAY_V, Moveable<ValueArray> > {
 	struct Data : Value::Void {
-		virtual dword      GetType() const             { return VALUEARRAY_V; }
-		virtual bool       IsNull() const;
-		virtual void       Serialize(Stream& s);
-		virtual void       Xmlize(XmlIO& xio);
-		virtual void       Jsonize(JsonIO& jio);
-		virtual unsigned   GetHashValue() const;
-		virtual bool       IsEqual(const Value::Void *p);
-		virtual String     AsString() const;
-		virtual int        Compare(const Value::Void *p);
+		virtual dword        GetType() const             { return VALUEARRAY_V; }
+		virtual bool         IsNull() const;
+		virtual void         Serialize(Stream& s);
+		virtual void         Xmlize(XmlIO& xio);
+		virtual void         Jsonize(JsonIO& jio);
+		virtual unsigned     GetHashValue() const;
+		virtual bool         IsEqual(const Value::Void *p);
+		virtual String       AsString() const;
+		virtual int          Compare(const Value::Void *p);
+		virtual Value::Void *CloneCycle(const Value *target) const;
 
 		int GetRefCount() const     { return AtomicRead(refcount); }
+
+		bool IsCycle(const Value *ptr) const;
 
 		Vector<Value> data;
 	};
@@ -208,6 +211,8 @@ class ValueArray : public ValueType<ValueArray, VALUEARRAY_V, Moveable<ValueArra
 	Vector<Value>& Create();
 	Vector<Value>& Clone();
 	void  Init0();
+
+	bool IsCycle(const Value *ptr) const;
 	
 	friend Value::Void *ValueArrayDataCreate();
 	friend class Value;
@@ -231,6 +236,8 @@ public:
 	
 //	operator Ref()                            { return AsRef(*this); }
 
+	ValueArray GetClone();
+
 	void Clear();
 	void SetCount(int n);
 	void SetCount(int n, const Value& v);
@@ -251,6 +258,8 @@ public:
 	void Append(const ValueArray& va)         { Insert(GetCount(), va); }
 
 	const Value& operator[](int i) const      { return Get(i); }
+	
+	Value& At(int i);
 
 	unsigned GetHashValue() const             { return data->GetHashValue(); }
 	void     Serialize(Stream& s);

@@ -246,6 +246,42 @@ void ValueArray::Set(int i, const Value& v) {
 #endif
 }
 
+Value& ValueArray::At(int i)
+{
+	return Clone().At(i);
+}
+
+bool ValueArray::Data::IsCycle(const Value *ptr) const
+{
+	for(int i = 0; i < data.GetCount(); i++) {
+		if(&data[i] == ptr)
+			return true;
+		if(IsValueArray(data[i])) {
+			ValueArray va2 = data[i];
+			if(va2.data->IsCycle(ptr))
+				return true;
+		}
+	}
+	return false;
+}
+
+Value::Void *ValueArray::Data::CloneCycle(const Value *p) const
+{
+	if(IsCycle(p)) {
+		Data *d = new Data;
+		d->data <<= data;
+		return d;
+	}
+	return NULL;
+}
+
+ValueArray ValueArray::GetClone()
+{
+	ValueArray va2 = *this;
+	va2.Clone();
+	return va2;
+}
+
 void ValueArray::Remove(int i, int count)
 {
 	Clone().Remove(i, count);

@@ -34,6 +34,13 @@ void Value::RefRetain()
 Value& Value::operator=(const Value& v) {
 	if(this == &v) return *this;
 	FreeRef();
+	if(v.IsRef()) {
+		Void *d = v.ptr()->CloneCycle(this);
+		if(d) {
+			InitRef(d);
+			return *this;
+		}
+	}
 	data = v.data;
 	if(IsRef())
 		ptr()->Retain();

@@ -96,6 +96,7 @@ public:
 		virtual String     AsString() const            { return ""; }
 		virtual int        Compare(const Void *p)      { return 0; }
 		virtual int        PolyCompare(const Value& p) { return 0; }
+		virtual Void      *CloneCycle(const Value *p) const { return NULL; } // detects ValueArray/ValueMap assignment cycles
 
 		Void()                                         { refcount = 1; }
 		virtual ~Void()                                {}

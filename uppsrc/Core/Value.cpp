@@ -654,6 +654,35 @@ const Value& Value::operator[](const String& key) const
 	return ErrorValue();	
 }
 
+Value& Value::GetAdd(const Value& key)
+{
+	if(IsNull())
+		*this = ValueMap();
+	ASSERT(IsRef() && ptr()->GetType() == VALUEMAP_V);
+	ValueMap::Data& d = ValueMap::Clone((ValueMap::Data*&)ptr());
+	int i = d.key.Find(key);
+	if(i < 0) {
+		i = d.value.GetCount();
+		d.key.Add(key);
+	}
+	return d.value.At(i);
+}
+
+Value& Value::operator()(const String& key)
+{
+	return GetAdd(key);
+}
+
+Value& Value::operator()(const char *key)
+{
+	return GetAdd(key);
+}
+
+Value& Value::operator()(const Id& key)
+{
+	return GetAdd(~key);
+}
+
 String Value::GetName() const
 {
 	if(IsRef())

@@ -259,9 +259,12 @@ public:
 	void   Add(const Value& src);
 	template <typename T>
 	Value& operator<<(const T& src)       { Add(src); return *this; }
+	Value& operator()(int i)              { return At(i); }
 
 	Value& GetAdd(const Value& key);
-	
+	Value& operator()(const String& key);
+	Value& operator()(const char *key);
+	Value& operator()(const Id& key);
 
 	Value()                               : data((int)Null, VOIDV, String::SPECIAL) { Magic(); }
 	~Value()                              { ClearMagic(); if(IsRef()) RefRelease(); }

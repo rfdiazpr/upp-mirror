@@ -16,6 +16,11 @@ CONSOLE_APP_MAIN
 	DDUMP(vm);
 	DDUMP(vm2);
 	
+	Value json;
+	Value& h = json("monday");
+	h("morning")(12) = GetSysDate();
+	h("monday")("evening")(12) = GetSysTime();
+	DDUMP(json);	
 	
 	ValueArray va;
 	va.Add("Node");

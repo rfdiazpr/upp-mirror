@@ -251,37 +251,6 @@ Value& ValueArray::At(int i)
 	return Clone().At(i);
 }
 
-bool ValueArray::Data::IsCycle(const Value *ptr) const
-{
-	for(int i = 0; i < data.GetCount(); i++) {
-		if(&data[i] == ptr)
-			return true;
-		if(IsValueArray(data[i])) {
-			ValueArray va2 = data[i];
-			if(va2.data->IsCycle(ptr))
-				return true;
-		}
-	}
-	return false;
-}
-
-Value::Void *ValueArray::Data::CloneCycle(const Value *p) const
-{
-	if(IsCycle(p)) {
-		Data *d = new Data;
-		d->data <<= data;
-		return d;
-	}
-	return NULL;
-}
-
-ValueArray ValueArray::GetClone()
-{
-	ValueArray va2 = *this;
-	va2.Clone();
-	return va2;
-}
-
 void ValueArray::Remove(int i, int count)
 {
 	Clone().Remove(i, count);
@@ -450,15 +419,20 @@ const Value& ValueMap::Data::Get(const Value& k) const
 	return q >= 0 ? value[q] : ErrorValue();
 }
 
-ValueMap::Data& ValueMap::Clone() {
-	if(data->GetRefCount() != 1) {
+ValueMap::Data& ValueMap::Clone(Data *&ptr)
+{
+	if(ptr->GetRefCount() != 1) {
 		Data *d = new Data;
-		d->key <<= data->key;
-		d->value = data->value;
-		data->Release();
-		data = d;
+		d->key <<= ptr->key;
+		d->value = ptr->value;
+		ptr->Release();
+		ptr = d;
 	}
-	return *data;
+	return *ptr;
+}
+
+ValueMap::Data& ValueMap::Clone() {
+	return Clone(data);
 }
 
 void ValueMap::Init0()

@@ -197,11 +197,9 @@ class ValueArray : public ValueType<ValueArray, VALUEARRAY_V, Moveable<ValueArra
 		virtual bool         IsEqual(const Value::Void *p);
 		virtual String       AsString() const;
 		virtual int          Compare(const Value::Void *p);
-		virtual Value::Void *CloneCycle(const Value *target) const;
 
 		int GetRefCount() const     { return AtomicRead(refcount); }
-
-		bool IsCycle(const Value *ptr) const;
+		Vector<Value>& Clone();
 
 		Vector<Value> data;
 	};
@@ -212,8 +210,6 @@ class ValueArray : public ValueType<ValueArray, VALUEARRAY_V, Moveable<ValueArra
 	Vector<Value>& Clone();
 	void  Init0();
 
-	bool IsCycle(const Value *ptr) const;
-	
 	friend Value::Void *ValueArrayDataCreate();
 	friend class Value;
 	friend class ValueMap;
@@ -234,10 +230,6 @@ public:
 	ValueArray(const Nuller&)                 { Init0(); }
 	bool IsNullInstance() const               { return IsEmpty(); }
 	
-//	operator Ref()                            { return AsRef(*this); }
-
-	ValueArray GetClone();
-
 	void Clear();
 	void SetCount(int n);
 	void SetCount(int n, const Value& v);
@@ -302,6 +294,7 @@ class ValueMap : public ValueType<ValueMap, VALUEMAP_V, Moveable<ValueMap> >{
 	Data *data;
 
 	Data& Create();
+	static Data& Clone(Data *&ptr);
 	Data& Clone();
 	void  Init0();
 

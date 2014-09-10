@@ -2,16 +2,48 @@
 
 using namespace Upp;
 
+
 CONSOLE_APP_MAIN
 {
+	ValueMap m;
+	m("key1", "value1");
+	m("key2", "value2");
+	
+	Value vm = m;
+	Value vm2 = m;	
+	vm.At(1) = "123";
+	
+	DDUMP(vm);
+	DDUMP(vm2);
+	
+	
 	ValueArray va;
 	va.Add("Node");
+
 	Value v = va;
 
 	Value& v1 = va.At(1);
 
-	v1 = va;
+	v1 = 123;
+	
+//	v1 = va;
 //	v1 = va.GetClone();
 
 	DDUMP(va);
+	
+	Value v2;
+	v2.At(0) = 1;
+	Value v3 = v2;
+	v2.At(1) = 2;
+	DUMP(v2);
+	DDUMP(v3);
+
+	{	
+		Value va;
+		DDUMP(va);
+		va << 1;
+		DDUMP(va);
+		va << 1 << "dva" << 3.0;
+		DDUMP(va);
+	}
 }

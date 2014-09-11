@@ -5,13 +5,17 @@ using namespace Upp;
 
 CONSOLE_APP_MAIN
 {
+	ValueMap t;
+	t("test") = 123;
+	DUMP(t);
+	DDUMP(t.At(0));
+	
 	ValueMap m;
-	m("key1", "value1");
-	m("key2", "value2");
+	m("key1", "value1")("key2", "value2");
 	
 	Value vm = m;
 	Value vm2 = m;	
-	vm.At(1) = "123";
+	vm(1) = "123";
 	
 	DDUMP(vm);
 	DDUMP(vm2);

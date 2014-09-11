@@ -488,6 +488,32 @@ ValueMap::operator Value() const {
 	return Value(data);
 }
 
+Value& ValueMap::Data::GetAdd(const Value& k)
+{
+	int i = key.Find(k);
+	if(i < 0) {
+		i = value.GetCount();
+		key.Add(k);
+	}
+	return value.At(i);
+}
+
+Value& ValueMap::Data::At(int i)
+{
+	ASSERT(i < value.GetCount());
+	return value.At(i);
+}
+
+Value& ValueMap::GetAdd(const Value& key)
+{
+	return Clone().GetAdd(key);
+}
+
+Value& ValueMap::At(int i)
+{
+	return Clone().At(i);
+}
+
 ValueMap::ValueMap(const Value& src)
 {
 	if(!IsNull(src)) {

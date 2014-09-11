@@ -285,6 +285,8 @@ class ValueMap : public ValueType<ValueMap, VALUEMAP_V, Moveable<ValueMap> >{
 		virtual int        Compare(const Value::Void *p);
 
 		const Value& Get(const Value& key) const;
+		Value& GetAdd(const Value& key);
+		Value& At(int i);
 
 		Index<Value> key;
 		ValueArray   value;
@@ -371,6 +373,14 @@ public:
 	const Value& operator[](const char *key) const   { return operator[](Value(key)); }
 	const Value& operator[](const int key) const     { return operator[](Value(key)); }
 	const Value& operator[](const Id& key) const     { return operator[](Value(key.ToString())); }
+
+	Value& GetAdd(const Value& key);
+	Value& At(int i);
+	Value& operator()(const Value& key)              { return GetAdd(key); }
+	Value& operator()(const String& key)             { return operator()(Value(key)); }
+	Value& operator()(const char *key)               { return operator()(Value(key)); }
+	Value& operator()(const int key)                 { return operator()(Value(key)); }
+	Value& operator()(const Id& key)                 { return operator()(Value(key.ToString())); }
 	
 	Value GetAndClear(const Value& key);
 

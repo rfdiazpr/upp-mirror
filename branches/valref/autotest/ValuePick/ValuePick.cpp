@@ -48,6 +48,19 @@ CONSOLE_APP_MAIN
 	
 		TEST(m, "{ 2: ahoj, 1: kamarade }");
 	}
+	{
+		ValueMap m;
+		m("1", 1)("2", 2);
+		ValueMap m1 = m;
+		ValueMap m2 = m;
+		m1.RemoveKey("1");
+		m1.RemoveKey("3");
+		m2.RemoveKey("2");
+		
+		TEST(m, "{ 1: 1, 2: 2 }");
+		TEST(m1, "{ 2: 2 }");
+		TEST(m2, "{ 1: 1 }");
+	}	
 	
 	LOG("============== OK");
 }

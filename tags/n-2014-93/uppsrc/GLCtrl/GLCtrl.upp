@@ -1,0 +1,19 @@
+uses
+	CtrlCore;
+
+library(WIN32 GCC) "glaux glu32 opengl32";
+
+library(LINUX) "GL GLU";
+
+library(FREEBSD) "GL GLU";
+
+library(GTK) "gdkglext-x11-1.0 gtkglext-x11-1.0";
+
+file
+	GLCtrl.h,
+	GLPicking.cpp,
+	Win32GLCtrl.cpp,
+	X11GLCtrl.cpp,
+	GtkGLCtrl.cpp,
+	GLCtrl.cpp;
+

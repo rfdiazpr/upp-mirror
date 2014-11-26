@@ -1,0 +1,13 @@
+description "\377B";
+
+uses
+	ide\Core,
+	CtrlLib;
+
+file
+	Common.h,
+	ComDlg.cpp,
+	Module.cpp,
+	Util.cpp,
+	common.iml;
+

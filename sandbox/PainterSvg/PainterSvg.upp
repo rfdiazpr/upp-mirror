@@ -1,0 +1,9 @@
+uses
+	Painter;
+
+file
+	PainterSvg.h,
+	Svg.h,
+	SvgUtil.cpp,
+	PainterSvg.cpp;
+

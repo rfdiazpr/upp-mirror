@@ -5,7 +5,9 @@
 
 NAMESPACE_UPP
 
-void ParseSVG(Painter& p, const char *svg, const char *folder);
+#include "Svg.h"
+
+bool ParseSVG(Painter& p, const char *svg, const char *folder);
 
 END_UPP_NAMESPACE
 

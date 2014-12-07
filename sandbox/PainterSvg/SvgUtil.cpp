@@ -1,5 +1,7 @@
 #include "PainterSvg.h"
 
+namespace Upp {
+
 Color SvgParser::GetTextColor(const String& color) {
 	struct Svg_color {
 		const char *name;
@@ -156,17 +158,20 @@ Color SvgParser::GetTextColor(const String& color) {
 	return map.Get(color, map.Get(ToLower(color), Null));
 }
 
-Color SvgParser::GetColor(String text) {
-	text = ToLower(text);
+Color SvgParser::GetColor(const String& text_) {
+	String text = ToLower(text_);
+	DDUMP(text);
 	if(text == "none" || text.IsEmpty())
 		return Null;
 	else
 	if(*text == '#') {
-		int n = ScanInt64(str + 1);
-		return Color(LOBYTE(HIWORD(n)), HIBYTE(n), LOBYTE(n));
+		int col = ScanInt(~text + 1, NULL, 16);
+		DDUMP(FormatIntHex(col));
+		DDUMP(Color(col >> 16, (col >> 8) & 255, col & 255));
+		return Color(col >> 16, (col >> 8) & 255, col & 255);
 	}
 	else
-		return GetSvgColor(text);
+		return GetTextColor(text);
 }
 
 Array<double> GetTransformArgs(String str, const char *command) {
@@ -195,72 +200,4 @@ Array<double> GetTransformArgs(String str, const char *command) {
 	return args;
 }
 
-void ApplyTransf(Svg2DTransform &transf, XmlParser &xp, int id) {
-	Array<double> args;
-	args = GetTransformArgs(xp[id], "translate");
-	if (args.GetCount() == 1) 
-		transf.Translate(args[0], args[0]);
-	else if (args.GetCount() == 2) 
-		transf.Translate(args[0], args[1]);
-	args = GetTransformArgs(xp[id], "scale");
-	if (args.GetCount() == 1) 
-		transf.Scale(args[0], args[0]);			
-	else if (args.GetCount() == 2) 
-		transf.Scale(args[0], args[1]);						
-}
-
-VectorMap<String, String> SvgParser::ApplyStyle(const char *s)
-{
-	VectorMap<String, String> r;
-	String key, value;
-	for(;;) {
-		if(*s == ';' || *s == '\0') {
-			if(key.GetCount())
-				r.Add(key, TrimBoth(value));
-			value.Clear();
-			key.Clear();
-			if(*s == '\0')
-				break;
-			else
-				s++;
-		}
-		else
-		if(*s == ':') {
-			key << TrimBoth(value);
-			value.Clear();
-			s++;
-		}
-		else
-			value.Cat(*s++);
-	}
-	return r;
-}
-
-/*
-VectorMap<String, String> SvgParser::ParseStyle(const char *s)
-{
-	VectorMap<String, String> r;
-	String key, value;
-	for(;;) {
-		if(*s == ';' || *s == '\0') {
-			if(key.GetCount())
-				r.Add(key, TrimBoth(value));
-			value.Clear();
-			key.Clear();
-			if(*s == '\0')
-				break;
-			else
-				s++;
-		}
-		else
-		if(*s == ':') {
-			key << TrimBoth(value);
-			value.Clear();
-			s++;
-		}
-		else
-			value.Cat(*s++);
-	}
-	return r;
-}
-*/
+};

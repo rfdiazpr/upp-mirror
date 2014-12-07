@@ -2,395 +2,183 @@
 
 NAMESPACE_UPP
 
-class Svg2DTransform {
-public:
-	Svg2DTransform() 						{Init();}
-	Svg2DTransform(Svg2DTransform &transf) 	{*this = transf;}
-	void Init() {
-		transX = transY = 0;
-		angle = 0;
-		scaleX = scaleY = 1;
-	}
-	void Apply(Painter &sw) {
-		sw.End();
-		sw.Begin();
-		sw.Translate(transX, transY);
-		sw.Scale(scaleX, scaleY);
-		sw.Rotate(angle);
-	}
-	void Translate(double x, double y) {
-		transX += x;
-		transY += y;
-	}
-	void Scale(double x, double y) {
-		scaleX *= x;
-		scaleY *= y;
-	}
-	void Rotate(double ang) {
-		angle += ang;
-	}
-	Svg2DTransform &operator=(const Svg2DTransform &transf) {
-		if (this == &transf)      // Same object?
-      		return *this; 
-		transX = transf.transX;
-		transY = transf.transY;
-		angle = transf.angle;
-		scaleX = transf.scaleX;
-		scaleY = transf.scaleY;
-		return *this;
-	}
-	
-private:
-	double transX;
-	double transY;
-	double angle;
-	double scaleX;
-	double scaleY;
-};
-
-class SvgStyle {
-public:
-	SvgStyle()					{Init();}
-	SvgStyle(SvgStyle &transf)  {*this = transf;}
-	void Init() {
-		strokeWidth = 1;
-		strokeFill = Null;
-		strokeColor = Black();
-		strokeOpacity = 1;
-	}
-	void Get(String str) {
-		String value;
-		Color color;
-		
-		color = GetColorXml(GetValueStringXml(str, "stroke:"));
-		if (!color.IsNullInstance())
-			strokeColor = color;
-		
-		value = GetValueStringXml(str, "stroke-width:");
-		if (value != "")
-			strokeWidth = atoi(value);
-		
-		color = GetColorXml(GetValueStringXml(str, "fill:"));
-		if (!color.IsNullInstance())
-			strokeFill = color;
-		
-		value = GetValueStringXml(str, "opacity:");
-		if (value != "")
-			strokeOpacity = atof(value);
-	}
-	void Apply(Painter &sw) {
-		sw.Opacity(strokeOpacity);	
-		if (!strokeFill.IsNullInstance())	
-			sw.Fill(strokeFill);				
-		sw.Stroke(strokeWidth, strokeColor);
-	}
-	SvgStyle &operator=(const SvgStyle &style) {
-		if (this == &style)      // Same object?
-      		return *this; 
-		strokeColor = style.strokeColor;
-		strokeFill = style.strokeFill;
-		strokeOpacity = style.strokeOpacity;
-		strokeWidth = style.strokeWidth;
-		return *this;
-	}
-	
-public:
-	int strokeWidth;
-	Color strokeFill;
-	Color strokeColor;
-	double strokeOpacity;
-};
-
-void SvgPaint_Rect(Painter& sw, XmlParser &xp, Svg2DTransform transf, SvgStyle style) {
-	int x, y, width, height;
-	
-	for (int i = 0; i < xp.GetAttrCount(); ++i) {
-		String attr = xp.GetAttr(i);
-		if (attr == "x") 
-			x = atoi(xp[i]);
-		else if (attr == "y") 
-			y = atoi(xp[i]);
-		else if (attr == "width") 
-			width = atoi(xp[i]);
-		else if (attr == "height") 
-			height = atoi(xp[i]);
-		else if (attr == "style") 
-			style.Get(xp[i]);
-		else if (attr == "transform") 
-			ApplyTransf(transf, xp, i);
-	}				
-	transf.Apply(sw);
-	sw.Rectangle(x, y, width, height);	
-	style.Apply(sw);
+void SvgParser::StartElement()
+{
+	state.Add();
+	state.Top() = state[state.GetCount() - 2];
+	sw.Begin();
+	Transform(Txt("transform"));
+	Style(Txt("style"));
+	closed = false;
 }
 
-void SvgPaint_Image(Painter& sw, XmlParser &xp, Svg2DTransform transf, SvgStyle style, 
-					const char *svgFolder) {
-	int x, y, width, height;
-	String fileName;
-	
-	for (int i = 0; i < xp.GetAttrCount(); ++i) {
-		String attr = xp.GetAttr(i);
-		if (attr == "x") 
-			x = atoi(xp[i]);
-		else if (attr == "y") 
-			y = atoi(xp[i]);
-		else if (attr == "width") 
-			width = atoi(xp[i]);
-		else if (attr == "height") 
-			height = atoi(xp[i]);
-		else if (attr == "xlink:href") 
-			fileName = xp[i];
-		else if (attr == "style") 
-			style.Get(xp[i]);
-		else if (attr == "transform") 
-			ApplyTransf(transf, xp, i);		
-	}				
-	if (!FileExists(fileName))
-		fileName = AppendFileName(svgFolder, fileName);
-	transf.Apply(sw);
-	Image img = StreamRaster::LoadFileAny(fileName);
-	if (!IsNull(img))
-		sw.Rectangle(x, y, width, height).Fill(StreamRaster::LoadFileAny(fileName), x, y, width, 0).Stroke(0, Black());
-	else {
-		sw.Rectangle(x, y, width, height).Fill(White()).Stroke(1, Black());
-		int wh = 20;
-		sw.Move(x+5, y+5).Line(x+5+wh, y+5).Line(x+5+wh, y+5+wh).Line(x+5, y+5+wh).Line(x+5, y+5).Stroke(1, Black());
-		sw.Move(x+5+5, y+5+5).Line(x+5+wh-5, y+5+wh-5).Stroke(3, Red());
-		sw.Move(x+5+wh-5, y+5+5).Line(x+5+5, y+5+wh-5).Stroke(3, Red());
-		sw.Move(x, y);
+void SvgParser::EndElement()
+{
+	if(!closed)
+		sw.Stroke(0, Black()); // Finish path to allow new transformations, if not yet done
+	state.Drop();
+	sw.End();
+}
+
+void SvgParser::StrokeFinishElement()
+{
+	State& s = state.Top();
+	sw.Begin(); // because we need to set opacity
+	sw.Opacity(s.stroke_opacity);
+	// TODO gradients
+	if(!IsNull(s.stroke) && s.stroke_width > 0) {
+		sw.Stroke(s.stroke_width, s.stroke);
+		closed = true;
 	}
-	style.Apply(sw);
+	EndElement();
 }
 
-void SvgPaint_Ellipse(Painter& sw, XmlParser &xp, Svg2DTransform transf, SvgStyle style) {
-	int x, y, width, height;
-	
-	for (int i = 0; i < xp.GetAttrCount(); ++i) {
-		String attr = xp.GetAttr(i);
-		if (attr == "cx") 
-			x = atoi(xp[i]);
-		else if (attr == "cy") 
-			y = atoi(xp[i]);
-		else if (attr == "rx") 
-			width = atoi(xp[i]);
-		else if (attr == "ry") 
-			height = atoi(xp[i]);
-		else if (attr == "style") 
-			style.Get(xp[i]);
-		else if (attr == "transform") 
-			ApplyTransf(transf, xp, i);		
-	}							
-	transf.Apply(sw);
-	sw.Ellipse(x, y, width, height);	
-	style.Apply(sw);
-}
-
-void SvgPaint_Line(Painter& sw, XmlParser &xp, Svg2DTransform transf, SvgStyle style) {
-	int x1, y1, x2, y2;
-	
-	for (int i = 0; i < xp.GetAttrCount(); ++i) {
-		String attr = xp.GetAttr(i);
-		if (attr == "x1") 
-			x1 = atoi(xp[i]);
-		else if (attr == "y1") 
-			y1 = atoi(xp[i]);
-		else if (attr == "x2") 
-			x2 = atoi(xp[i]);
-		else if (attr == "y2") 
-			y2 = atoi(xp[i]);
-		else if (attr == "style") 
-			style.Get(xp[i]);
-		else if (attr == "transform") 
-			ApplyTransf(transf, xp, i);
-	}				
-	transf.Apply(sw);	
-	sw.Move(x1, y1);
-	sw.Line(x2, y2);	
-	style.Apply(sw);
-}
-
-Array<Point> GetPolygonPointsXml(String &strpoints) {
-	Array<Point> points;
-	int newpos, pos;
-	char separator;
-	
-	if (strpoints.Find(',') >= 0)
-		separator = ',';
-	else
-		separator = ' ';
-	
-	pos = newpos = 0;
-	while (newpos != strpoints.GetCount()) {
-		int x, y;
-		if ((newpos = strpoints.Find(separator, pos)) < 0)
-			break;
-		x = atoi(strpoints.Mid(pos, newpos+1));
-		pos = newpos+1;
-		if ((newpos = strpoints.Find(' ', pos+1 < strpoints.GetCount()? pos+1: pos)) < 0)	// Jump possible spaces 
-			newpos = strpoints.GetCount();
-		y = atoi(strpoints.Mid(pos, newpos+1));
-		pos = newpos+1;
-		Point &point = points.Add();
-		point.x = x;
-		point.y = y;
+void SvgParser::FinishElement()
+{
+	State& s = state.Top();
+	sw.Begin(); // because we need to set opacity
+	sw.Opacity(s.fill_opacity);
+	// TODO gradients
+	if(!IsNull(s.fill)) {
+		sw.Fill(s.fill);
+		closed = true;
 	}
-	return points;
+	StrokeFinishElement();
 }
 
-void SvgPaint_Polygon(Painter& sw, XmlParser &xp, Svg2DTransform transf, SvgStyle style) {
-	Array<Point> points;
-	
-	for (int i = 0; i < xp.GetAttrCount(); ++i) {
-		String attr = xp.GetAttr(i);
-		if (attr == "points") {
-			String strpoints;
-			strpoints = NormalizeSpaces(xp[i]);
-			points = GetPolygonPointsXml(strpoints);
-		} else if (attr == "style") 
-			style.Get(xp[i]);
-		else if (attr == "transform") 
-			ApplyTransf(transf, xp, i);		
-	}			
-	transf.Apply(sw);
-	sw.Move(points[0].x, points[0].y);
-	for (int i = 1; i < points.GetCount(); ++i)				
-		sw.Line(points[i].x, points[i].y);
-	style.Apply(sw);
+void SvgParser::AttrRect()
+{
+	sw.Rectangle(Dbl("x"), Dbl("y"), Dbl("width"), Dbl("height"));
 }
 
-void SvgPaint_Text(Painter& sw, XmlParser &xp, Svg2DTransform transf, SvgStyle style) {
-	int x, y;
-	String font;
-	int factor = 20;			// Factor to get better resolution text
-	
-	Font f(Font::ARIAL, 12);
-	String str = xp.ReadText();
-	StringBuffer stext;
-	stext = str;
-	
-	int i, j;
-	for (i = j = 0; i < stext.GetCount(); ++i, ++j) {
-		if (stext[i] == '\n')
-			stext[j] = ' ';	
-		else if (stext[i] == '\r')
-			--j;
-		else
-			stext[j] = stext[i];
-	}
-	stext.SetCount(j);
-	String text = stext;
-	for (int i = 0; i < xp.GetAttrCount(); ++i) {
-		String attr = xp.GetAttr(i);
-		if (attr == "x") 
-			x = atoi(xp[i]);
-		else if (attr == "y") 
-			y = atoi(xp[i]);
-		else if (attr == "style") { 
-			style.Get(xp[i]);
-			
-			if (style.strokeFill.IsNullInstance())
-				style.strokeFill = style.strokeColor;
-			String fontText;
-			fontText = GetValueStringXml(xp[i], "font-family:");
-			if (fontText.Find("Roman") >= 0)
-				f.Face(Font::ROMAN);
-			else if (fontText.Find("Arial") >= 0)
-				f.Face(Font::ARIAL);			
-			else if (fontText.Find("Courier") >= 0)
-				f.Face(Font::COURIER);		
-			f.Height(atoi(GetValueStringXml(xp[i], "font-size:"))*factor);
-			if (f.GetHeight() == 0)
-				f.Height(12*factor);
-		} else if (attr == "transform") {
-			Array<double> args;
-			args = GetTransformArgs(xp[i], "translate");
-			if (!args.IsEmpty()) 
-				transf.Translate(args[0], args[1]);
-			args = GetTransformArgs(xp[i], "scale");
-			if (!args.IsEmpty()) 
-				transf.Scale(args[0], args[1]);			
+Vector<Point> SvgParser::GetPoints() {
+	Vector<Point> r;
+	String value = Txt("points");
+	try {
+		CParser p(value);
+		while(!p.IsEof()) {
+			Pointf n;
+			n.x = p.ReadDouble();
+			p.Char(',');
+			n.y = p.ReadDouble();
+			r.Add(n);
 		}
 	}
-	transf.Translate(x, y-f.GetHeight()/factor);
-	transf.Scale(1./factor, 1./factor);						
-	transf.Apply(sw);	
-	sw.Text(0, 0, text, f);
-	style.Apply(sw);
+	catch(CParser::Error) {}
+	return r;
 }
 
-void SvgPaint_Path(Painter& sw, XmlParser &xp, Svg2DTransform transf, SvgStyle &style) {
-	String path;
-	
-	for (int i = 0; i < xp.GetAttrCount(); ++i) {
-		String attr = xp.GetAttr(i);
-		if (attr == "d") 
-			path = xp[i];
-		else if (attr == "style") 
-			style.Get(xp[i]);
-		else if (attr == "transform") 
-			ApplyTransf(transf, xp, i);		
-	}		
-	transf.Apply(sw);	
-	if (!path.IsEmpty())
-		sw.Path(path);
-	style.Apply(sw);
+void SvgParser::Poly(bool line) {
+	Vector<Point> p = GetPoints();
+	StartElement();
+	sw.Move(p[0].x, p[0].y);
+	for(int i = 1; i < p.GetCount(); ++i)
+		sw.Line(p[i].x, p[i].y);
+	if(line)
+		StrokeFinishElement();
+	else
+		FinishElement();
 }
 
-void SvgPaint_G(Painter& sw, XmlParser &xp, Svg2DTransform &transf, SvgStyle &style) {
-	for (int i = 0; i < xp.GetAttrCount(); ++i) {
-		String attr = xp.GetAttr(i);
-		if (attr == "style") 
-			style.Get(xp[i]);
-		else if (attr == "transform") 
-			ApplyTransf(transf, xp, i);
-	}		
-}
-
-void ParseG(Painter& p, XmlParser &xp, Svg2DTransform transf, SvgStyle style, const char *svgFolder) {
-	if(xp.TagE("rect")) 
-		SvgPaint_Rect(p, xp, transf, style);
-	else if(xp.TagE("ellipse"))
-		SvgPaint_Ellipse(p, xp, transf, style);				
-	else if(xp.TagE("line"))
-		SvgPaint_Line(p, xp, transf, style);				
-	else if(xp.TagE("polygon"))
-		SvgPaint_Polygon(p, xp, transf, style);				
-	else if(xp.TagE("polyline"))
-		SvgPaint_Polygon(p, xp, transf, style);	
-	else if(xp.TagE("path"))
-		SvgPaint_Path(p, xp, transf, style);	
-	else if(xp.TagE("image"))
-		SvgPaint_Image(p, xp, transf, style, svgFolder);		
-	else if(xp.Tag("text")) {
-		SvgPaint_Text(p, xp, transf, style);
-		xp.PassEnd();	
-	} else if(xp.Tag("g")) {
-		Svg2DTransform transfG(transf);
-		SvgStyle styleG(style);
-		
-		SvgPaint_G(p, xp, transfG, styleG);
-					
-		while(!xp.End()) 
-			ParseG(p, xp, transfG, styleG, svgFolder);
-	} else
-		xp.Skip();
-}
-
-void ParseSVG(Painter& p, const char *svgFile, const char *svgFolder) {
-	XmlParser xp(svgFile);
-	while(!xp.IsTag())
-		xp.Skip();
-	xp.PassTag("svg");
-	Svg2DTransform transf;
-	SvgStyle style;
-	p.Begin();
-	while(!xp.End()) {
-		transf.Init();
-		style.Init();
-		ParseG(p, xp, transf, style, svgFolder);
+void SvgParser::ParseG() {
+	if(IsTag()) DLOG(PeekTag());
+	if(TagE("rect")) {
+		StartElement();
+		AttrRect();
+		FinishElement();
 	}
-	p.End();
+	else
+	if(TagE("ellipse")) {
+		StartElement();
+		sw.Ellipse(Dbl("cx"), Dbl("cy"), Dbl("rx"), Dbl("ry"));
+		FinishElement();
+	}
+	else
+	if(TagE("line")) {
+		StartElement();
+		sw.Move(Dbl("x1"), Dbl("y1"));
+		sw.Line(Dbl("x2"), Dbl("y2"));
+		FinishElement();
+	}
+	else
+	if(TagE("polygon"))
+		Poly(false);
+	else
+	if(TagE("polyline"))
+		Poly(true);
+	else
+	if(TagE("path")) {
+		StartElement();
+		sw.Path(Txt("d"));
+		FinishElement();
+	}
+	else
+	if(TagE("image")) {
+		StartElement();
+		String fileName = Txt("xlink:href");
+		if (!FileExists(fileName))
+			fileName = AppendFileName(svgFolder, fileName);
+		Image img = StreamRaster::LoadFileAny(fileName);
+		if(!IsNull(img)) {
+			AttrRect();
+			sw.Fill(StreamRaster::LoadFileAny(fileName), Dbl("x"), Dbl("y"), Dbl("width"), 0);
+		}
+		EndElement();
+	}
+	else
+	if(Tag("text")) {
+		StartElement();
+		String text = ReadText();
+		text.Replace("\n", " ");
+		text.Replace("\r", "");
+		text.Replace("\t", " ");
+		State& s = state.Top();
+		int face = Font::SANSSERIF;
+		if(findarg(s.font_family, "courier", "monospace") >= 0)
+			face = Font::MONOSPACE;
+		if(findarg(s.font_family, "roman;serif"))
+			face = Font::SERIF;
+		sw.Text(Dbl("x"), Dbl("y"), text, Font(face, (int)s.font_size)); // TODO:Fix font size
+		FinishElement();
+		PassEnd();	
+	} else
+	if(Tag("g")) {
+		StartElement();
+		ParseG();
+		End();
+		PassEnd();
+	}
+	else
+		Skip();
+}
+
+bool SvgParser::Parse() {
+	try {
+		while(!IsTag())
+			Skip();
+		PassTag("svg");
+		sw.Begin();
+		while(!End())
+			ParseG();
+		sw.End();
+	}
+	catch(XmlError) {
+		return false;
+	}
+	return true;
+}
+
+SvgParser::SvgParser(const char *svg, const char *folder, Painter& sw)
+:	sw(sw),
+	XmlParser(svg)
+{
+	svgFolder = folder;
+	Reset();
+}
+
+bool ParseSVG(Painter& p, const char *svg, const char *folder)
+{
+	return SvgParser(svg, folder, p).Parse();
 }
 
 END_UPP_NAMESPACE

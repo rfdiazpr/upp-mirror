@@ -34,6 +34,9 @@ void SvgView::Load(const char *filename)
 	img.SetImage(Null);
 	ImageBuffer ib(GetSize());
 	BufferPainter sw(ib);
+	sw.Clear(White());
+	sw.Translate(200, 0);
+	DLOG("============= " << filename);
 	try {
 		ParseSVG(sw, LoadFileBOM(filename), GetFileFolder(filename));
 	}
@@ -120,6 +123,7 @@ SvgView::SvgView()
 	Sizeable().Zoomable();
 
 	dir = GetCurrentDirectory();
+	dir = "C:/u/exsrc/SDL_svg-1.2.0/svg";
 }
 
 GUI_APP_MAIN

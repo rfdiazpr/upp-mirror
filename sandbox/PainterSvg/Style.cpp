@@ -23,12 +23,14 @@ void SvgParser::Style(const char *style)
 			value = TrimBoth(value);
 			if(value != "inherit") {
 				if(key == "fill") {
-					if(value.StartsWith("url(")) {
-						value = value.Mid(4);
+					if(value.StartsWith("url(#")) {
+						value = value.Mid(5);
 						int q = value.Find(')');
 						if(q >= 0)
 							value.Trim(q);
+						DLOG("Fill " << value);
 						s.fill_gradient = gradient.Find(value);
+						DDUMP(s.fill_gradient);
 						s.fill = Null;
 					}
 					else {

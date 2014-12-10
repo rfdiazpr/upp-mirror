@@ -14,7 +14,7 @@ struct SvgParser : XmlParser {
 		Pointf a, b, c, f;
 		double r;
 		int    style;
-		bool   object_space;
+		bool   user_space;
 		String transform;
 
 		Vector<Stop> stop;
@@ -43,7 +43,10 @@ struct SvgParser : XmlParser {
 	
 	Array<State> state;
 	bool         closed;
-	
+	Pointf       prev;
+	Rectf        boundingbox;
+	Xform2D      lastTransform;
+
 	void Reset();
 
 	static Color GetTextColor(const String& color);
@@ -55,17 +58,26 @@ struct SvgParser : XmlParser {
 	String Txt(const char *id)                  { return (*this)[id]; }
 	double Dbl(const char *id, double def = 0)  { return Nvl(StrDbl(Txt(id)), def); }
 	
+	void   Bounding(const Pointf& f);
+	Pointf GP(const Gradient& g, const Pointf& p);
+	double GP(const Gradient& g, double v);
+
 	void StartElement();
 	void EndElement();
 	void StrokeFinishElement();
 	void FinishElement();
 	void AttrRect();
 	void Stops(const Gradient& g);
-	Vector<Point> GetPoints();
 	void Poly(bool line);
 	void ParseG();
 	void ParseGradient(bool radial);
 	void ResolveGradient(int i);
+	
+	bool   ReadBool(CParser& p);
+	double ReadDouble(CParser& p);
+	Pointf ReadPoint0(CParser& p, bool rel);
+	Pointf ReadPoint(CParser& p, bool rel);
+	void   Path(const char *s);
 	
 	bool Parse();
 

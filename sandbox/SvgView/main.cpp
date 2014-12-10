@@ -35,7 +35,7 @@ void SvgView::Load(const char *filename)
 	ImageBuffer ib(GetSize());
 	BufferPainter sw(ib);
 	sw.Clear(White());
-	sw.Translate(200, 0);
+	sw.Translate(400, 0);
 	DLOG("============= " << filename);
 	try {
 		ParseSVG(sw, LoadFileBOM(filename), GetFileFolder(filename));

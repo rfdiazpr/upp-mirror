@@ -128,7 +128,7 @@ void SvgParser::Transform(const char *transform)
 					sw.Translate(-r[1], -r[2]);
 				sw.Rotate(r[0]);
 				if(r.GetCount() >= 3)
-					sw.Translate(-r[1], -r[2]);
+					sw.Translate(r[1], r[2]);
 			}
 			else
 			if(kind == "scale" && r.GetCount() >= 2)

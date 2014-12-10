@@ -6,5 +6,6 @@ file
 	Svg.h,
 	SvgUtil.cpp,
 	Style.cpp,
+	SvgPath.cpp,
 	PainterSvg.cpp;
 

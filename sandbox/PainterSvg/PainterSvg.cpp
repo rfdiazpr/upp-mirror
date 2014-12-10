@@ -17,25 +17,27 @@ void SvgParser::ResolveGradient(int i)
 		g.stop <<= g2.stop;
 	g.a.x = Nvl(Nvl(g.a.x, g2.a.x));
 	g.a.y = Nvl(Nvl(g.a.y, g2.a.y));
-	g.b.x = Nvl(Nvl(g.b.x, g2.b.x));
+	g.b.x = Nvl(Nvl(g.b.x, g2.b.x), 1.0);
 	g.b.y = Nvl(Nvl(g.b.y, g2.b.y));
-	g.c.x = Nvl(Nvl(g.c.x, g2.c.x));
-	g.c.y = Nvl(Nvl(g.c.y, g2.c.y));
+	g.c.x = Nvl(Nvl(g.c.x, g2.c.x), 0.5);
+	g.c.y = Nvl(Nvl(g.c.y, g2.c.y), 0.5);
 	g.f.x = Nvl(Nvl(g.f.x, g2.f.x), g.c.x);
 	g.f.y = Nvl(Nvl(g.f.y, g2.f.y), g.c.y);
-	g.r = Nvl(Nvl(g.r, g2.r));
+	g.r = Nvl(Nvl(g.r, g2.r), 0.5);
 	g.transform = Nvl(g.transform, g2.transform);
 	g.style = Nvl(Nvl(g.style, g2.style), GRADIENT_PAD);
 }
 
 void SvgParser::StartElement()
 {
+	DLOG("ID: " << Txt("id"));
 	state.Add();
 	state.Top() = state[state.GetCount() - 2];
 	sw.Begin();
 	Transform(Txt("transform"));
 	Style(Txt("style"));
 	closed = false;
+	boundingbox = Rectf(DBL_MAX, DBL_MAX, DBL_MIN, DBL_MIN);
 }
 
 void SvgParser::EndElement()
@@ -48,12 +50,8 @@ void SvgParser::EndElement()
 
 void SvgParser::Stops(const Gradient& g)
 {
-	DDUMP(g.stop.GetCount());
-	for(int i = 0; i < g.stop.GetCount(); i++) {
-		DDUMP(g.stop[i].offset);
-		DDUMP(g.stop[i].color);
+	for(int i = 0; i < g.stop.GetCount(); i++)
 		sw.ColorStop(g.stop[i].offset, g.stop[i].color);
-	}
 }
 
 void SvgParser::StrokeFinishElement()
@@ -84,6 +82,26 @@ void SvgParser::StrokeFinishElement()
 	EndElement();
 }
 
+Pointf SvgParser::GP(const Gradient& g, const Pointf& p)
+{
+	DDUMP(g.user_space);
+	DDUMP(boundingbox);
+	if(g.user_space)
+		return p;
+	DDUMP(p);
+	Point h = Pointf(p.x * (boundingbox.GetWidth()) + boundingbox.left,
+	                 p.y * (boundingbox.GetHeight()) + boundingbox.top);
+	DDUMP(h);
+	return h;
+}
+
+double SvgParser::GP(const Gradient& g, double v)
+{
+	if(g.user_space)
+		return v;
+	return v * Length(boundingbox.GetSize()) / sqrt(2.0);
+}
+
 void SvgParser::FinishElement()
 {
 	State& s = state.Top();
@@ -96,12 +114,18 @@ void SvgParser::FinishElement()
 		Gradient& g = gradient[s.fill_gradient];
 		if(g.stop.GetCount()) {
 			Stops(g);
-		DDUMP(g.a);
-		DDUMP(g.b);
-			if(g.radial)
-				sw.Fill(g.f, g.stop[0].color, g.c, g.r, g.stop.Top().color, g.style);
+			if(g.radial) {
+				DLOG("======= Radial ========");
+				DDUMP(g.f);
+				DDUMP(g.c);
+				DDUMP(g.r);
+				DDUMP(GP(g, g.f));
+				DDUMP(GP(g, g.c));
+				DDUMP(GP(g, g.r));
+				sw.Fill(GP(g, g.f), g.stop[0].color, GP(g, g.c), GP(g, g.r), g.stop.Top().color, g.style);
+			}
 			else
-				sw.Fill(g.a, g.stop[0].color, g.b, g.stop.Top().color, g.style);
+				sw.Fill(GP(g, g.a), g.stop[0].color, GP(g, g.b), g.stop.Top().color, g.style);
 			sw.ClearStops();
 		}
 		closed = true;
@@ -118,37 +142,12 @@ void SvgParser::FinishElement()
 
 void SvgParser::AttrRect()
 {
-	sw.Rectangle(Dbl("x"), Dbl("y"), Dbl("width"), Dbl("height"));
-}
-
-Vector<Point> SvgParser::GetPoints() {
-	Vector<Point> r;
-	String value = Txt("points");
-	try {
-		CParser p(value);
-		while(!p.IsEof()) {
-			Pointf n;
-			n.x = p.ReadDouble();
-			p.Char(',');
-			n.y = p.ReadDouble();
-			r.Add(n);
-		}
-	}
-	catch(CParser::Error) {}
-	return r;
-}
-
-void SvgParser::Poly(bool line)
-{
-	Vector<Point> p = GetPoints();
-	StartElement();
-	sw.Move(p[0].x, p[0].y);
-	for(int i = 1; i < p.GetCount(); ++i)
-		sw.Line(p[i].x, p[i].y);
-	if(line)
-		StrokeFinishElement();
-	else
-		FinishElement();
+	Pointf p(Dbl("x"), Dbl("y"));
+	double cx = Dbl("width");
+	double cy = Dbl("height");
+	sw.Rectangle(p.x, p.y, cx, cy);
+	Bounding(p);
+	Bounding(p + Pointf(cx, cy));
 }
 
 void SvgParser::ParseGradient(bool radial)
@@ -156,7 +155,7 @@ void SvgParser::ParseGradient(bool radial)
 	DDUMP(Txt("id"));
 	Gradient& g = gradient.Add(Txt("id"));
 	g.radial = radial;
-	g.object_space = Txt("gradientUnits") == "objectBoundingBox"; //TODO: implement
+	g.user_space = Txt("gradientUnits") == "userSpaceOnUse"; //TODO: implement
 	g.transform = Txt("gradientTransform");
 	g.c.x = Dbl("cx", Null);
 	g.c.y = Dbl("cy", Null);
@@ -211,8 +210,36 @@ void SvgParser::ParseGradient(bool radial)
 			Skip();
 }
 
+void SvgParser::Poly(bool line)
+{
+	Vector<Point> r;
+	String value = Txt("points");
+	try {
+		CParser p(value);
+		while(!p.IsEof()) {
+			Pointf n;
+			n.x = p.ReadDouble();
+			p.Char(',');
+			n.y = p.ReadDouble();
+			r.Add(n);
+			Bounding(n);
+		}
+	}
+	catch(CParser::Error) {}
+	if(r.GetCount() == 0) {
+		StartElement();
+		sw.Move(r[0].x, r[0].y);
+		for(int i = 1; i < r.GetCount(); ++i)
+			sw.Line(r[i].x, r[i].y);
+		if(line)
+			StrokeFinishElement();
+		else
+			FinishElement();
+	}
+}
+
 void SvgParser::ParseG() {
-	if(IsTag()) DLOG(PeekTag());
+	if(IsTag()) DLOG("-- TAG " << PeekTag());
 	if(Tag("defs"))
 		while(!End())
 			if(Tag("linearGradient"))
@@ -230,14 +257,22 @@ void SvgParser::ParseG() {
 	else
 	if(TagE("ellipse")) {
 		StartElement();
-		sw.Ellipse(Dbl("cx"), Dbl("cy"), Dbl("rx"), Dbl("ry"));
+		Pointf c(Dbl("cx"), Dbl("cy"));
+		Pointf r(Dbl("rx"), Dbl("ry"));
+		Bounding(c - r);
+		Bounding(c + r);
+		sw.Ellipse(c.x, c.y, r.x, r.y);
 		FinishElement();
 	}
 	else
 	if(TagE("line")) {
 		StartElement();
-		sw.Move(Dbl("x1"), Dbl("y1"));
-		sw.Line(Dbl("x2"), Dbl("y2"));
+		Pointf a(Dbl("x1"), Dbl("y1"));
+		Pointf b(Dbl("x2"), Dbl("y2"));
+		Bounding(a);
+		Bounding(b);
+		sw.Move(a);
+		sw.Line(b);
 		FinishElement();
 	}
 	else
@@ -249,7 +284,7 @@ void SvgParser::ParseG() {
 	else
 	if(TagE("path")) {
 		StartElement();
-		sw.Path(Txt("d"));
+		Path(Txt("d"));
 		FinishElement();
 	}
 	else
@@ -285,7 +320,8 @@ void SvgParser::ParseG() {
 	else
 	if(Tag("g")) {
 		StartElement();
-		ParseG();
+		while(!End())
+			ParseG();
 		EndElement();
 	}
 	else
@@ -303,7 +339,6 @@ bool SvgParser::Parse() {
 		sw.End();
 	}
 	catch(XmlError e) {
-		DDUMP(e);
 		return false;
 	}
 	return true;

@@ -1,3 +1,33 @@
+struct BoundsPainter : public NilPainter {
+protected:
+	virtual void   MoveOp(const Pointf& p, bool rel);
+	virtual void   LineOp(const Pointf& p, bool rel);
+	virtual void   QuadraticOp(const Pointf& p1, const Pointf& p, bool rel);
+	virtual void   QuadraticOp(const Pointf& p, bool rel);
+	virtual void   CubicOp(const Pointf& p1, const Pointf& p2, const Pointf& p, bool rel);
+	virtual void   CubicOp(const Pointf& p2, const Pointf& p, bool rel);
+	virtual void   ArcOp(const Pointf& c, const Pointf& r, double angle, double sweep, bool rel);
+	virtual void   SvgArcOp(const Pointf& r, double xangle, bool large, bool sweep,
+	                        const Pointf& p, bool rel);
+	virtual void   CloseOp();
+	virtual void   DivOp();
+
+//	virtual void   TransformOp(const Xform2D& m);
+
+	Painter& sw;
+	Rectf    boundingbox;
+	Pointf   current;
+	
+	Pointf PathPoint(const Pointf& p, bool rel);
+	void   SetCurrent(Pointf p, bool rel);
+
+public:
+	void  New();
+	const Rectf& Get() { return boundingbox; }
+
+	BoundsPainter(Painter& sw) : sw(sw) { New(); }
+};
+
 struct SvgParser : XmlParser {
 	Painter& sw;
 
@@ -44,8 +74,8 @@ struct SvgParser : XmlParser {
 	Array<State> state;
 	bool         closed;
 	Pointf       prev;
-	Rectf        boundingbox;
 	Xform2D      lastTransform;
+	BoundsPainter bp;
 
 	void Reset();
 
@@ -58,7 +88,6 @@ struct SvgParser : XmlParser {
 	String Txt(const char *id)                  { return (*this)[id]; }
 	double Dbl(const char *id, double def = 0)  { return Nvl(StrDbl(Txt(id)), def); }
 	
-	void   Bounding(const Pointf& f);
 	Pointf GP(const Gradient& g, const Pointf& p);
 	double GP(const Gradient& g, double v);
 

@@ -8,7 +8,16 @@ uses
 	PainterSvg;
 
 file
-	main.cpp;
+	main.cpp,
+	svg\altum_angelfish_01.svg,
+	svg\bored_dog_01.svg,
+	svg\brown_fish_01.svg,
+	svg\filltest.svg,
+	svg\gradient-alignment.svg,
+	svg\matrix.svg,
+	svg\polys.svg,
+	svg\transparency.svg,
+	svg\tux.svg;
 
 mainconfig
 	"" = "GUI";

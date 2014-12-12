@@ -37,7 +37,7 @@ void SvgParser::StartElement()
 	Transform(Txt("transform"));
 	Style(Txt("style"));
 	closed = false;
-	boundingbox = Rectf(DBL_MAX, DBL_MAX, DBL_MIN, DBL_MIN);
+	bp.New();
 }
 
 void SvgParser::EndElement()
@@ -85,6 +85,7 @@ void SvgParser::StrokeFinishElement()
 Pointf SvgParser::GP(const Gradient& g, const Pointf& p)
 {
 	DDUMP(g.user_space);
+	const Rectf& boundingbox = bp.Get();
 	DDUMP(boundingbox);
 	if(g.user_space)
 		return p;
@@ -99,7 +100,7 @@ double SvgParser::GP(const Gradient& g, double v)
 {
 	if(g.user_space)
 		return v;
-	return v * Length(boundingbox.GetSize()) / sqrt(2.0);
+	return v * Length(bp.Get().GetSize()) / sqrt(2.0);
 }
 
 void SvgParser::FinishElement()
@@ -145,9 +146,7 @@ void SvgParser::AttrRect()
 	Pointf p(Dbl("x"), Dbl("y"));
 	double cx = Dbl("width");
 	double cy = Dbl("height");
-	sw.Rectangle(p.x, p.y, cx, cy);
-	Bounding(p);
-	Bounding(p + Pointf(cx, cy));
+	bp.Rectangle(p.x, p.y, cx, cy);
 }
 
 void SvgParser::ParseGradient(bool radial)
@@ -222,15 +221,14 @@ void SvgParser::Poly(bool line)
 			p.Char(',');
 			n.y = p.ReadDouble();
 			r.Add(n);
-			Bounding(n);
 		}
 	}
 	catch(CParser::Error) {}
 	if(r.GetCount() == 0) {
 		StartElement();
-		sw.Move(r[0].x, r[0].y);
+		bp.Move(r[0].x, r[0].y);
 		for(int i = 1; i < r.GetCount(); ++i)
-			sw.Line(r[i].x, r[i].y);
+			bp.Line(r[i].x, r[i].y);
 		if(line)
 			StrokeFinishElement();
 		else
@@ -259,9 +257,7 @@ void SvgParser::ParseG() {
 		StartElement();
 		Pointf c(Dbl("cx"), Dbl("cy"));
 		Pointf r(Dbl("rx"), Dbl("ry"));
-		Bounding(c - r);
-		Bounding(c + r);
-		sw.Ellipse(c.x, c.y, r.x, r.y);
+		bp.Ellipse(c.x, c.y, r.x, r.y);
 		FinishElement();
 	}
 	else
@@ -269,10 +265,8 @@ void SvgParser::ParseG() {
 		StartElement();
 		Pointf a(Dbl("x1"), Dbl("y1"));
 		Pointf b(Dbl("x2"), Dbl("y2"));
-		Bounding(a);
-		Bounding(b);
-		sw.Move(a);
-		sw.Line(b);
+		bp.Move(a);
+		bp.Line(b);
 		FinishElement();
 	}
 	else
@@ -284,7 +278,7 @@ void SvgParser::ParseG() {
 	else
 	if(TagE("path")) {
 		StartElement();
-		Path(Txt("d"));
+		bp.Path(Txt("d"));
 		FinishElement();
 	}
 	else
@@ -313,7 +307,7 @@ void SvgParser::ParseG() {
 			face = Font::MONOSPACE;
 		if(findarg(s.font_family, "roman;serif"))
 			face = Font::SERIF;
-		sw.Text(Dbl("x"), Dbl("y"), text, Font(face, (int)s.font_size)); // TODO:Fix font size
+		bp.Text(Dbl("x"), Dbl("y"), text, Font(face, (int)s.font_size)); // TODO:Fix font size
 		FinishElement();
 		PassEnd();	
 	}
@@ -333,10 +327,10 @@ bool SvgParser::Parse() {
 		while(!IsTag())
 			Skip();
 		PassTag("svg");
-		sw.Begin();
+		bp.Begin();
 		while(!End())
 			ParseG();
-		sw.End();
+		bp.End();
 	}
 	catch(XmlError e) {
 		return false;
@@ -345,7 +339,7 @@ bool SvgParser::Parse() {
 }
 
 SvgParser::SvgParser(const char *svg, const char *folder, Painter& sw)
-:	sw(sw),
+:	sw(sw), bp(sw),
 	XmlParser(svg)
 {
 	svgFolder = folder;
@@ -355,6 +349,46 @@ SvgParser::SvgParser(const char *svg, const char *folder, Painter& sw)
 bool ParseSVG(Painter& p, const char *svg, const char *folder)
 {
 	return SvgParser(svg, folder, p).Parse();
+}
+
+double ReadNumber(CParser& p)
+{
+	while(!p.IsEof() && (!p.IsDouble() || p.IsChar('.')))
+		p.SkipTerm();
+	return p.ReadDouble();
+}
+
+Rectf GetSvgSize(const char *svg)
+{
+	Rectf r = Null;
+	XmlParser xml(svg);
+	try {
+		while(!xml.IsTag())
+			xml.Skip();
+		xml.PassTag("svg");
+		String v = xml["viewBox"];
+		if(v.GetCount()) {
+			try {
+				CParser p(v);
+				r.left = ReadNumber(p);
+				r.top = ReadNumber(p);
+				r.right = r.left + ReadNumber(p);
+				r.bottom = r.right + ReadNumber(p);
+			}
+			catch(CParser::Error) {
+				return Null;
+			}
+		}
+		else {
+			r.left = r.top = 0;
+			r.right = Nvl(StrDbl(xml["width"]), 1.0);
+			r.bottom = Nvl(StrDbl(xml["height"]), 1.0);
+		}
+	}
+	catch(XmlError e) {
+		return Null;
+	}
+	return r;
 }
 
 END_UPP_NAMESPACE

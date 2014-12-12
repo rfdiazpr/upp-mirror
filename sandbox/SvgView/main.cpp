@@ -11,6 +11,7 @@ private:
 	ImageCtrl             img;
 	FileList              files;
 	Splitter              splitter;
+	StaticRect            view;
 	String                dir;
 	FrameTop<Button>      dirup;
 
@@ -31,17 +32,18 @@ public:
 
 void SvgView::Load(const char *filename)
 {
-	img.SetImage(Null);
-	ImageBuffer ib(GetSize());
+	String svg = LoadFileBOM(filename);
+	Size sz = view.GetSize();
+	Rectf f = GetSvgSize(svg);
+	Size isz = GetFitSize(Size(ceil(f.GetWidth()), fceil(f.GetHeight())), sz);
+	ImageBuffer ib(isz);
 	BufferPainter sw(ib);
 	sw.Clear(White());
-	sw.Translate(400, 0);
-	DLOG("============= " << filename);
-	try {
-		ParseSVG(sw, LoadFileBOM(filename), GetFileFolder(filename));
-	}
-	catch(XmlError) {};
+	sw.Translate(-f.left, -f.top);
+	sw.Scale(isz.cx / f.GetWidth());
+	ParseSVG(sw, svg, ""/*GetFileFolder(filename)*/);
 	img.SetImage(ib);
+	img.LeftPos(0, isz.cx).TopPos(0, isz.cy);
 }
 
 void SvgView::LoadDir(const char *d)
@@ -108,7 +110,6 @@ void SvgView::Serialize(Stream& s)
 
 SvgView::SvgView()
 {
-	splitter.Horz(files, img);
 	splitter.SetPos(2700);
 	Add(splitter.SizePos());
 
@@ -121,9 +122,12 @@ SvgView::SvgView()
 	files.AddFrame(dirup);
 
 	Sizeable().Zoomable();
+	
+	splitter.Horz(files, view);
+	view.Add(img);
 
 	dir = GetCurrentDirectory();
-	dir = "C:/u/exsrc/SDL_svg-1.2.0/svg";
+	dir = GetDataFile("svg");
 }
 
 GUI_APP_MAIN

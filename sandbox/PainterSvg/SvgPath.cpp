@@ -2,130 +2,83 @@
 
 NAMESPACE_UPP
 
-void SvgParser::Bounding(const Pointf& f)
+void BoundsPainter::New()
 {
-	boundingbox.left = min(f.x, boundingbox.left);
-	boundingbox.top = min(f.y, boundingbox.top);
-	boundingbox.right = max(f.x, boundingbox.right);
-	boundingbox.bottom = max(f.y, boundingbox.bottom);
+	boundingbox = Rectf(DBL_MAX, DBL_MAX, DBL_MIN, DBL_MIN);
+	current = Pointf(0, 0);
 }
 
-bool SvgParser::ReadBool(CParser& p)
+Pointf BoundsPainter::PathPoint(const Pointf& p, bool rel)
 {
-	while(p.Char(','));
-	if(p.Char('1')) return true;
-	p.Char('0');
-	return false;
+	Pointf r;
+	r.x = IsNull(p.x) ? current.x : rel ? p.x + current.x : p.x;
+	r.y = IsNull(p.y) ? current.y : rel ? p.y + current.y : p.y;
+	return r;
 }
 
-double SvgParser::ReadDouble(CParser& p)
+void BoundsPainter::SetCurrent(Pointf p, bool rel)
 {
-	while(p.Char(','));
-	return p.IsDouble() ? p.ReadDouble() : 0;
+	current = PathPoint(p, rel);
+	boundingbox.left = min(current.x, boundingbox.left);
+	boundingbox.top = min(current.y, boundingbox.top);
+	boundingbox.right = max(current.x, boundingbox.right);
+	boundingbox.bottom = max(current.y, boundingbox.bottom);
 }
 
-Pointf SvgParser::ReadPoint0(CParser& p, bool rel)
+void BoundsPainter::MoveOp(const Pointf& p, bool rel)
 {
-	Pointf t;
-	t.x = ReadDouble(p);
-	t.y = ReadDouble(p);
-	if(rel)
-		t += prev;
-	return t;
+	sw.Move(p, rel);
+	SetCurrent(p, rel);
 }
 
-Pointf SvgParser::ReadPoint(CParser& p, bool rel)
+void BoundsPainter::LineOp(const Pointf& p, bool rel)
 {
-	Pointf t = ReadPoint0(p, rel);
-	prev = t;
-	Bounding(t);
-	return t;
+	sw.Line(p, rel);
+	SetCurrent(p, rel);
 }
 
-void SvgParser::Path(const char *s)
+void BoundsPainter::QuadraticOp(const Pointf& p1, const Pointf& p, bool rel)
 {
-	try {
-		prev = Pointf(0, 0);
-		CParser p(s);
-		while(!p.IsEof()) {
-			int c = p.GetChar();
-			p.Spaces();
-			bool rel = IsLower(c);
-			Pointf t, t1, t2;
-			switch(ToUpper(c)) {
-			case 'M':
-				sw.Move(ReadPoint(p, rel));
-			case 'L':
-				while(p.IsDouble())
-					sw.Line(ReadPoint(p, rel));
-				break;
-			case 'Z':
-				sw.Close();
-				break;
-			case 'H':
-				while(p.IsDouble()) {
-					Pointf h(p.ReadDouble(), prev.y);
-					if(rel)
-						h.x += prev.x;
-					prev = h;
-					Bounding(h);
-					sw.Line(h);
-				}
-				break;
-			case 'V':
-				while(p.IsDouble()) {
-					Pointf h(prev.x, p.ReadDouble());
-					if(rel)
-						h.y += prev.y;
-					prev = h;
-					Bounding(h);
-					sw.Line(h);
-				}
-				break;
-			case 'C': // TODO: Compute BB of curves correctly!
-				while(p.IsDouble()) {
-					t1 = ReadPoint0(p, rel);
-					t2 = ReadPoint0(p, rel);
-					t = ReadPoint(p, rel);
-					sw.Cubic(t1, t2, t, rel);
-				}
-				break;
-			case 'S':
-				while(p.IsDouble()) {
-					t2 = ReadPoint0(p, rel);
-					t = ReadPoint(p, rel);
-					sw.Cubic(t2, t, rel);
-				}
-				break;
-			case 'Q':
-				while(p.IsDouble()) {
-					t1 = ReadPoint0(p, rel);
-					t = ReadPoint(p, rel);
-					sw.Quadratic(t1, t, rel);
-				}
-				break;
-			case 'T':
-				while(p.IsDouble()) {
-					t = ReadPoint(p, rel);
-					sw.Quadratic(t, rel);
-				}
-				break;
-			case 'A':
-				while(p.IsDouble()) {
-					t1 = ReadPoint0(p, rel);
-					double xangle = ReadDouble(p);
-					bool large = ReadBool(p);
-					bool sweep = ReadBool(p);
-					t = ReadPoint0(p, rel);
-					sw.SvgArc(t1, xangle * M_PI / 180.0, large, sweep, t, rel);
-				}
-				break;
-			default:
-				return;
-			}
-		}
-	}
-	catch(CParser::Error) {}
+	sw.Quadratic(p1, p, rel);
+	SetCurrent(p, rel);
+}
+
+void BoundsPainter::QuadraticOp(const Pointf& p, bool rel)
+{
+	sw.Quadratic(p, rel);
+	SetCurrent(p, rel);
+}
+
+void BoundsPainter::CubicOp(const Pointf& p1, const Pointf& p2, const Pointf& p, bool rel)
+{
+	sw.Cubic(p1, p2, p, rel);
+	SetCurrent(p, rel);
+}
+
+void BoundsPainter::CubicOp(const Pointf& p2, const Pointf& p, bool rel)
+{
+	sw.Cubic(p2, p, rel);
+	SetCurrent(p, rel);
+}
+
+void BoundsPainter::ArcOp(const Pointf& c, const Pointf& r, double angle, double sweep, bool rel)
+{
+	DoArc(rel ? current + c : c, r, angle, sweep, 0);
+}
+
+void BoundsPainter::SvgArcOp(const Pointf& r, double xangle, bool large, bool sweep, const Pointf& p, bool rel)
+{
+	DoSvgArc(r, xangle, large, sweep, PathPoint(p, rel), current);
+}
+
+void BoundsPainter::CloseOp()
+{
+	sw.Close();
+}
+
+void BoundsPainter::DivOp()
+{
+	sw.Div();
 }
 
 END_UPP_NAMESPACE

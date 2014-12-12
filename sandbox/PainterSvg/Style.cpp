@@ -110,49 +110,54 @@ void SvgParser::Style(const char *style)
 
 void SvgParser::Transform(const char *transform)
 {
-	CParser p(transform);
-	while(!p.IsEof()) {
-		String kind = ToLower(p.ReadId());
-		Vector<double> r;
-		p.Char('(');
-		while(!p.IsEof() && !p.Char(')')) {
-			r.Add(p.ReadDouble());
+	DDUMP(transform);
+	try {
+		CParser p(transform);
+		while(!p.IsEof()) {
+			String kind = ToLower(p.ReadId());
+			Vector<double> r;
+			p.Char('(');
+			while(!p.IsEof() && !p.Char(')')) {
+				r.Add(p.ReadDouble());
+				p.Char(',');
+			}
+			if(r.GetCount() >= 1) {
+				if(kind == "translate" && r.GetCount() >= 2)
+					sw.Translate(r[0], r[1]);
+				else
+				if(kind == "rotate") {
+					if(r.GetCount() >= 3)
+						sw.Translate(-r[1], -r[2]);
+					sw.Rotate(r[0]);
+					if(r.GetCount() >= 3)
+						sw.Translate(r[1], r[2]);
+				}
+				else
+				if(kind == "scale" && r.GetCount() >= 2)
+					sw.Scale(r[0], r[1]);
+				else {
+					Xform2D m;
+					if(kind == "skewx")
+						m.y.x = atan(r[0]);
+					else
+					if(kind == "skewy")
+						m.x.y = atan(r[0]);
+					else
+					if(kind == "matrix" && r.GetCount() >= 6) {
+						m.x.x = r[0];
+						m.x.y = r[1];
+						m.y.x = r[2];
+						m.y.y = r[3];
+						m.t.x = r[4];
+						m.t.y = r[5];
+					}
+					sw.Transform(m);
+				}
+			}
 			p.Char(',');
 		}
-		if(r.GetCount() >= 1) {
-			if(kind == "translate" && r.GetCount() >= 2)
-				sw.Translate(r[0], r[1]);
-			else
-			if(kind == "rotate") {
-				if(r.GetCount() >= 3)
-					sw.Translate(-r[1], -r[2]);
-				sw.Rotate(r[0]);
-				if(r.GetCount() >= 3)
-					sw.Translate(r[1], r[2]);
-			}
-			else
-			if(kind == "scale" && r.GetCount() >= 2)
-				sw.Scale(r[0], r[1]);
-			else {
-				Xform2D m;
-				if(kind == "skewx")
-					m.y.x = atan(r[0]);
-				else
-				if(kind == "skewy")
-					m.x.y = atan(r[0]);
-				else
-				if(kind == "matrix" && r.GetCount() >= 6) {
-					m.x.x = r[0];
-					m.x.y = r[1];
-					m.y.x = r[2];
-					m.y.y = r[3];
-					m.t.x = r[4];
-					m.t.y = r[5];
-				}
-				sw.Transform(m);
-			}
-		}
 	}
+	catch(CParser::Error) {}
 }
 
 };

@@ -14,82 +14,90 @@ void SvgParser::Reset()
 	s.font_size = 24;
 }
 
+void SvgParser::ProcessValue(const String& key, const String& value_)
+{
+	State& s = state.Top();
+	String value = TrimBoth(value_);
+	value = TrimBoth(value);
+	DDUMP(value);
+	if(value != "inherit") {
+		if(key == "fill") {
+			if(value.StartsWith("url(#")) {
+				value = value.Mid(5);
+				int q = value.Find(')');
+				if(q >= 0)
+					value.Trim(q);
+				DLOG("Fill " << value);
+				s.fill_gradient = gradient.Find(value);
+				DDUMP(s.fill_gradient);
+				s.fill = Null;
+			}
+			else {
+				s.fill_gradient = -1;
+				s.fill = GetColor(value);
+			}
+		}
+		else
+		if(key == "fill-opacity")
+			s.fill_opacity = StrDbl(value);
+		else
+		if(key == "fill-rule")
+			sw.EvenOdd(value == "evenodd");
+		else
+		if(key == "stroke") {
+			if(value.StartsWith("url(")) {
+				value = value.Mid(4);
+				int q = value.Find(')');
+				if(q >= 0)
+					value.Trim(q);
+				s.stroke_gradient = gradient.Find(value);
+				s.stroke = Null;
+			}
+			else {
+				s.stroke = GetColor(value);
+				s.stroke_gradient = -1;
+			}
+		}
+		else
+		if(key == "stroke-opacity")
+			s.stroke_opacity = StrDbl(value);
+		else
+		if(key == "stroke-width")
+			s.stroke_width = StrDbl(value);
+		else
+		if(key == "stroke-linecap")
+			sw.LineCap(decode(value, "round", LINECAP_ROUND, "square", LINECAP_SQUARE, LINECAP_BUTT));
+		else
+		if(key == "stroke-linejoin")
+			sw.LineJoin(decode(value, "round", LINEJOIN_ROUND, "bevel", LINEJOIN_BEVEL, LINEJOIN_MITER));
+		else
+		if(key == "miter-limit")
+			sw.MiterLimit(max(1.0, StrDbl(value)));
+		else
+		if(key == "stroke-dasharray") {
+			s.dash_array = value;
+			sw.Dash(s.dash_array, s.dash_offset);
+		}
+		else
+		if(key == "stroke-dashoffset") {
+			s.dash_array = value;
+			sw.Dash(s.dash_array, s.dash_offset);
+		}
+		else
+		if(key == "stroke-dashoffset") {
+			s.dash_offset = StrDbl(value);
+			sw.Dash(s.dash_array, s.dash_offset);
+		}
+	}
+}
+
 void SvgParser::Style(const char *style)
 {
+	DDUMP(style);
 	String key, value;
-	State& s = state.Top();
 	for(;;) {
 		if(*style == ';' || *style == '\0') {
-			value = TrimBoth(value);
-			if(value != "inherit") {
-				if(key == "fill") {
-					if(value.StartsWith("url(#")) {
-						value = value.Mid(5);
-						int q = value.Find(')');
-						if(q >= 0)
-							value.Trim(q);
-						DLOG("Fill " << value);
-						s.fill_gradient = gradient.Find(value);
-						DDUMP(s.fill_gradient);
-						s.fill = Null;
-					}
-					else {
-						s.fill_gradient = -1;
-						s.fill = GetColor(value);
-					}
-				}
-				else
-				if(key == "fill-opacity")
-					s.fill_opacity = StrDbl(value);
-				else
-				if(key == "fill-rule")
-					sw.EvenOdd(value == "evenodd");
-				else
-				if(key == "stroke") {
-					if(value.StartsWith("url(")) {
-						value = value.Mid(4);
-						int q = value.Find(')');
-						if(q >= 0)
-							value.Trim(q);
-						s.stroke_gradient = gradient.Find(value);
-						s.stroke = Null;
-					}
-					else {
-						s.stroke = GetColor(value);
-						s.stroke_gradient = -1;
-					}
-				}
-				else
-				if(key == "stroke-opacity")
-					s.stroke_opacity = StrDbl(value);
-				else
-				if(key == "stroke-width")
-					s.stroke_width = StrDbl(value);
-				else
-				if(key == "stroke-linecap")
-					sw.LineCap(decode(value, "round", LINECAP_ROUND, "square", LINECAP_SQUARE, LINECAP_BUTT));
-				else
-				if(key == "stroke-linejoin")
-					sw.LineJoin(decode(value, "round", LINEJOIN_ROUND, "bevel", LINEJOIN_BEVEL, LINEJOIN_MITER));
-				else
-				if(key == "miter-limit")
-					sw.MiterLimit(max(1.0, StrDbl(value)));
-				else
-				if(key == "stroke-dasharray") {
-					s.dash_array = value;
-					sw.Dash(s.dash_array, s.dash_offset);
-				}
-				else
-				if(key == "stroke-dashoffset") {
-					s.dash_array = value;
-					sw.Dash(s.dash_array, s.dash_offset);
-				}
-				else
-				if(key == "stroke-dashoffset") {
-					s.dash_offset = StrDbl(value);
-					sw.Dash(s.dash_array, s.dash_offset);
-				}
-			}
+			ProcessValue(key, value);
 			value.Clear();
 			key.Clear();
 			if(*style == '\0')

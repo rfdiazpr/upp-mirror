@@ -82,6 +82,7 @@ struct SvgParser : XmlParser {
 	static Color GetTextColor(const String& color);
 	static Color GetColor(const String& text);
 	
+	void ProcessValue(const String& key, const String& value);
 	void Style(const char *style);
 	void Transform(const char *transform);
 	
@@ -90,7 +91,7 @@ struct SvgParser : XmlParser {
 	
 	Pointf GP(const Gradient& g, const Pointf& p);
 	double GP(const Gradient& g, double v);
-
+	
 	void StartElement();
 	void EndElement();
 	void StrokeFinishElement();

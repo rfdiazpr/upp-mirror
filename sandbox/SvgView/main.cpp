@@ -32,14 +32,18 @@ public:
 
 void SvgView::Load(const char *filename)
 {
+	LOG("================= " << filename);
 	String svg = LoadFileBOM(filename);
 	Size sz = view.GetSize();
 	Rectf f = GetSvgSize(svg);
+	DDUMP(f.GetSize());
 	Size isz = GetFitSize(Size(ceil(f.GetWidth()), fceil(f.GetHeight())), sz);
+	DDUMP(isz);
 	ImageBuffer ib(isz);
 	BufferPainter sw(ib);
 	sw.Clear(White());
 	sw.Scale(isz.cx / f.GetWidth());
+	DDUMP(isz.cx / f.GetWidth());
 	sw.Translate(-f.left, -f.top);
 	ParseSVG(sw, svg, ""/*GetFileFolder(filename)*/);
 	img.SetImage(ib);

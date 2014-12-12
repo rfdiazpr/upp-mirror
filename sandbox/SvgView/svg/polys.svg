@@ -3,8 +3,7 @@
 <svg viewBox="-3584 -600 7614 9682" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve">
  <g id="Layer_1">
   <g>
-   <path fill-rule="nonzero" fill="#FF0000" stroke="#000000" stroke-width="22" d="M-1695 2c603,0 1095,396 1095,881 0,485 -492,881 -1095,881 -602,0 -1094,-396 -1094,-881 0,-485 492,-881 1094,-881zm543 620c186,0 339,143 339,319 0,176 -153,320 -339,320 -187,0 -339,-144 -339,-320 0,-176 152,-319 339,-319z"/>
-   <text text-rendering="optimizeLegibility" x="-2246" y="2113" font-size="333px">nonzero</text>             
+   <path fill-rule="nonzero" fill="#FF0000" stroke="#000000" stroke-width="22" d="M-1695 2c603,0 1095,396 1095,881 0,485 -492,881 -1095,881 -602,0 -1094,-396 -1094,-881 0,-485 492,-881 1094,-881zm543 620c186,0 339,143 339,319 0,176 -153,320 -339,320 -187,0 -339,-144 -339,-320 0,-176 152,-3   339,-319z"/>
   </g>
   <g>
    <path fill-rule="nonzero" fill="#66FFCC" stroke="#000000" stroke-width="22" d="M-2092 4049l562 -1665 891 1491 -1898 -1026 2130 -58 -1685 1258z"/>

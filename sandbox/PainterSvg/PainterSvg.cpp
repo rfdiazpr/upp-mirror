@@ -36,6 +36,8 @@ void SvgParser::StartElement()
 	sw.Begin();
 	Transform(Txt("transform"));
 	Style(Txt("style"));
+	for(int i = 0; i < GetAttrCount(); i++)
+		ProcessValue(GetAttr(i), (*this)[i]);
 	closed = false;
 	bp.New();
 }
@@ -110,6 +112,7 @@ void SvgParser::FinishElement()
 		sw.Begin();
 		sw.Opacity(s.fill_opacity);
 	}
+	DDUMP(s.fill);
 	if(s.fill_gradient >= 0) {
 		ResolveGradient(s.fill_gradient);
 		Gradient& g = gradient[s.fill_gradient];

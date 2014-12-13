@@ -42,9 +42,9 @@ void SvgView::Load(const char *filename)
 	ImageBuffer ib(isz);
 	BufferPainter sw(ib);
 	sw.Clear(White());
-	sw.Scale(isz.cx / f.GetWidth());
+	sw.Scale(0.5 * isz.cx / f.GetWidth());
 	DDUMP(isz.cx / f.GetWidth());
-	sw.Translate(-f.left, -f.top);
+	sw.Translate(2 * -f.left, -f.top);
 	ParseSVG(sw, svg, ""/*GetFileFolder(filename)*/);
 	img.SetImage(ib);
 	img.LeftPos(0, isz.cx).TopPos(0, isz.cy);
@@ -136,6 +136,8 @@ SvgView::SvgView()
 
 GUI_APP_MAIN
 {
+	StreamRaster::LoadFileAny("asdfasdfasdf");
+
 	SvgView x;
 	LoadFromFile(x);
 	x.LoadDir();

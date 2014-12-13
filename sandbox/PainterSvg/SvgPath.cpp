@@ -28,7 +28,7 @@ void BoundsPainter::SetCurrent(Pointf p, bool rel)
 void BoundsPainter::MoveOp(const Pointf& p, bool rel)
 {
 	sw.Move(p, rel);
-	SetCurrent(p, rel);
+	current = PathPoint(p, rel);
 }
 
 void BoundsPainter::LineOp(const Pointf& p, bool rel)
@@ -79,6 +79,17 @@ void BoundsPainter::CloseOp()
 void BoundsPainter::DivOp()
 {
 	sw.Div();
+}
+
+void BoundsPainter::TextOp(const Pointf& p, const wchar *text, Font fnt, int n, double *dx)
+{
+	Painter::TextOp(p, text, fnt, n, dx);
+}
+
+void BoundsPainter::CharacterOp(const Pointf& p, int ch, Font fnt)
+{
+//	sw.Character(p, ch, fnt);
+	PaintCharacter(*this, p, ch, fnt);
 }
 
 END_UPP_NAMESPACE

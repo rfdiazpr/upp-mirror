@@ -44,8 +44,9 @@ void SvgParser::StartElement()
 
 void SvgParser::EndElement()
 {
-	if(!closed)
+	if(!closed) {
 		sw.Stroke(0, Black()); // Finish path to allow new transformations, if not yet done
+	}
 	state.Drop();
 	sw.End();
 }
@@ -299,18 +300,16 @@ void SvgParser::ParseG() {
 	}
 	else
 	if(Tag("text")) {
+		DDUMP(closed);
 		StartElement();
 		String text = ReadText();
+		DDUMP(text);
 		text.Replace("\n", " ");
 		text.Replace("\r", "");
 		text.Replace("\t", " ");
-		State& s = state.Top();
-		int face = Font::SANSSERIF;
-		if(findarg(s.font_family, "courier", "monospace") >= 0)
-			face = Font::MONOSPACE;
-		if(findarg(s.font_family, "roman;serif"))
-			face = Font::SERIF;
-		bp.Text(Dbl("x"), Dbl("y"), text, Font(face, (int)s.font_size)); // TODO:Fix font size
+		Font fnt = state.Top().font;
+		DDUMP(fnt);
+		bp.Text(Dbl("x"), Dbl("y") - fnt.GetAscent(), text, fnt);
 		FinishElement();
 		PassEnd();	
 	}

@@ -12,6 +12,10 @@ protected:
 	virtual void   CloseOp();
 	virtual void   DivOp();
 
+	virtual void   TextOp(const Pointf& p, const wchar *text, Font fnt, int n = -1, 
+	                      double *dx = NULL);
+	virtual void   CharacterOp(const Pointf& p, int ch, Font fnt);
+
 //	virtual void   TransformOp(const Xform2D& m);
 
 	Painter& sw;
@@ -67,8 +71,7 @@ struct SvgParser : XmlParser {
 		String dash_array;
 		double dash_offset;
 		
-		String font_family;
-		double font_size;
+		Font   font;
 	};
 	
 	Array<State> state;

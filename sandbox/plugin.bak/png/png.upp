@@ -1,0 +1,45 @@
+description "PNG image file format U++ encapsulation\3770,128,128";
+
+acceptflags
+	EMBED_PNG;
+
+flags(WIN32) EMBED_PNG;
+
+library(!EMBED_PNG&!WIN32) png;
+
+uses
+	Core,
+	Draw;
+file
+	png.h,
+	pngupp.cpp,
+	pngreg.icpp,
+	lib readonly separator
+, lib/pngconf.h
+, lib/pngdebug.h
+, lib/png.h
+, lib/pnginfo.h
+, lib/pnglibconf.h
+, lib/pngpriv.h
+, lib/pngstruct.h
+, lib/png.c
+, lib/pngerror.c
+, lib/pngget.c
+, lib/pngmem.c
+, lib/pngpread.c
+, lib/pngread.c
+, lib/pngrio.c
+, lib/pngrtran.c
+, lib/pngrutil.c
+, lib/pngset.c
+, lib/pngtrans.c
+, lib/pngwio.c
+, lib/pngwrite.c
+, lib/pngwtran.c
+, lib/pngwutil.c
+,Info readonly separator
+, lib/CHANGES
+, lib/LICENSE
+, lib/README
+, lib/libpng-manual.txt
+;

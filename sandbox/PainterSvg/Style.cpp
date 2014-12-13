@@ -11,7 +11,7 @@ void SvgParser::Reset()
 	s.stroke = Null;
 	s.fill_opacity = s.stroke_opacity = s.stroke_width = 1;
 	s.dash_offset = 0;
-	s.font_size = 24;
+	s.font = Serif(24);
 }
 
 void SvgParser::ProcessValue(const String& key, const String& value_)
@@ -19,7 +19,7 @@ void SvgParser::ProcessValue(const String& key, const String& value_)
 	State& s = state.Top();
 	String value = TrimBoth(value_);
 	value = TrimBoth(value);
-	DDUMP(value);
+	DLOG("ATTR " << key << " = " << value);
 	if(value != "inherit") {
 		if(key == "fill") {
 			if(value.StartsWith("url(#")) {
@@ -29,12 +29,12 @@ void SvgParser::ProcessValue(const String& key, const String& value_)
 					value.Trim(q);
 				DLOG("Fill " << value);
 				s.fill_gradient = gradient.Find(value);
-				DDUMP(s.fill_gradient);
 				s.fill = Null;
 			}
 			else {
 				s.fill_gradient = -1;
 				s.fill = GetColor(value);
+				DLOG("Fill " << s.fill);
 			}
 		}
 		else
@@ -88,7 +88,29 @@ void SvgParser::ProcessValue(const String& key, const String& value_)
 			s.dash_offset = StrDbl(value);
 			sw.Dash(s.dash_array, s.dash_offset);
 		}
-	}
+		else
+		if(key == "font") {
+			// TODO
+		}
+		else
+		if(key == "font-family") {
+			int face = Font::SANSSERIF;
+			if(findarg(value, "courier", "monospace") >= 0)
+				face = Font::MONOSPACE;
+			if(findarg(value, "roman;serif") >= 0)
+				face = Font::SERIF;
+			s.font.Face(face);
+		}
+		else
+		if(key == "font-size")
+			s.font.Height(atoi(value));
+		else
+		if(key == "font-style")
+			s.font.Italic(findarg(value, "italic", "oblique") >= 0);
+		else
+		if(key == "font-weight")
+			s.font.Bold(findarg(value, "bold", "bolder") || atoi(value) >= 500);
+   	}
 }
 
 void SvgParser::Style(const char *style)
@@ -130,31 +152,32 @@ void SvgParser::Transform(const char *transform)
 				p.Char(',');
 			}
 			if(r.GetCount() >= 1) {
+				DLOG("transform " << kind << r);
 				if(kind == "translate" && r.GetCount() >= 2)
 					sw.Translate(r[0], r[1]);
 				else
 				if(kind == "rotate") {
 					if(r.GetCount() >= 3)
 						sw.Translate(-r[1], -r[2]);
-					sw.Rotate(r[0]);
+					sw.Rotate(r[0] * M_2PI / 360);
 					if(r.GetCount() >= 3)
 						sw.Translate(r[1], r[2]);
 				}
 				else
-				if(kind == "scale" && r.GetCount() >= 2)
-					sw.Scale(r[0], r[1]);
+				if(kind == "scale" && r.GetCount() >= 1)
+					sw.Scale(r[0], r[min(r.GetCount() - 1, 1)]);
 				else {
 					Xform2D m;
 					if(kind == "skewx")
-						m.y.x = atan(r[0]);
+						m.x.y = atan(r[0] * M_2PI / 360);
 					else
 					if(kind == "skewy")
-						m.x.y = atan(r[0]);
+						m.y.x = atan(r[0] * M_2PI / 360);
 					else
 					if(kind == "matrix" && r.GetCount() >= 6) {
 						m.x.x = r[0];
-						m.x.y = r[1];
-						m.y.x = r[2];
+						m.y.x = r[1];
+						m.x.y = r[2];
 						m.y.y = r[3];
 						m.t.x = r[4];
 						m.t.y = r[5];

@@ -119,18 +119,37 @@ void SvgParser::FinishElement()
 		Gradient& g = gradient[s.fill_gradient];
 		if(g.stop.GetCount()) {
 			Stops(g);
+			
+			Pointf d = g.b - g.a;
+
+			Xform2D m;
+		/*	m.x.x = d.x;
+			m.x.y = d.y;
+			m.y.x = -d.y;
+			m.y.y = d.x;
+			m.t = g.a;
+		*/	
+			Rectf r = bp.Get();
+			Pointf sz = r.GetSize();
+			
+			DDUMP(r);
+			DDUMP(sz);
+		
+			m = m * Xform2D::Translation(2 * r.left, 2 * r.top);
+			m = m * Xform2D::Scale(sz.x / 2, sz.y);
+/*			m.x.x *= sz.x;
+			m.y.x *= sz.x;
+			m.x.y *= sz.y;
+			m.y.y *= sz.y;
+			m.t += sz * r.TopLeft();
+*/			
+			Pointf a = GP(g, g.a);
+			Pointf b = GP(g, g.b);
 			if(g.radial) {
-				DLOG("======= Radial ========");
-				DDUMP(g.f);
-				DDUMP(g.c);
-				DDUMP(g.r);
-				DDUMP(GP(g, g.f));
-				DDUMP(GP(g, g.c));
-				DDUMP(GP(g, g.r));
 				sw.Fill(GP(g, g.f), g.stop[0].color, GP(g, g.c), GP(g, g.r), g.stop.Top().color, g.style);
 			}
 			else
-				sw.Fill(GP(g, g.a), g.stop[0].color, GP(g, g.b), g.stop.Top().color, g.style);
+				sw.Fill(g.stop[0].color, g.stop.Top().color, m);
 			sw.ClearStops();
 		}
 		closed = true;

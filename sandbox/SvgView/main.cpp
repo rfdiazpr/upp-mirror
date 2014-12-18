@@ -42,7 +42,7 @@ void SvgView::Load(const char *filename)
 	ImageBuffer ib(isz);
 	BufferPainter sw(ib);
 	sw.Clear(White());
-	sw.Scale(0.5 * isz.cx / f.GetWidth());
+//	sw.Scale(0.5 * isz.cx / f.GetWidth());
 	DDUMP(isz.cx / f.GetWidth());
 	sw.Translate(2 * -f.left, -f.top);
 	ParseSVG(sw, svg, ""/*GetFileFolder(filename)*/);

@@ -22,11 +22,11 @@
     <linearGradient
        id="linearGradient1530">
       <stop
-         style="stop-color:darkblue;stop-opacity:1.0000000;"
+         style="stop-color:#000000;stop-opacity:1.0000000;"
          offset="0.0000000"
          id="stop1531" />
       <stop
-         style="stop-color:yellow;stop-opacity:1.0000000;"
+         style="stop-color:#ffffff;stop-opacity:1.0000000;"
          offset="1.0000000"
          id="stop1532" />
     </linearGradient>
@@ -34,10 +34,10 @@
        inkscape:collect="always"
        xlink:href="#linearGradient1530"
        id="linearGradient1533"
-       x1="0.43720931"
-       y1="0.40625000"
-       x2="0.40900232"
-       y2="0.45312500" />
+       x1="0"
+       y1="0"
+       x2="1"
+       y2="1" />
   </defs>
   <sodipodi:namedview
      id="base"

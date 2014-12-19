@@ -154,18 +154,18 @@ void SvgParser::Transform(const char *transform)
 			if(r.GetCount() >= 1) {
 				DLOG("transform " << kind << r);
 				if(kind == "translate" && r.GetCount() >= 2)
-					sw.Translate(r[0], r[1]);
+					bp.Translate(r[0], r[1]);
 				else
 				if(kind == "rotate") {
 					if(r.GetCount() >= 3)
-						sw.Translate(-r[1], -r[2]);
-					sw.Rotate(r[0] * M_2PI / 360);
+						bp.Translate(-r[1], -r[2]);
+					bp.Rotate(r[0] * M_2PI / 360);
 					if(r.GetCount() >= 3)
-						sw.Translate(r[1], r[2]);
+						bp.Translate(r[1], r[2]);
 				}
 				else
 				if(kind == "scale" && r.GetCount() >= 1)
-					sw.Scale(r[0], r[min(r.GetCount() - 1, 1)]);
+					bp.Scale(r[0], r[min(r.GetCount() - 1, 1)]);
 				else {
 					Xform2D m;
 					if(kind == "skewx")
@@ -182,7 +182,7 @@ void SvgParser::Transform(const char *transform)
 						m.t.x = r[4];
 						m.t.y = r[5];
 					}
-					sw.Transform(m);
+					bp.Transform(m);
 				}
 			}
 			p.Char(',');

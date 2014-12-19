@@ -8,7 +8,9 @@ NAMESPACE_UPP
 #include "Svg.h"
 
 bool  ParseSVG(Painter& p, const char *svg, const char *folder);
-Rectf GetSvgSize(const char *svg);
+
+void  GetSvgDimensions(const char *svg, Sizef& sz, Rectf& viewbox);
+Rectf GetSvgBoundingBox(const char *svg);
 
 END_UPP_NAMESPACE
 

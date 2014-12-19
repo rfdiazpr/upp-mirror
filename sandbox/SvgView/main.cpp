@@ -6,12 +6,12 @@ using namespace Upp;
 class SvgView : public TopWindow {
 public:
 	virtual bool Key(dword key, int);
+	virtual void Paint(Draw& w);
 
 private:
-	ImageCtrl             img;
+	String                svg;
 	FileList              files;
-	Splitter              splitter;
-	StaticRect            view;
+	SplitterFrame         splitter;
 	String                dir;
 	FrameTop<Button>      dirup;
 
@@ -30,24 +30,31 @@ public:
 	SvgView();
 };
 
-void SvgView::Load(const char *filename)
+void SvgView::Paint(Draw& w)
 {
-	LOG("================= " << filename);
-	String svg = LoadFileBOM(filename);
-	Size sz = view.GetSize();
-	Rectf f = GetSvgSize(svg);
-	DDUMP(f.GetSize());
-	Size isz = GetFitSize(Size(ceil(f.GetWidth()), fceil(f.GetHeight())), sz);
-	DDUMP(isz);
+	Size sz = GetSize();
+	w.DrawRect(sz, Gray());
+	Rectf f = GetSvgBoundingBox(svg);
+	DLOG("###### BOUNDINGBOX " << f);
+	Sizef iszf = GetFitSize(f.GetSize(), Sizef(sz.cx, sz.cy) - 10.0);
+	Size isz((int)ceil(iszf.cx), (int)ceil(iszf.cy));
+	if(isz.cx <= 0 || isz.cy <= 0)
+		return;
 	ImageBuffer ib(isz);
 	BufferPainter sw(ib);
 	sw.Clear(White());
-//	sw.Scale(0.5 * isz.cx / f.GetWidth());
-	DDUMP(isz.cx / f.GetWidth());
-	sw.Translate(2 * -f.left, -f.top);
+	sw.Scale(min(isz.cx / f.GetWidth(), isz.cy / f.GetHeight()));
+	sw.Translate(-f.left, -f.top);
 	ParseSVG(sw, svg, ""/*GetFileFolder(filename)*/);
-	img.SetImage(ib);
-	img.LeftPos(0, isz.cx).TopPos(0, isz.cy);
+	Point p = Rect(sz).CenterPos(isz);
+	w.DrawImage(p.x, p.y, ib);
+}
+
+void SvgView::Load(const char *filename)
+{
+	LOG("================= " << filename);
+	svg = LoadFileBOM(filename);
+	Refresh();
 }
 
 void SvgView::LoadDir(const char *d)
@@ -114,9 +121,6 @@ void SvgView::Serialize(Stream& s)
 
 SvgView::SvgView()
 {
-	splitter.SetPos(2700);
-	Add(splitter.SizePos());
-
 	files.WhenEnterItem = THISBACK(Enter);
 	files.WhenLeftDouble = THISBACK(DoDir);
 	dirup.Height(max(CtrlImg::DirUp().GetSize().cy, Draw::GetStdFontCy() + 6));
@@ -127,8 +131,7 @@ SvgView::SvgView()
 
 	Sizeable().Zoomable();
 	
-	splitter.Horz(files, view);
-	view.Add(img);
+	AddFrame(splitter.Left(files, 200));
 
 	dir = GetCurrentDirectory();
 	dir = GetDataFile("svg");

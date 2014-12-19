@@ -1,5 +1,4 @@
 struct BoundsPainter : public NilPainter {
-protected:
 	virtual void   MoveOp(const Pointf& p, bool rel);
 	virtual void   LineOp(const Pointf& p, bool rel);
 	virtual void   QuadraticOp(const Pointf& p1, const Pointf& p, bool rel);
@@ -16,20 +15,32 @@ protected:
 	                      double *dx = NULL);
 	virtual void   CharacterOp(const Pointf& p, int ch, Font fnt);
 
-//	virtual void   TransformOp(const Xform2D& m);
+	virtual void   TransformOp(const Xform2D& m);
+	virtual void   BeginOp();
+	virtual void   EndOp();
+
+	
+	void Finish(double width = 0);
 
 	Painter& sw;
 	Rectf    boundingbox;
-	Pointf   current;
-	
-	Pointf PathPoint(const Pointf& p, bool rel);
-	void   SetCurrent(Pointf p, bool rel);
+	Pointf   current, qcontrol, ccontrol;
 
-public:
+	Array<Xform2D> mtx;
+	Rectf      svg_boundingbox;
+	NilPainter nil;
+
+	Pointf PathPoint(const Pointf& p, bool rel);
+	Pointf SetCurrent(Pointf p, bool rel = false);
+	void   Bounds(Pointf p);
+
+	void Quadratic(const Pointf& p1, const Pointf& p);
+	void Cubic(const Pointf& p1, const Pointf& p2, const Pointf& p);
+
 	void  New();
 	const Rectf& Get() { return boundingbox; }
 
-	BoundsPainter(Painter& sw) : sw(sw) { New(); }
+	BoundsPainter(Painter& sw) : sw(sw) { New(); mtx.Add(); svg_boundingbox = Null; }
 };
 
 struct SvgParser : XmlParser {

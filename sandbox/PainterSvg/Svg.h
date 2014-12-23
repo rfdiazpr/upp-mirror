@@ -39,8 +39,10 @@ struct BoundsPainter : public NilPainter {
 
 	void  New();
 	const Rectf& Get() { return boundingbox; }
+	
+	bool  compute_svg_boundingbox;
 
-	BoundsPainter(Painter& sw) : sw(sw) { New(); mtx.Add(); svg_boundingbox = Null; }
+	BoundsPainter(Painter& sw) : sw(sw) { New(); mtx.Add(); svg_boundingbox = Null; compute_svg_boundingbox = false; }
 };
 
 struct SvgParser : XmlParser {
@@ -59,7 +61,7 @@ struct SvgParser : XmlParser {
 		Pointf a, b, c, f;
 		double r;
 		int    style;
-		bool   user_space;
+		bool   user_space; // TODO: Cascade!
 		String transform;
 
 		Vector<Stop> stop;

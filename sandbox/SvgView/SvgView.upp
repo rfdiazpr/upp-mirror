@@ -23,7 +23,11 @@ file
 	svg\radialgradient1.svg,
 	svg\rg1024_Presentation_with_girl.svg,
 	svg\dashtest.svg,
-	svg\radialgradient2.svg;
+	svg\radialgradient2.svg,
+	svg\shapes-polygon-01-t.svg,
+	svg\twitter2.svg,
+	svg\twitter.svg,
+	svg\yinyang.svg;
 
 mainconfig
 	"" = "GUI";

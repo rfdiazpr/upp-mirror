@@ -13,6 +13,7 @@ Pointf BoundsPainter::PathPoint(const Pointf& p, bool rel)
 	Pointf r;
 	r.x = IsNull(p.x) ? current.x : rel ? p.x + current.x : p.x;
 	r.y = IsNull(p.y) ? current.y : rel ? p.y + current.y : p.y;
+	DDUMP(r);
 	return r;
 }
 
@@ -31,7 +32,9 @@ Pointf BoundsPainter::SetCurrent(Pointf p, bool rel)
 void BoundsPainter::MoveOp(const Pointf& p, bool rel)
 {
 	sw.Move(p, rel);
-	 qcontrol = ccontrol = current = PathPoint(p, rel);
+	DDUMP(rel);
+	qcontrol = ccontrol = current = PathPoint(p, rel);
+	DDUMP(current);
 }
 
 void BoundsPainter::LineOp(const Pointf& p, bool rel)
@@ -117,10 +120,10 @@ void CubicMinMax(double p1, double p2, double p3, double p4, double& l, double& 
 	for(int i = 0; i < n; i++) {
 		double tv = r[i];
 		if(tv > 0 && tv < 1) {
-			tv = ((1 - tv) * (1 - tv) * (1 - tv) * p1 +
+			tv =     ((1 - tv) * (1 - tv) * (1 - tv) * p1 +
 			     3 * tv * (1 - tv) * (1 - tv) * p2 +
 			     3 * tv * tv * (1 - tv) * p3 +
-			     tv * tv * tv * p4);
+			         tv * tv * tv * p4);
 			if(tv < l)
 				l = tv;
 			if(tv > h)
@@ -149,7 +152,7 @@ void BoundsPainter::CubicOp(const Pointf& p1, const Pointf& p2, const Pointf& p,
 
 void BoundsPainter::CubicOp(const Pointf& p2, const Pointf& p, bool rel)
 {
-	sw.Cubic(p2, p, rel);
+//	sw.Cubic(p2, p, rel);
 	CubicOp(2.0 * current - ccontrol, PathPoint(p2, rel), PathPoint(p, rel), rel);
 }
 
@@ -185,15 +188,12 @@ void BoundsPainter::CharacterOp(const Pointf& p, int ch, Font fnt)
 
 void BoundsPainter::Finish(double width)
 {
-	if(!IsNull(boundingbox)) {
+	if(compute_svg_boundingbox && !IsNull(boundingbox)) {
 		Rectf h = boundingbox.Inflated(width / 2);
 		Pointf a = mtx.Top().Transform(h.TopLeft());
 		Pointf b = mtx.Top().Transform(h.BottomRight());		
-		DLOG("BoundsPainter FINISH " << h << " -> " << Rectf(a, b));
-		DDUMP(svg_boundingbox);
 		svg_boundingbox.Union(a);
 		svg_boundingbox.Union(b);
-		DDUMP(svg_boundingbox);
 	}
 }
 

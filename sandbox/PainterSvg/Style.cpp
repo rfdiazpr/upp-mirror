@@ -1,5 +1,7 @@
 #include "PainterSvg.h"
 
+#define LLOG(x)
+
 namespace Upp {
 
 void SvgParser::Reset()
@@ -19,7 +21,7 @@ void SvgParser::ProcessValue(const String& key, const String& value_)
 	State& s = state.Top();
 	String value = TrimBoth(value_);
 	value = TrimBoth(value);
-	DLOG("ATTR " << key << " = " << value);
+	LLOG("ATTR " << key << " = " << value);
 	if(value != "inherit") {
 		if(key == "opacity")
 			s.opacity = Nvl(StrDbl(value), 1.0);
@@ -30,14 +32,12 @@ void SvgParser::ProcessValue(const String& key, const String& value_)
 				int q = value.Find(')');
 				if(q >= 0)
 					value.Trim(q);
-				DLOG("Fill " << value);
 				s.fill_gradient = gradient.Find(value);
 				s.fill = Null;
 			}
 			else {
 				s.fill_gradient = -1;
 				s.fill = GetColor(value);
-				DLOG("Fill " << s.fill);
 			}
 		}
 		else
@@ -48,11 +48,12 @@ void SvgParser::ProcessValue(const String& key, const String& value_)
 			sw.EvenOdd(value == "evenodd");
 		else
 		if(key == "stroke") {
-			if(value.StartsWith("url(")) {
-				value = value.Mid(4);
+			if(value.StartsWith("url(#")) {
+				value = value.Mid(5);
 				int q = value.Find(')');
 				if(q >= 0)
 					value.Trim(q);
+				DLOG("Find gradient " << value);
 				s.stroke_gradient = gradient.Find(value);
 				s.stroke = Null;
 			}
@@ -150,7 +151,7 @@ Xform2D SvgParser::Transform(const char *transform)
 				p.Char(',');
 			}
 			if(r.GetCount() >= 1) {
-				DLOG("transform " << kind << r);
+				LLOG("transform " << kind << r);
 				if(kind == "translate" && r.GetCount() >= 2)
 					mx = Xform2D::Translation(r[0], r[1]) * mx;
 				else

@@ -160,14 +160,22 @@ Color SvgParser::GetTextColor(const String& color) {
 
 Color SvgParser::GetColor(const String& text_) {
 	String text = ToLower(text_);
-	DDUMP(text);
 	if(text == "none" || text.IsEmpty())
 		return Null;
 	else
 	if(*text == '#') {
-		int col = ScanInt(~text + 1, NULL, 16);
-		DDUMP(col);
-		return Color(col >> 16, (col >> 8) & 255, col & 255);
+		const char *b = ~text + 1;
+		while(*b && !IsXDigit(*b))
+			b++;
+		const char *s = b;
+		while(IsXDigit(*s))
+			s++;
+		int col = ScanInt(b, NULL, 16);
+		if(s - b <= 3) {
+			col = (col & 0xf) | ((col & 0xf0) << 4) | ((col & 0xf00) << 8);
+			col |= col << 4;
+		}
+		return Color((col >> 16) & 255, (col >> 8) & 255, col & 255);
 	}
 	else {
 		try {

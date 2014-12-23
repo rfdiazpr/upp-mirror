@@ -1,5 +1,7 @@
 #include "PainterSvg.h"
 
+#define LLOG(x)
+
 NAMESPACE_UPP
 
 void SvgParser::ResolveGradient(int i)
@@ -17,20 +19,19 @@ void SvgParser::ResolveGradient(int i)
 		g.stop <<= g2.stop;
 	g.a.x = Nvl(Nvl(g.a.x, g2.a.x));
 	g.a.y = Nvl(Nvl(g.a.y, g2.a.y));
-	g.b.x = Nvl(Nvl(g.b.x, g2.b.x), 1.0);
+	g.b.x = Nvl(g.b.x, g2.b.x); // In user-space units, needs to be replaced by cx, in normal with 1
 	g.b.y = Nvl(Nvl(g.b.y, g2.b.y));
 	g.c.x = Nvl(Nvl(g.c.x, g2.c.x), 0.5);
 	g.c.y = Nvl(Nvl(g.c.y, g2.c.y), 0.5);
 	g.f.x = Nvl(Nvl(g.f.x, g2.f.x), g.c.x);
 	g.f.y = Nvl(Nvl(g.f.y, g2.f.y), g.c.y);
-	g.r = Nvl(Nvl(g.r, g2.r), 0.5);
+	g.r = Nvl(Nvl(g.r, g2.r), 1.0);
 	g.transform = Nvl(g.transform, g2.transform);
 	g.style = Nvl(Nvl(g.style, g2.style), GRADIENT_PAD);
 }
 
 void SvgParser::StartElement()
 {
-	DLOG("ID: " << Txt("id"));
 	state.Add();
 	state.Top() = state[state.GetCount() - 2];
 	bp.Begin();
@@ -63,13 +64,10 @@ void SvgParser::DoGradient(int gi, bool stroke)
 		Pointf c = g.c;
 		Pointf f = g.f;
 		Pointf r(g.r, g.r);
-		if(g.radial) { _DBG_
-			DLOG("RAW:");
-			DDUMP(c);
-			DDUMP(f);
-		}
 		Sizef sz = bp.boundingbox.GetSize();
 		Pointf pos = bp.boundingbox.TopLeft();
+		if(IsNull(b.x))
+			b.x = g.user_space ? bp.boundingbox.right : 1.0;
 		if(g.user_space) {
 			a = (a - pos) / sz;
 			b = (b - pos) / sz;
@@ -79,17 +77,7 @@ void SvgParser::DoGradient(int gi, bool stroke)
 		}
 		Xform2D m;
 		
-//		r = 1;
-//		c = Pointf(0.5, 0.5);
-		//f = c;
-		
 		if(g.radial) {
-			DLOG("RADIAL");
-			DDUMP(bp.boundingbox);
-			DDUMP(c);
-			DDUMP(f);
-			DDUMP(r);
-
 			m.x.x = r.x;
 			m.x.y = 0;
 			m.y.x = 0;
@@ -110,7 +98,6 @@ void SvgParser::DoGradient(int gi, bool stroke)
 			m = m * Transform(g.transform);
 		RGBA c1 = g.stop[0].color;
 		RGBA c2 = g.stop.Top().color;
-//		g.style = GRADIENT_REPEAT; _DBG_
 		if(stroke)
 			if(g.radial)
 				sw.Stroke(s.stroke_width, f, c1, c2, m, g.style);
@@ -153,13 +140,11 @@ void SvgParser::StrokeFinishElement()
 void SvgParser::FinishElement()
 {
 	State& s = state.Top();
-	DDUMP(s.fill_opacity);
 	double o = s.opacity * s.fill_opacity;
 	if(o != 1) {
 		sw.Begin();
 		sw.Opacity(o);
 	}
-	DDUMP(s.fill);
 	if(s.fill_gradient >= 0)
 		DoGradient(s.fill_gradient, false);
 	else
@@ -175,31 +160,34 @@ void SvgParser::FinishElement()
 
 void SvgParser::ParseGradient(bool radial)
 {
-	DDUMP(Txt("id"));
+	DLOG("ParseGradient " << Txt("id"));
 	Gradient& g = gradient.Add(Txt("id"));
 	g.radial = radial;
-	g.user_space = Txt("gradientUnits") == "userSpaceOnUse"; //TODO: implement
+	g.user_space = Txt("gradientUnits") == "userSpaceOnUse";
 	g.transform = Txt("gradientTransform");
-	g.c.x = Dbl("cx", Null);
-	g.c.y = Dbl("cy", Null);
-	g.r = Dbl("r", Null);
-	g.f.x = Dbl("fx", g.c.x);
-	g.f.y = Dbl("fy", g.c.y);
-	g.a.x = Dbl("x1", Null);
-	g.a.y = Dbl("y1", Null);
-	g.b.x = Dbl("x2", Null);
-	g.b.y = Dbl("y2", Null);
-	g.style = decode(Txt("spreadMethod"), "pad", GRADIENT_PAD, "reflect", GRADIENT_REFLECT,
-	                 "repeat", GRADIENT_REPEAT, (int)Null);
 	g.href = Txt("xlink:href");
 	g.resolved = IsNull(g.href);
+	double def = g.resolved ? 0.0 : (double)Null;
+	double def5 = g.resolved ? 0.5 : (double)Null;
+	g.c.x = Dbl("cx", def5);
+	g.c.y = Dbl("cy", def5);
+	g.r = Dbl("r", g.resolved ? 1.0 : (double)Null);
+	g.f.x = Dbl("fx", g.c.x);
+	g.f.y = Dbl("fy", g.c.y);
+	g.a.x = Dbl("x1", def);
+	g.a.y = Dbl("y1", def);
+	g.b.x = Dbl("x2", Null);
+	g.b.y = Dbl("y2", def);
+	g.style = decode(Txt("spreadMethod"), "pad", GRADIENT_PAD, "reflect", GRADIENT_REFLECT,
+	                 "repeat", GRADIENT_REPEAT, (int)Null);
+	DLOG("ParseGradient");
 	while(!End())
 		if(TagE("stop")) {
 			Stop &s = g.stop.Add();
 			s.offset = 0;
 			String st = Txt("style");
 			const char *style = st;
-			double opacity = 0;
+			double opacity = 1;
 			Color  color;
 			String key, value;
 			for(;;) {
@@ -226,8 +214,14 @@ void SvgParser::ParseGradient(bool radial)
 				else
 					value.Cat(*style++);
 			}
+			value = Txt("stop-color");
+			if(value.GetCount())
+				color = GetColor(value);
+			value = Txt("stop-opacity");
+			if(value.GetCount())
+				opacity = StrDbl(value);
 			s.color = clamp(int(opacity * 255 + 0.5), 0, 255) * color;
-			s.offset = Dbl("offset");
+			s.offset = Dbl("offset"); // TODO: Can be in style too?
 		}
 		else
 			Skip();
@@ -245,10 +239,11 @@ void SvgParser::Poly(bool line)
 			p.Char(',');
 			n.y = p.ReadDouble();
 			r.Add(n);
+			p.Char(',');
 		}
 	}
 	catch(CParser::Error) {}
-	if(r.GetCount() == 0) {
+	if(r.GetCount()) {
 		StartElement();
 		bp.Move(r[0].x, r[0].y);
 		for(int i = 1; i < r.GetCount(); ++i)
@@ -261,8 +256,8 @@ void SvgParser::Poly(bool line)
 }
 
 void SvgParser::ParseG() {
-	if(IsTag()) DLOG("-- TAG " << PeekTag());
-	if(Tag("defs"))
+	if(IsTag()) DLOG("====== TAG " << PeekTag());
+	if(Tag("defs")) {
 		while(!End())
 			if(Tag("linearGradient"))
 				ParseGradient(false);
@@ -271,6 +266,14 @@ void SvgParser::ParseG() {
 				ParseGradient(true);
 			else // TODO: Implement pattern
 				Skip();
+	}
+	else
+	if(Tag("linearGradient"))
+		ParseGradient(false);
+	else
+	if(Tag("radialGradient"))
+		ParseGradient(true);
+	else
 	if(TagE("rect")) {
 		StartElement();
 		bp.RoundedRectangle(Dbl("x"), Dbl("y"), Dbl("width"), Dbl("height"), Dbl("rx"), Dbl("ry"));
@@ -279,9 +282,15 @@ void SvgParser::ParseG() {
 	else
 	if(TagE("ellipse")) {
 		StartElement();
+		bp.Ellipse(Dbl("cx"), Dbl("cy"), Dbl("rx"), Dbl("ry"));
+		FinishElement();
+	}
+	else
+	if(TagE("circle")) {
+		StartElement();
 		Pointf c(Dbl("cx"), Dbl("cy"));
-		Pointf r(Dbl("rx"), Dbl("ry"));
-		bp.Ellipse(c.x, c.y, r.x, r.y);
+		double r = Dbl("r");
+		bp.Ellipse(c.x, c.y, r, r);
 		FinishElement();
 	}
 	else
@@ -320,15 +329,12 @@ void SvgParser::ParseG() {
 	}
 	else
 	if(Tag("text")) {
-		DDUMP(closed);
 		StartElement();
 		String text = ReadText();
-		DDUMP(text);
 		text.Replace("\n", " ");
 		text.Replace("\r", "");
 		text.Replace("\t", " ");
 		Font fnt = state.Top().font;
-		DDUMP(fnt);
 		bp.Text(Dbl("x"), Dbl("y") - fnt.GetAscent(), text, fnt);
 		FinishElement();
 		PassEnd();	
@@ -368,19 +374,21 @@ SvgParser::SvgParser(const char *svg, const char *folder, Painter& sw)
 	Reset();
 }
 
-bool ParseSVG(Painter& p, const char *svg, const char *folder, Rectf& boundingbox)
+bool ParseSVG(Painter& p, const char *svg, const char *folder, Rectf *boundingbox)
 {
 	SvgParser sp(svg, folder, p);
+	sp.bp.compute_svg_boundingbox = boundingbox;
 	if(!sp.Parse())
 		return false;
-	boundingbox = sp.bp.svg_boundingbox;
+	if(boundingbox)
+		*boundingbox = sp.bp.svg_boundingbox;
 	return true;
 }
 
 bool ParseSVG(Painter& p, const char *svg, const char *folder)
 {
-	Rectf dummy;
-	return ParseSVG(p, svg, folder, dummy);
+	DLOG("==== ParseSVG");
+	return ParseSVG(p, svg, folder, NULL);
 }
 
 
@@ -428,9 +436,10 @@ void GetSvgDimensions(const char *svg, Sizef& sz, Rectf& viewbox)
 
 Rectf GetSvgBoundingBox(const char *svg)
 {
+	DLOG("==== GetSvgBoundingBox");
 	NilPainter nil;
 	Rectf bb;
-	if(!ParseSVG(nil, svg, "", bb))
+	if(!ParseSVG(nil, svg, "", &bb))
 		return Null;
 	return bb;
 }

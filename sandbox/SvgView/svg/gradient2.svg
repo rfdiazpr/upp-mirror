@@ -22,11 +22,11 @@
     <linearGradient
        id="linearGradient1530">
       <stop
-         style="stop-color:#000000;stop-opacity:1.0000000;"
+         style="stop-color:darkblue;stop-opacity:1.0000000;"
          offset="0.0000000"
          id="stop1531" />
       <stop
-         style="stop-color:#ffffff;stop-opacity:1.0000000;"
+         style="stop-color:yellow;stop-opacity:1.0000000;"
          offset="1.0000000"
          id="stop1532" />
     </linearGradient>
@@ -34,10 +34,10 @@
        inkscape:collect="always"
        xlink:href="#linearGradient1530"
        id="linearGradient1533"
-       x1="0"
-       y1="0"
-       x2="1"
-       y2="1" />
+       x1="0.43720931"
+       y1="0.40625000"
+       x2="0.40900232"
+       y2="0.45312500" />
   </defs>
   <sodipodi:namedview
      id="base"
@@ -73,22 +73,8 @@
      id="rect908"
      width="539.83759"
      height="322.46298"
-     x="164.11063"
-     y="179.64647" />
-  <rect
-     style="fill:#0000ff;fill-opacity:0.75000000;fill-rule:evenodd;stroke:#000000;stroke-width:1.0000000pt;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1.0000000;"
-     id="rect1534"
-     width="54.703541"
-     height="263.44073"
-     x="96.450981"
-     y="237.22914" />
-  <rect
-     style="fill:#0000ff;fill-opacity:0.75000000;fill-rule:evenodd;stroke:#000000;stroke-width:1.0000000pt;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1.0000000;"
-     id="rect1535"
-     width="27.351770"
-     height="63.340942"
-     x="716.90430"
-     y="438.76849" />
-  <rect x="400" y="310" width="3" height="3" fill="red"/>
-  <rect x="384" y="325" width="3" height="3" fill="red"/>
+     x="0"
+     y="0" />
+  <rect x="236" y="130" width="3" height="3" fill="red"/>
+  <rect x="222" y="145" width="3" height="3" fill="red"/>
 </svg>

@@ -70,6 +70,8 @@ struct SvgParser : XmlParser {
 	ArrayMap<String, Gradient> gradient;
 	
 	struct State {
+		double opacity;
+	
 		int    fill_gradient;
 		Color  fill;
 		double fill_opacity;
@@ -96,22 +98,18 @@ struct SvgParser : XmlParser {
 	static Color GetTextColor(const String& color);
 	static Color GetColor(const String& text);
 	
-	void ProcessValue(const String& key, const String& value);
-	void Style(const char *style);
-	void Transform(const char *transform);
+	void    ProcessValue(const String& key, const String& value);
+	void    Style(const char *style);
+	Xform2D Transform(const char *transform);
 	
 	String Txt(const char *id)                  { return (*this)[id]; }
 	double Dbl(const char *id, double def = 0)  { return Nvl(StrDbl(Txt(id)), def); }
-	
-	Pointf GP(const Gradient& g, const Pointf& p);
-	double GP(const Gradient& g, double v);
 	
 	void StartElement();
 	void EndElement();
 	void StrokeFinishElement();
 	void FinishElement();
-	void AttrRect();
-	void Stops(const Gradient& g);
+	void DoGradient(int gi, bool stroke);
 	void Poly(bool line);
 	void ParseG();
 	void ParseGradient(bool radial);

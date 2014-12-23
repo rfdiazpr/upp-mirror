@@ -169,8 +169,23 @@ Color SvgParser::GetColor(const String& text_) {
 		DDUMP(col);
 		return Color(col >> 16, (col >> 8) & 255, col & 255);
 	}
-	else
+	else {
+		try {
+			CParser p(text);
+			if(p.Id("rgb")) {
+				p.Char('(');
+				int r = clamp(p.ReadInt(), 0, 255);
+				p.Char(',');
+				int g = clamp(p.ReadInt(), 0, 255);
+				p.Char(',');
+				int b = clamp(p.ReadInt(), 0, 255);
+				return Color(r, g, b);
+			}
+		}
+		catch(CParser::Error()) {
+		}
 		return GetTextColor(text);
+	}
 }
 
 Array<double> GetTransformArgs(String str, const char *command) {

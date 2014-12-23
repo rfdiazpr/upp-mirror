@@ -3,12 +3,10 @@
 
 using namespace Upp;
 
-class SvgView : public TopWindow {
-public:
+struct SvgView : public TopWindow {
 	virtual bool Key(dword key, int);
 	virtual void Paint(Draw& w);
 
-private:
 	String                svg;
 	FileList              files;
 	SplitterFrame         splitter;
@@ -20,7 +18,6 @@ private:
 	void DoDir();
 	void DirUp();
 
-public:
 	typedef SvgView CLASSNAME;
 
 	void Serialize(Stream& s);
@@ -144,6 +141,9 @@ GUI_APP_MAIN
 	SvgView x;
 	LoadFromFile(x);
 	x.LoadDir();
+	
+	x.files.Find("dashtest.svg");
+	
 	x.Run();
 	StoreToFile(x);
 }

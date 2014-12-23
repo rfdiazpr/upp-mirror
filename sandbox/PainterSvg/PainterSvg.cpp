@@ -34,7 +34,7 @@ void SvgParser::StartElement()
 	state.Add();
 	state.Top() = state[state.GetCount() - 2];
 	bp.Begin();
-	Transform(Txt("transform"));
+	bp.Transform(Transform(Txt("transform")));
 	Style(Txt("style"));
 	for(int i = 0; i < GetAttrCount(); i++)
 		ProcessValue(GetAttr(i), (*this)[i]);
@@ -50,132 +50,127 @@ void SvgParser::EndElement()
 	bp.End();
 }
 
-void SvgParser::Stops(const Gradient& g)
+void SvgParser::DoGradient(int gi, bool stroke)
 {
-	for(int i = 0; i < g.stop.GetCount(); i++)
-		sw.ColorStop(g.stop[i].offset, g.stop[i].color);
+	State& s = state.Top();
+	ResolveGradient(gi);
+	Gradient& g = gradient[gi];
+	if(g.stop.GetCount()) {
+		for(int i = 0; i < g.stop.GetCount(); i++)
+			sw.ColorStop(g.stop[i].offset, g.stop[i].color);
+		Pointf a = g.a;
+		Pointf b = g.b;
+		Pointf c = g.c;
+		Pointf f = g.f;
+		Pointf r(g.r, g.r);
+		if(g.radial) { _DBG_
+			DLOG("RAW:");
+			DDUMP(c);
+			DDUMP(f);
+		}
+		Sizef sz = bp.boundingbox.GetSize();
+		Pointf pos = bp.boundingbox.TopLeft();
+		if(g.user_space) {
+			a = (a - pos) / sz;
+			b = (b - pos) / sz;
+			c = (c - pos) / sz;
+			f = (f - pos) / sz;
+			r = r / sz;
+		}
+		Xform2D m;
+		
+//		r = 1;
+//		c = Pointf(0.5, 0.5);
+		//f = c;
+		
+		if(g.radial) {
+			DLOG("RADIAL");
+			DDUMP(bp.boundingbox);
+			DDUMP(c);
+			DDUMP(f);
+			DDUMP(r);
+
+			m.x.x = r.x;
+			m.x.y = 0;
+			m.y.x = 0;
+			m.y.y = r.y;
+			m.t = c;
+			f = (f - c) / r;
+		}
+		else {
+			Pointf d = b - a;
+			m.x.x = d.x;
+			m.x.y = -d.y;
+			m.y.x = d.y;
+			m.y.y = d.x;
+			m.t = a;
+		}
+		m = m * Xform2D::Scale(sz.cx, sz.cy) * Xform2D::Translation(pos.x, pos.y);
+		if(g.transform.GetCount())
+			m = m * Transform(g.transform);
+		RGBA c1 = g.stop[0].color;
+		RGBA c2 = g.stop.Top().color;
+//		g.style = GRADIENT_REPEAT; _DBG_
+		if(stroke)
+			if(g.radial)
+				sw.Stroke(s.stroke_width, f, c1, c2, m, g.style);
+			else
+				sw.Stroke(s.stroke_width, c1, c2, m, g.style);
+		else
+			if(g.radial)
+				sw.Fill(f, c1, c2, m, g.style);
+			else
+				sw.Fill(c1, c2, m, g.style);
+		bp.Finish(stroke * s.stroke_width);
+		sw.ClearStops();
+		closed = true;
+	}
 }
 
 void SvgParser::StrokeFinishElement()
 {
 	State& s = state.Top();
 	if(s.stroke_width > 0) {
-		if(s.stroke_opacity != 1) {
+		double o = s.opacity * s.stroke_opacity;
+		if(o != 1) {
 			sw.Begin();
-			sw.Opacity(s.stroke_opacity);
+			sw.Opacity(o);
 		}
-		if(s.stroke_gradient >= 0 && s.stroke_width > 0) {
-			ResolveGradient(s.stroke_gradient);
-			Gradient& g = gradient[s.stroke_gradient];
-			if(g.stop.GetCount()) {
-				Stops(g);
-				if(g.radial)
-					sw.Stroke(s.stroke_width, g.f, White(), g.c, g.r, White(), g.style);
-				else
-					sw.Stroke(s.stroke_width, g.a, RGBAZero(), g.b, RGBAZero(), g.style);
-				sw.ClearStops();
-				bp.Finish(s.stroke_width);
-				closed = true;
-			}
-		}
+		if(s.stroke_gradient >= 0 && s.stroke_width > 0)
+			DoGradient(s.stroke_gradient, true);
 		else
 		if(!IsNull(s.stroke) && s.stroke_width > 0) {
 			sw.Stroke(s.stroke_width, s.stroke);
 			bp.Finish(s.stroke_width);
 			closed = true;
 		}
-		if(s.stroke_opacity != 1)
+		if(o != 1)
 			sw.End();
 	}
 	EndElement();
 }
 
-Pointf SvgParser::GP(const Gradient& g, const Pointf& p)
-{
-	DDUMP(g.user_space);
-	const Rectf& boundingbox = bp.Get();
-	DDUMP(boundingbox);
-	if(g.user_space)
-		return p;
-	DDUMP(p);
-	Point h = Pointf(p.x * (boundingbox.GetWidth()) + boundingbox.left,
-	                 p.y * (boundingbox.GetHeight()) + boundingbox.top);
-	DDUMP(h);
-	return h;
-}
-
-double SvgParser::GP(const Gradient& g, double v)
-{
-	if(g.user_space)
-		return v;
-	return v * Length(bp.Get().GetSize()) / sqrt(2.0);
-}
-
 void SvgParser::FinishElement()
 {
 	State& s = state.Top();
-	if(s.fill_opacity != 1) {
+	DDUMP(s.fill_opacity);
+	double o = s.opacity * s.fill_opacity;
+	if(o != 1) {
 		sw.Begin();
-		sw.Opacity(s.fill_opacity);
+		sw.Opacity(o);
 	}
 	DDUMP(s.fill);
-	if(s.fill_gradient >= 0) {
-		ResolveGradient(s.fill_gradient);
-		Gradient& g = gradient[s.fill_gradient];
-		if(g.stop.GetCount()) {
-			Stops(g);
-			
-			Pointf d = g.b - g.a;
-
-			Xform2D m;
-		/*	m.x.x = d.x;
-			m.x.y = d.y;
-			m.y.x = -d.y;
-			m.y.y = d.x;
-			m.t = g.a;
-		*/	
-			Rectf r = bp.Get();
-			Pointf sz = r.GetSize();
-			
-			DDUMP(r);
-			DDUMP(sz);
-		
-			m = m * Xform2D::Translation(2 * r.left, 2 * r.top);
-			m = m * Xform2D::Scale(sz.x / 2, sz.y);
-/*			m.x.x *= sz.x;
-			m.y.x *= sz.x;
-			m.x.y *= sz.y;
-			m.y.y *= sz.y;
-			m.t += sz * r.TopLeft();
-*/			
-			Pointf a = GP(g, g.a);
-			Pointf b = GP(g, g.b);
-			if(g.radial)
-				sw.Fill(GP(g, g.f), g.stop[0].color, GP(g, g.c), GP(g, g.r), g.stop.Top().color, g.style);
-			else
-				sw.Fill(g.stop[0].color, g.stop.Top().color, m);
-			sw.ClearStops();
-			bp.Finish(0);
-			closed = true;
-		}
-	}
+	if(s.fill_gradient >= 0)
+		DoGradient(s.fill_gradient, false);
 	else
 	if(!IsNull(s.fill)) {
 		sw.Fill(s.fill);
 		bp.Finish(0);
 		closed = true;
 	}
-	if(s.fill_opacity != 1)
+	if(o != 1)
 		sw.End();
 	StrokeFinishElement();
-}
-
-void SvgParser::AttrRect()
-{
-	Pointf p(Dbl("x"), Dbl("y"));
-	double cx = Dbl("width");
-	double cy = Dbl("height");
-	bp.Rectangle(p.x, p.y, cx, cy);
 }
 
 void SvgParser::ParseGradient(bool radial)
@@ -278,7 +273,7 @@ void SvgParser::ParseG() {
 				Skip();
 	if(TagE("rect")) {
 		StartElement();
-		AttrRect();
+		bp.RoundedRectangle(Dbl("x"), Dbl("y"), Dbl("width"), Dbl("height"), Dbl("rx"), Dbl("ry"));
 		FinishElement();
 	}
 	else
@@ -318,7 +313,7 @@ void SvgParser::ParseG() {
 			fileName = AppendFileName(svgFolder, fileName);
 		Image img = StreamRaster::LoadFileAny(fileName);
 		if(!IsNull(img)) {
-			AttrRect();
+			bp.Rectangle(Dbl("x"), Dbl("y"), Dbl("width"), Dbl("height"));
 			sw.Fill(StreamRaster::LoadFileAny(fileName), Dbl("x"), Dbl("y"), Dbl("width"), 0);
 		}
 		EndElement();
@@ -379,6 +374,7 @@ bool ParseSVG(Painter& p, const char *svg, const char *folder, Rectf& boundingbo
 	if(!sp.Parse())
 		return false;
 	boundingbox = sp.bp.svg_boundingbox;
+	return true;
 }
 
 bool ParseSVG(Painter& p, const char *svg, const char *folder)

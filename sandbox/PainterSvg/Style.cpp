@@ -9,7 +9,7 @@ void SvgParser::Reset()
 	s.fill_gradient = s.stroke_gradient = -1;
 	s.fill = Black();
 	s.stroke = Null;
-	s.fill_opacity = s.stroke_opacity = s.stroke_width = 1;
+	s.opacity = s.fill_opacity = s.stroke_opacity = s.stroke_width = 1;
 	s.dash_offset = 0;
 	s.font = Serif(24);
 }
@@ -21,6 +21,9 @@ void SvgParser::ProcessValue(const String& key, const String& value_)
 	value = TrimBoth(value);
 	DLOG("ATTR " << key << " = " << value);
 	if(value != "inherit") {
+		if(key == "opacity")
+			s.opacity = Nvl(StrDbl(value), 1.0);
+		else
 		if(key == "fill") {
 			if(value.StartsWith("url(#")) {
 				value = value.Mid(5);
@@ -39,7 +42,7 @@ void SvgParser::ProcessValue(const String& key, const String& value_)
 		}
 		else
 		if(key == "fill-opacity")
-			s.fill_opacity = StrDbl(value);
+			s.fill_opacity = Nvl(StrDbl(value), 1.0);
 		else
 		if(key == "fill-rule")
 			sw.EvenOdd(value == "evenodd");
@@ -60,10 +63,10 @@ void SvgParser::ProcessValue(const String& key, const String& value_)
 		}
 		else
 		if(key == "stroke-opacity")
-			s.stroke_opacity = StrDbl(value);
+			s.stroke_opacity = Nvl(StrDbl(value), 1.0);
 		else
 		if(key == "stroke-width")
-			s.stroke_width = StrDbl(value);
+			s.stroke_width = Nvl(StrDbl(value), 1.0);
 		else
 		if(key == "stroke-linecap")
 			sw.LineCap(decode(value, "round", LINECAP_ROUND, "square", LINECAP_SQUARE, LINECAP_BUTT));
@@ -80,17 +83,12 @@ void SvgParser::ProcessValue(const String& key, const String& value_)
 		}
 		else
 		if(key == "stroke-dashoffset") {
-			s.dash_array = value;
-			sw.Dash(s.dash_array, s.dash_offset);
-		}
-		else
-		if(key == "stroke-dashoffset") {
 			s.dash_offset = StrDbl(value);
 			sw.Dash(s.dash_array, s.dash_offset);
 		}
 		else
 		if(key == "font") {
-			// TODO
+			// TODO(?)
 		}
 		else
 		if(key == "font-family") {
@@ -138,9 +136,9 @@ void SvgParser::Style(const char *style)
 	}
 }
 
-void SvgParser::Transform(const char *transform)
+Xform2D SvgParser::Transform(const char *transform)
 {
-	DDUMP(transform);
+	Xform2D mx;
 	try {
 		CParser p(transform);
 		while(!p.IsEof()) {
@@ -154,18 +152,18 @@ void SvgParser::Transform(const char *transform)
 			if(r.GetCount() >= 1) {
 				DLOG("transform " << kind << r);
 				if(kind == "translate" && r.GetCount() >= 2)
-					bp.Translate(r[0], r[1]);
+					mx = Xform2D::Translation(r[0], r[1]) * mx;
 				else
 				if(kind == "rotate") {
 					if(r.GetCount() >= 3)
-						bp.Translate(-r[1], -r[2]);
-					bp.Rotate(r[0] * M_2PI / 360);
+						mx = Xform2D::Translation(-r[1], -r[2]) * mx;
+					mx = Xform2D::Rotation(r[0] * M_2PI / 360) * mx;
 					if(r.GetCount() >= 3)
-						bp.Translate(r[1], r[2]);
+						mx = Xform2D::Translation(r[1], r[2]) * mx;
 				}
 				else
 				if(kind == "scale" && r.GetCount() >= 1)
-					bp.Scale(r[0], r[min(r.GetCount() - 1, 1)]);
+					mx = Xform2D::Scale(r[0], r[min(r.GetCount() - 1, 1)]) * mx;
 				else {
 					Xform2D m;
 					if(kind == "skewx")
@@ -182,13 +180,15 @@ void SvgParser::Transform(const char *transform)
 						m.t.x = r[4];
 						m.t.y = r[5];
 					}
-					bp.Transform(m);
+					mx = m * mx;
 				}
 			}
 			p.Char(',');
 		}
 	}
-	catch(CParser::Error) {}
+	catch(CParser::Error) {
+	}
+	return mx;
 }
 
 };

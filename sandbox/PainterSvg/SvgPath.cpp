@@ -180,7 +180,6 @@ void BoundsPainter::TextOp(const Pointf& p, const wchar *text, Font fnt, int n, 
 
 void BoundsPainter::CharacterOp(const Pointf& p, int ch, Font fnt)
 {
-//	sw.Character(p, ch, fnt);
 	PaintCharacter(*this, p, ch, fnt);
 }
 

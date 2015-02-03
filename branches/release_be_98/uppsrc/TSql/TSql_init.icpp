@@ -1,8 +1,0 @@
-#include "TSql.h"
-
-NAMESPACE_UPP
-
-#define TFILE <TSql/TSql.h>
-#include <Core/t.h>
-
-END_UPP_NAMESPACE

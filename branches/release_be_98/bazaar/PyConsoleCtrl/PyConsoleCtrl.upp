@@ -1,9 +1,0 @@
-uses
-	CtrlLib,
-	PyCon;
-
-file
-	PyConsoleCtrl.h,
-	PyConsoleCtrl.cpp,
-	PyConsoleCtrl.lay;
-

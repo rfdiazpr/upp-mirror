@@ -1,8 +1,0 @@
-description "Various small(er) designers (Image viewer, QTF editor, ...)\377B";
-
-file
-	Img.h,
-	Png.cpp,
-	Img.icpp,
-	Qtf.icpp;
-

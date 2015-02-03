@@ -1,9 +1,0 @@
-#include "ppm.h"
-
-NAMESPACE_UPP
-
-INITBLOCK {
-	StreamRaster::Register<PPMRaster>();
-}
-
-END_UPP_NAMESPACE

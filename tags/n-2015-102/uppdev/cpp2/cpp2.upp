@@ -1,0 +1,17 @@
+uses
+	Core,
+	CppBase;
+
+file
+	cpp.h,
+	macro.cpp,
+	ppfile.cpp,
+	cpp.cpp,
+	main.cpp,
+	test.h,
+	testfile,
+	cpp.txt;
+
+mainconfig
+	"" = "";
+

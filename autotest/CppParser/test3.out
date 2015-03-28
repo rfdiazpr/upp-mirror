@@ -1,5 +1,0 @@
-<globals> {
-	FUNCTIONTEMPLATE memcpy(_DstType(&)[_Size],const void*,size_t)throw(), line 3
-}
-<locals> {
-}

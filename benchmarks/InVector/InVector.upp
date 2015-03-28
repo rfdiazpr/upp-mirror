@@ -1,9 +1,0 @@
-uses
-	Core;
-
-file
-	InVector.cpp;
-
-mainconfig
-	"" = "MT";
-

@@ -18,6 +18,10 @@ class Browser;
 
 void           GC_Cache();
 
+String         GetIncludePath();
+bool           IsCPPFile(const String& file);
+String         GetMasterFile(const String& file);
+
 CppBase&       CodeBase();
 void           StartCodeBase();
 void           CodeBaseScan(Stream& s, const String& fn);
@@ -27,6 +31,8 @@ void           SyncCodeBase();
 void           SaveCodeBase();
 bool           ExistsBrowserItem(const String& item);
 void           ReQualifyCodeBase();
+
+void           ParseSrc(Stream& in, const String& fn, Callback2<int, const String&> error);
 
 void           CodeBaseScanLay(const String& fn);
 void           ScanLayFile(const char *fn);
@@ -93,9 +99,8 @@ Vector<ItemTextPart> ParseItemNatural(const CppItemInfo& m);
 Vector<ItemTextPart> ParseItemNatural(const CppItemInfo& m);
 
 struct BrowserFileInfo {
-	Time     time;
-	String   package;
-	String   file;
+	Time                      time;
+	VectorMap<String, String> used_macro;
 
 	BrowserFileInfo() { time = Null; }
 };

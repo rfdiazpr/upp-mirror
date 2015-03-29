@@ -379,6 +379,8 @@ public:
 	virtual   String    IdeGetFileName();
 	virtual   String    IdeGetNestFolder();
 
+	virtual   String    IdeGetIncludePath();
+
 	virtual   bool      IsPersistentFindReplace();
 
 	virtual void   ConsoleShow();
@@ -1033,6 +1035,8 @@ public:
 	void      SearchTopics();
 	void      ShowTopics();
 	void      ShowTopicsWin();
+
+	String    GetIncludePath();
 
 	void      TopicBack();
 

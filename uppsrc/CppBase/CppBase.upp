@@ -8,6 +8,9 @@ uses
 file
 	CppBase.h options(BUILDER_OPTION) PCH,
 	keyword.i,
+	macro.cpp,
+	ppfile.cpp,
+	cpp.cpp,
 	Pre.cpp,
 	cpplex.cpp,
 	Parser.cpp,

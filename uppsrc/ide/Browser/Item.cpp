@@ -112,7 +112,7 @@ Vector<ItemTextPart> ParseItemNatural(const String& name,
 			else {
 				String id;
 				n = 0;
-				while(IsAlNum(s[n]) || s[n] == '_' || s[n] == ':')
+				while(iscid(s[n]) || s[n] == ':')
 					id.Cat(s[n++]);
 				if(IsCppType(id))
 					p.type = ITEM_CPP_TYPE;

@@ -336,20 +336,7 @@ bool AssistEditor::IncludeAssist()
 	}
 	else {
 		p.Char('<');
-		theide->SetupDefaultMethod();
-		VectorMap<String, String> bm = GetMethodVars(theide->method);
-		include = SplitDirs(GetVar("UPP") + ';' + bm.Get("INCLUDE", "")
-#ifdef PLATFORM_POSIX
-			+ ";/usr/include;/usr/local/include"
-#endif
-		);
-		// Also adding internal includes
-		const Workspace& wspc = GetIdeWorkspace();
-		for(int i = 0; i < wspc.GetCount(); i++) {
-			const Package& pkg = wspc.GetPackage(i);
-			for(int j = 0; j < pkg.include.GetCount(); j++)
-				include.Add(SourcePath(wspc[i], pkg.include[j].text));
-		}
+		include = SplitDirs(theide->GetIncludePath());
 		include_local = false;
 	}
 	include_path.Clear();

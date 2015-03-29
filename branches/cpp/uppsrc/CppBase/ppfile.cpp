@@ -2,6 +2,8 @@
 
 NAMESPACE_UPP
 
+#define LTIMING(x) RTIMING(x)
+
 void SetSpaces(String& l, int pos, int count)
 {
 	StringBuffer s = l;
@@ -241,6 +243,7 @@ const PPFile& GetPPFile(const char *path)
 	PPFile& f = file.GetAdd(path);
 	if(f.filetime != tm) {
 		f.filetime = tm;
+		LTIMING("PP read");
 		FileIn in(path);
 		f.Parse(in);
 	}

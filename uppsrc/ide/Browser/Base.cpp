@@ -1,8 +1,8 @@
 #include "Browser.h"
 
-#define LTIMING(x)    TIMING(x)
+#define LTIMING(x)    RTIMING(x)
 #define LLOG(x)
-#define LTIMESTOP(x)  TIMESTOP(x)
+#define LTIMESTOP(x)  RTIMESTOP(x)
 
 static const char s_dbver[] = "CPP-BASE 3.00";
 
@@ -307,7 +307,7 @@ void UpdateCodeBase(Progress& pi)
 		pi.AlignText(ALIGN_LEFT);
 		for(int i = 0; i < scan.GetCount(); i++) {
 			s_file = scan[i];
-			pi.SetText(s_file);
+			pi.SetText(GetFileName(GetFileFolder(s_file)) + "/" + GetFileName(s_file));
 			pi.Step();
 			String ext = ToUpper(GetFileExt(s_file));
 			if(ext == ".LAY")

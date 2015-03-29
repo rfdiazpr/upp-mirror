@@ -55,6 +55,8 @@ bool IncludesFile(const String& parent_path, const String& header_path, const St
 
 void GatherSources(Index<String>& include, const String& path, const String& include_path);
 
+#define REVERSE_MACROS
+
 struct Cpp {
 	bool                        incomment;
 	bool                        done;
@@ -64,6 +66,9 @@ struct Cpp {
 	Vector<String>              macro_key;
 	Vector<String>              macro_value;
 	VectorMap<String, CppMacro> macro;
+#ifdef REVERSE_MACROS
+	Vector<const PPItem *>      macro_ptr;
+#endif
 
 	String                      output;
 	Index<String>               usedmacro;

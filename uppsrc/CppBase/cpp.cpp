@@ -2,7 +2,7 @@
 
 NAMESPACE_UPP
 
-#define LTIMING(x) TIMING(x)
+#define LTIMING(x) RTIMING(x)
 
 void Cpp::Define(const char *s)
 {
@@ -144,6 +144,9 @@ bool Cpp::Preprocess(const String& sourcefile, Stream& in, const String& current
                      const Index<String> *get_macros)
 {
 	macro.Clear();
+	macro.Reserve(1000);
+	macro_ptr.Clear();
+	macro_ptr.Reserve(30000);
 	Vector<String> ignorelist = Split("__declspec;__cdecl;"
                                       "__out;__in;__inout;__deref_in;__deref_inout;__deref_out;"
                                       "__AuToQuOtE;__xin;__xout;"
@@ -174,8 +177,17 @@ void Cpp::Do(const String& sourcefile, Stream& in, const String& currentfile,
 			const PPItem& m = pp.item[i];
 			if(m.type == PP_DEFINE) {
 				LTIMING("PP_DEFINE");
+			#ifdef REVERSE_MACROS
+				if(get_macros) {
+					if(get_macros->Find(m.id) >= 0)
+						macro.GetAdd(m.id) = m.macro;
+				}
+				else
+					macro_ptr.Add(&m);
+			#else
 				if(!get_macros || get_macros->Find(m.id) >= 0) 
 					macro.GetAdd(m.id) = m.macro;
+			#endif
 			}
 			else
 			if(m.type == PP_INCLUDE) {
@@ -200,6 +212,46 @@ void Cpp::Do(const String& sourcefile, Stream& in, const String& currentfile,
 	if(get_macros)
 		return;
 
+	#ifdef REVERSE_MACROS	
+	{
+		Index<String> id;
+		{
+			int pos = in.GetPos();
+			LTIMING("Gather IDs");
+			while(!in.IsEof()) {
+				String l = in.GetLine();
+				int el = 0;
+				while(*l.Last() == '\\' && !in.IsEof()) {
+					el++;
+					l.Trim(l.GetLength() - 1);
+					l.Cat(in.GetLine());
+				}
+				const char *s = l;
+				while(*s) {
+					if(iscib(*s)) {
+						const char *b = s;
+						while(iscid(*s))
+							s++;
+						LTIMING("add macro");
+						id.FindAdd(String(b, s));
+					}
+					else
+						s++;
+				}
+			}
+			in.Seek(pos);
+		}
+		{
+			LTIMING("macros");
+			for(int i = 0; i < macro_ptr.GetCount(); i++) {
+				const PPItem& m = *macro_ptr[i];
+				if(id.Find(m.id) >= 0)
+					macro.GetAdd(m.id) = m.macro;
+			}
+		}
+	}
+	#endif
+	
 	LTIMING("Expand");
 	incomment = false;
 	StringBuffer result;

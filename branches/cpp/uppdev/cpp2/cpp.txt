@@ -1,1 +1,27 @@
+Gather files 0.375
+Checking files 0.031
+Removing files 0.000
+Parsing files 5.125
+TIMING PP_DEFINE      :  0.00 ns -  0.00 ns (593.00 ms / 12471437 ), min:  0.00 ns, max:  1.00 ms, nesting: 1 - 12471437
+TIMING Parse          : 636.94 ms - 554.35 us (637.00 ms / 1149 ), min:  0.00 ns, max: 16.00 ms, nesting: 1 - 1149
+TIMING Expand         : 424.95 ms - 376.39 us (425.00 ms / 1129 ), min:  0.00 ns, max: 38.00 ms, nesting: 1 - 1129
+TIMING macros         : 500.95 ms - 443.71 us (501.00 ms / 1129 ), min:  0.00 ns, max:  2.00 ms, nesting: 1 - 1129
+TIMING Gather IDs     : 208.95 ms - 185.07 us (209.00 ms / 1129 ), min:  0.00 ns, max:  9.00 ms, nesting: 1 - 1129
+TIMING GetMasterFile  : 742.94 ms - 646.60 us (743.00 ms / 1149 ), min:  0.00 ns, max:  4.00 ms, nesting: 1 - 1149
+TIMING Preprocess     :  3.25 s  -  2.83 ms ( 3.25 s  / 1149 ), min:  0.00 ns, max: 45.00 ms, nesting: 1 - 1149
+TIMING GetIncludePath : 190.24 ms - 420.12 ns (212.00 ms / 452817 ), min:  0.00 ns, max:  1.00 ms, nesting: 1 - 452817
+TIMING sCppFile make  : 999.95 us - 999.95 us ( 1.00 ms / 1 ), min:  1.00 ms, max:  1.00 ms, nesting: 1 - 1
+
+
+Gather files 0.375
+Checking files 0.016
+Removing files 0.000
+Parsing files 6.531
+TIMING PP_DEFINE      :  1.67 s  - 134.20 ns ( 2.30 s  / 12471407 ), min:  0.00 ns, max:  1.00 ms, nesting: 1 - 12471407
+TIMING Parse          : 676.94 ms - 589.16 us (677.00 ms / 1149 ), min:  0.00 ns, max: 27.00 ms, nesting: 1 - 1149
+TIMING Expand         : 523.94 ms - 464.08 us (524.00 ms / 1129 ), min:  0.00 ns, max: 39.00 ms, nesting: 1 - 1129
+TIMING GetMasterFile  : 728.94 ms - 634.41 us (729.00 ms / 1149 ), min:  0.00 ns, max:  4.00 ms, nesting: 1 - 1149
+TIMING Preprocess     :  4.41 s  -  3.84 ms ( 4.41 s  / 1149 ), min:  0.00 ns, max: 50.00 ms, nesting: 1 - 1149
+TIMING GetIncludePath : 189.15 ms - 417.72 ns (212.00 ms / 452817 ), min:  0.00 ns, max:  1.00 ms, nesting: 1 - 452817
+TIMING sCppFile make  : 999.95 us - 999.95 us ( 1.00 ms / 1 ), min:  1.00 ms, max:  1.00 ms, nesting: 1 - 1
 	

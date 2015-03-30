@@ -24,6 +24,7 @@ void Test(const char *sourcefile, const char *currentfile)
 		DUMP(cpp.namespace_stack);
 //	DDUMP(cpp.output);
 		DUMP(cpp.usedmacro);
+		DUMP(cpp.macro.GetCount());
 	}
 	LOG("=================================");
 
@@ -68,6 +69,12 @@ CONSOLE_APP_MAIN
 //	f.Parse(in);
 //	f.Dump();
 
+#if 0
+	Index<String> h;
+	GatherIncludes(h, "c:/u/upp.src/uppsrc/CtrlLib/EditField.cpp", include_path);
+	DUMPC(h);
+	return;
+#endif
 
 //	Test("c:/u/upp.src/uppsrc/CtrlLib/EditField.cpp", "c:/u/upp.src/uppsrc/CtrlLib/EditField.cpp");
 #if 0

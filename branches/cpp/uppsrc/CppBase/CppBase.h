@@ -19,7 +19,7 @@ struct CppMacro : Moveable<CppMacro>, DeepCopyOption<CppMacro> {
 };
 
 enum PPItemType {
-	PP_DEFINE,
+	PP_DEFINES,
 	PP_INCLUDE,
 	PP_USING,
 	PP_NAMESPACE,
@@ -28,8 +28,13 @@ enum PPItemType {
 
 struct PPItem {
 	int      type;
-	String   id;
-	CppMacro macro;
+	String   text;
+	int      segment_id;
+};
+
+struct PPMacro : Moveable<PPMacro> {
+	CppMacro  macro;
+	int       segment_id;
 };
 
 struct PPFile { // contains "macro extract" of file, only info about macros defined and namespaces
@@ -42,6 +47,8 @@ struct PPFile { // contains "macro extract" of file, only info about macros defi
 	void Dump() const;
 
 private:
+	Vector<int>    ppmacro;   // indicies of macros in sAllMacros
+
 	void CheckEndNamespace(Vector<int>& namespace_block, int level);
 };
 

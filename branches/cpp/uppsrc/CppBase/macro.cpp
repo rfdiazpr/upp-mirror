@@ -2,6 +2,8 @@
 
 NAMESPACE_UPP
 
+
+
 inline bool IsSpc(byte c)
 {
 	return c > 0 && c <= 32;

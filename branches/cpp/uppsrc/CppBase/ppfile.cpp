@@ -36,6 +36,21 @@ void RemoveComments(String& l, bool& incomment)
 	}
 }
 
+static VectorMap<String, PPMacro> sAllMacros;
+
+const CppMacro *FindMacro(const String& id, Index<int>& segments)
+{
+	const CppMacro *r = NULL;
+	int q = sAllMacros.Find(id);
+	while(q >= 0) {
+		const PPMacro& m = sAllMacros[q];
+		if(segments.Find(m.segment_id))
+			r = &m.macro;
+		q = sAllMacros.FindNext(q);
+	}
+	return t;
+}
+
 void PPFile::CheckEndNamespace(Vector<int>& namespace_block, int level)
 {
 	if(namespace_block.GetCount() && namespace_block.Top() == level) {
@@ -46,6 +61,8 @@ void PPFile::CheckEndNamespace(Vector<int>& namespace_block, int level)
 
 void PPFile::Parse(Stream& in)
 {
+	for(int i = 0; i < ppmacro.GetCount(); i++)
+		sAllMacros.Unlink(ppmacro[i]);
 	item.Clear();
 	includes.Clear();
 	bool was_using = false;
@@ -53,6 +70,7 @@ void PPFile::Parse(Stream& in)
 	int  level = 0;
 	bool incomment = false;
 	Vector<int> namespace_block;
+	bool next_segment = true;
 	while(!in.IsEof()) {
 		String l = in.GetLine();
 		while(*l.Last() == '\\' && !in.IsEof()) {
@@ -64,15 +82,26 @@ void PPFile::Parse(Stream& in)
 			CParser p(l);
 			if(p.Char('#')) {
 				if(p.Id("define")) {
-					PPItem& m = item.Add();
-					m.type = PP_DEFINE;
-					m.id = m.macro.Define(p.GetPtr());
-					if(IsNull(m.id))
-						item.Drop();
+					static int segment_serial;
+					if(next_segment) {
+						PPItem& m = macro.Add();
+						m.type = PP_DEFINE;
+						m.segment_id = ++segment_serial;
+						next_segment = false;
+					}
+					CppMacro def;
+					String   id = def.Define(s);
+					if(id.GetCount()) {
+						ppmacro.Add(sAllMacros.GetCount());
+						PPMacro& m = sAllMacros.Add(id);
+						m.segment_id = segment_serial;
+						m.macro = def;
+					}
 				}
 				else
 				if(p.Id("include")) {
 					PPItem& m = item.Add();
+					next_segment = true;
 					m.type = PP_INCLUDE;
 					m.id = TrimBoth(p.GetPtr());
 					if(IsNull(m.id))
@@ -94,6 +123,7 @@ void PPFile::Parse(Stream& in)
 						if(!was_using)
 							namespace_block.Add(level);
 						PPItem& m = item.Add();
+						next_segment = true;
 						m.type = type;
 						m.id = id;
 						was_namespace = was_using = false;
@@ -126,6 +156,7 @@ void PPFile::Parse(Stream& in)
 							int q = namespace_macro.Find(id);
 							if(q > 0) {
 								PPItem& m = item.Add();
+								next_segment = true;
 								m.type = PP_NAMESPACE;
 								m.id = namespace_macro[q];
 								namespace_block.Add(level);
@@ -187,6 +218,7 @@ void PPSync()
 	sPathFileTime.Clear();
 	sIncludePath.Clear();
 	sIncludes.Clear();
+	sAllMacros.Sweep();
 }
 
 String GetIncludePath0(const char *s, const char *filedir, const String& include_path)

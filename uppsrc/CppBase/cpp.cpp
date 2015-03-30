@@ -74,6 +74,12 @@ String Cpp::Expand(const char *s, Index<String>& notmacro)
 			String id(b, s);
 			if(notmacro.Find(id) < 0) {
 				const CppMacro *m = macro.FindPtr(id);
+				if(!m) {
+					m = FindMacro(id, segment_id);
+					//TODO benchmark this
+				//	if(m)
+				//		macro.Add(id, *m);
+				}
 				if(m && !id.StartsWith("__$allowed_on_")) {
 					Vector<String> param;
 					const char *s0 = s;
@@ -120,6 +126,8 @@ String Cpp::Expand(const char *s, Index<String>& notmacro)
 					id = '\x1a' + Expand(m->Expand(param), notmacro);
 					notmacro.Trim(ti);
 				}
+				else
+					notmacro.Add(id);
 			}
 			r.Cat(id);
 		}
@@ -145,8 +153,8 @@ bool Cpp::Preprocess(const String& sourcefile, Stream& in, const String& current
 {
 	macro.Clear();
 	macro.Reserve(1000);
-	macro_ptr.Clear();
-	macro_ptr.Reserve(30000);
+	segment_id.Clear();
+	segment_id.Reserve(100);
 	Vector<String> ignorelist = Split("__declspec;__cdecl;"
                                       "__out;__in;__inout;__deref_in;__deref_inout;__deref_out;"
                                       "__AuToQuOtE;__xin;__xout;"
@@ -175,35 +183,25 @@ void Cpp::Do(const String& sourcefile, Stream& in, const String& currentfile,
 	#endif
 		for(int i = 0; i < pp.item.GetCount() && !done; i++) {
 			const PPItem& m = pp.item[i];
-			if(m.type == PP_DEFINE) {
-				LTIMING("PP_DEFINE");
-			#ifdef REVERSE_MACROS
-				if(get_macros) {
-					if(get_macros->Find(m.id) >= 0)
-						macro.GetAdd(m.id) = m.macro;
-				}
-				else
-					macro_ptr.Add(&m);
-			#else
-				if(!get_macros || get_macros->Find(m.id) >= 0) 
-					macro.GetAdd(m.id) = m.macro;
-			#endif
+			if(m.type == PP_DEFINES) {
+				LTIMING("PP_DEFINES");
+				segment_id.Add(m.segment_id);
 			}
 			else
 			if(m.type == PP_INCLUDE) {
-				String s = GetIncludePath(m.id, current_folder, include_path);
+				String s = GetIncludePath(m.text, current_folder, include_path);
 				if(s.GetCount())
 					Do(sourcefile, in, s, visited, get_macros);
 			}
 			else
 			if(m.type == PP_NAMESPACE)
-				namespace_stack.Add(m.id);
+				namespace_stack.Add(m.text);
 			else
 			if(m.type == PP_NAMESPACE_END && namespace_stack.GetCount())
 				namespace_stack.Drop();
 			else
 			if(m.type == PP_USING)
-				namespace_using.FindAdd(m.id);
+				namespace_using.FindAdd(m.text);
 		}
 		return;
 	}
@@ -211,46 +209,6 @@ void Cpp::Do(const String& sourcefile, Stream& in, const String& currentfile,
 	done = true;
 	if(get_macros)
 		return;
-
-	#ifdef REVERSE_MACROS	
-	Index<String> id;
-	{
-		{
-			int64 pos = in.GetPos();
-			LTIMING("Gather IDs");
-			while(!in.IsEof()) {
-				String l = in.GetLine();
-				int el = 0;
-				while(*l.Last() == '\\' && !in.IsEof()) {
-					el++;
-					l.Trim(l.GetLength() - 1);
-					l.Cat(in.GetLine());
-				}
-				const char *s = l;
-				while(*s) {
-					if(iscib(*s)) {
-						const char *b = s;
-						while(iscid(*s))
-							s++;
-					//	LTIMING("add macro");
-						id.FindAdd(String(b, s));
-					}
-					else
-						s++;
-				}
-			}
-			in.Seek(pos);
-		}
-		{
-			LTIMING("macros");
-			for(int i = 0; i < macro_ptr.GetCount(); i++) {
-				const PPItem& m = *macro_ptr[i];
-				if(id.Find(m.id) >= 0)
-					macro.GetAdd(m.id) = m.macro;
-			}
-		}
-	}
-	#endif
 	
 	LTIMING("Expand");
 	incomment = false;
@@ -283,7 +241,7 @@ void Cpp::Do(const String& sourcefile, Stream& in, const String& currentfile,
 					String hdr = Expand(p.GetPtr());
 					String header_path = GetIncludePath(hdr, current_folder, include_path);
 					if(header_path.GetCount())
-						Do(Null, NilStream(), header_path, visited, &id);
+						Do(Null, NilStream(), header_path, visited, NULL);
 				}
 			}
 		}

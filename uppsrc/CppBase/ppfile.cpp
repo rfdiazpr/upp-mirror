@@ -38,17 +38,17 @@ void RemoveComments(String& l, bool& incomment)
 
 static VectorMap<String, PPMacro> sAllMacros;
 
-const CppMacro *FindMacro(const String& id, Index<int>& segments)
+const CppMacro *FindMacro(const String& id, Index<int>& segment_id)
 {
 	const CppMacro *r = NULL;
 	int q = sAllMacros.Find(id);
 	while(q >= 0) {
 		const PPMacro& m = sAllMacros[q];
-		if(segments.Find(m.segment_id))
+		if(segment_id.Find(m.segment_id) >= 0)
 			r = &m.macro;
 		q = sAllMacros.FindNext(q);
 	}
-	return t;
+	return r;
 }
 
 void PPFile::CheckEndNamespace(Vector<int>& namespace_block, int level)
@@ -84,13 +84,13 @@ void PPFile::Parse(Stream& in)
 				if(p.Id("define")) {
 					static int segment_serial;
 					if(next_segment) {
-						PPItem& m = macro.Add();
-						m.type = PP_DEFINE;
+						PPItem& m = item.Add();
+						m.type = PP_DEFINES;
 						m.segment_id = ++segment_serial;
 						next_segment = false;
 					}
 					CppMacro def;
-					String   id = def.Define(s);
+					String   id = def.Define(p.GetPtr());
 					if(id.GetCount()) {
 						ppmacro.Add(sAllMacros.GetCount());
 						PPMacro& m = sAllMacros.Add(id);
@@ -103,11 +103,11 @@ void PPFile::Parse(Stream& in)
 					PPItem& m = item.Add();
 					next_segment = true;
 					m.type = PP_INCLUDE;
-					m.id = TrimBoth(p.GetPtr());
-					if(IsNull(m.id))
+					m.text = TrimBoth(p.GetPtr());
+					if(IsNull(m.text))
 						item.Drop();
 					else
-						includes.FindAdd(m.id);
+						includes.FindAdd(m.text);
 				}
 			}
 			else {
@@ -125,7 +125,7 @@ void PPFile::Parse(Stream& in)
 						PPItem& m = item.Add();
 						next_segment = true;
 						m.type = type;
-						m.id = id;
+						m.text = id;
 						was_namespace = was_using = false;
 					}
 					else
@@ -158,7 +158,7 @@ void PPFile::Parse(Stream& in)
 								PPItem& m = item.Add();
 								next_segment = true;
 								m.type = PP_NAMESPACE;
-								m.id = namespace_macro[q];
+								m.text = namespace_macro[q];
 								namespace_block.Add(level);
 								level++;
 							}
@@ -195,12 +195,13 @@ void PPFile::Dump() const
 	for(int i = 0; i < item.GetCount(); i++) {
 		const PPItem& m = item[i];
 		String ll;
-		ll << decode(m.type, PP_DEFINE, "#define", PP_INCLUDE, "#include",
-		                     PP_USING, "using namespace", PP_NAMESPACE, "namespace",
-		                     PP_NAMESPACE_END, "}", "")
-		   << ' ' << m.id;
-		if(m.type == PP_DEFINE)
-			ll << m.macro;
+		ll << decode(m.type, PP_DEFINES, "#defines ", PP_INCLUDE, "#include ",
+		                     PP_USING, "using namespace ", PP_NAMESPACE, "namespace ",
+		                     PP_NAMESPACE_END, "}", "");
+		if(m.type == PP_DEFINES)
+			ll << m.segment_id;
+		else
+			ll << m.text;
 		if(m.type == PP_NAMESPACE)
 			ll << " {";
 		LOG(ll);

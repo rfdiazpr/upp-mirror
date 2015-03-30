@@ -72,6 +72,7 @@ struct Cpp {
 	
 	Index<int>                  segment_id;
 	VectorMap<String, CppMacro> macro;
+	Index<String>               notmacro;
 
 	String                      output;
 	Index<String>               usedmacro;
@@ -82,7 +83,6 @@ struct Cpp {
 
 	static const char *SkipString(const char *s);
 	void   ParamAdd(Vector<String>& param, const char *b, const char *e);
-	String Expand(const char *s, Index<String>& notmacro);
 	String Expand(const char *s);
 	void   Do(const String& sourcefile, Stream& in, const String& currentfile,
 	          Index<String>& visited, const Index<String> *get_macros);

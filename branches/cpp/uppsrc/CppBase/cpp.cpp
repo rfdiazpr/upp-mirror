@@ -48,12 +48,6 @@ void Cpp::ParamAdd(Vector<String>& param, const char *s, const char *e)
 
 String Cpp::Expand(const char *s)
 {
-	Index<String> notmacro;
-	return Expand(s, notmacro);
-}
-
-String Cpp::Expand(const char *s, Index<String>& notmacro)
-{
 	StringBuffer r;
 	while(*s) {
 		if(incomment) {
@@ -123,7 +117,7 @@ String Cpp::Expand(const char *s, Index<String>& notmacro)
 					usedmacro.FindAdd(id);
 					int ti = notmacro.GetCount();
 					notmacro.Add(id);
-					id = '\x1a' + Expand(m->Expand(param), notmacro);
+					id = '\x1a' + Expand(m->Expand(param));
 					notmacro.Trim(ti);
 				}
 				else
@@ -160,6 +154,17 @@ bool Cpp::Preprocess(const String& sourcefile, Stream& in, const String& current
                                       "__AuToQuOtE;__xin;__xout;"
                                       "$drv_group;$allowed_on_parameter",
                                       ';');
+
+	static Index<String> kw;
+	ONCELOCK {
+		const char **h = CppKeyword();
+		while(*h) {
+			kw.Add(*h);
+			h++;
+		}
+	}
+	notmacro = clone(kw);
+
 	for(int i = 0; i < ignorelist.GetCount(); i++)
 		macro.GetAdd(ignorelist[i]).param = ".";
 	done = false;

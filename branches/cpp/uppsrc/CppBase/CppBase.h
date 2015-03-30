@@ -7,7 +7,7 @@ NAMESPACE_UPP
 
 void RemoveComments(String& l, bool& incomment);
 
-struct CppMacro : Moveable<CppMacro>, DeepCopyOption<CppMacro> {
+struct CppMacro : Moveable<CppMacro> {
 	String        param;
 	String        body;
 	
@@ -52,6 +52,8 @@ private:
 	void CheckEndNamespace(Vector<int>& namespace_block, int level);
 };
 
+const CppMacro *FindMacro(const String& id, Index<int>& segments);
+
 void PPSync();
 
 const PPFile& GetPPFile(const char *path);
@@ -62,20 +64,14 @@ bool IncludesFile(const String& parent_path, const String& header_path, const St
 
 void GatherSources(Index<String>& include, const String& path, const String& include_path);
 
-#define REVERSE_MACROS
-
 struct Cpp {
 	bool                        incomment;
 	bool                        done;
 	
 	String                      include_path;
 	
-	Vector<String>              macro_key;
-	Vector<String>              macro_value;
+	Index<int>                  segment_id;
 	VectorMap<String, CppMacro> macro;
-#ifdef REVERSE_MACROS
-	Vector<const PPItem *>      macro_ptr;
-#endif
 
 	String                      output;
 	Index<String>               usedmacro;

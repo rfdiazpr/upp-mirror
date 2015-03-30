@@ -213,10 +213,10 @@ void Cpp::Do(const String& sourcefile, Stream& in, const String& currentfile,
 		return;
 
 	#ifdef REVERSE_MACROS	
+	Index<String> id;
 	{
-		Index<String> id;
 		{
-			int pos = in.GetPos();
+			int64 pos = in.GetPos();
 			LTIMING("Gather IDs");
 			while(!in.IsEof()) {
 				String l = in.GetLine();
@@ -232,7 +232,7 @@ void Cpp::Do(const String& sourcefile, Stream& in, const String& currentfile,
 						const char *b = s;
 						while(iscid(*s))
 							s++;
-						LTIMING("add macro");
+					//	LTIMING("add macro");
 						id.FindAdd(String(b, s));
 					}
 					else
@@ -273,19 +273,22 @@ void Cpp::Do(const String& sourcefile, Stream& in, const String& currentfile,
 		if(p.Char('#')) {
 			if(p.Id("define")) {
 				result.Cat(l + "\n");
+				LTIMING("Expand define");
 				Define(p.GetPtr());
 			}
 			else {
 				result.Cat('\n');
 				if(p.Id("include")) {
+					LTIMING("Expand include");
 					String hdr = Expand(p.GetPtr());
 					String header_path = GetIncludePath(hdr, current_folder, include_path);
 					if(header_path.GetCount())
-						Do(Null, NilStream(), header_path, visited, get_macros);
+						Do(Null, NilStream(), header_path, visited, &id);
 				}
 			}
 		}
 		else {
+			LTIMING("Expand expand");
 			result.Cat(Expand(l) + "\n");
 		}
 		while(el--)

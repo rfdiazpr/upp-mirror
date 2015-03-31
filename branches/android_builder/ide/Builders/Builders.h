@@ -184,6 +184,22 @@ private:
 	bool script_error;
 };
 
+struct AndroidSDKBuilder : CppBuilder {
+public:
+	String GetTargetExt() const;
+	
+	virtual bool   BuildPackage(const String& packageName, Vector<String>& linkfile, Vector<String>&, String& linkoptions,
+		const Vector<String>& all_uses, const Vector<String>& all_libraries, int optimize);
+	virtual bool   Link(const Vector<String>& linkfile, const String& linkoptions, bool createmap);
+
+protected:
+	bool CreateRFile(const String& packageDir);
+	
+	String BuildToolsDir() const;
+	String PlatformDir() const;
+	String AaptPath() const;
+};
+
 void DeletePCHFile(const String& pch_file);
 
 #endif

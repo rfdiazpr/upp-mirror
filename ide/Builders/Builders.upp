@@ -14,6 +14,7 @@ file
 	MscBuilder.icpp,
 	OwcBuilder.icpp,
 	JavaBuilder.icpp,
+	AndroidSDKBuilder.icpp,
 	ScriptBuilder.icpp,
 	Info readonly separator,
 	Build.h,

@@ -1,0 +1,127 @@
+#include "Builders.h"
+
+// Hardcoded paths.
+String sdkPath = "/home/klugier/AndroidStudio/sdk";
+String sdkPlatform = "";
+String jdkPath = "/usr/lib/jvm/java-8-oracle";
+
+String AndroidSDKBuilder::GetTargetExt() const
+{
+	return "apk";
+}
+
+bool AndroidSDKBuilder::BuildPackage(const String& packageName, Vector<String>& linkfile,
+	                                 Vector<String>&, String& linkoptions,
+	                                 const Vector<String>& all_uses,
+	                                 const Vector<String>& all_libraries,
+	                                 int)
+{
+	bool error = false;
+	
+	String packagePath = PackagePath(packageName);
+	String packageDir = GetFileFolder(packagePath);
+	ChDir(packageDir);
+	PutVerbose("cd " + packageDir);
+	
+	Package package;
+	package.Load(packagePath);
+	
+	bool isAndroidManifest = false;
+	Vector<String> packageSourceFiles; // <- Paths releated to project
+	Vector<String> sourceFiles; // <- Paths releated to operating system
+	Vector<String> sourceObjectFiles; // <- Objects file paths
+	Vector<String> sourceOptions;
+	for(int i = 0; i < package.GetCount(); i++) {
+		if(!IdeIsBuilding())
+			return false;
+		if(!package[i].separator) {
+			// TODO: add global options aka gop support
+			Vector<String> allPackageFiles = CustomStep(package[i], packageName, error);
+			if(!allPackageFiles.GetCount())
+				error = true;
+			for (int j = 0; j < allPackageFiles.GetCount(); j++) {
+				String filePath = allPackageFiles[j];
+				String fileExt = ToLower(GetFileExt(filePath));
+				
+				if(fileExt == ".java") {
+					// TODO: how to handle project source (aka. "java") dir tree.
+					String packageFile = AppendFileName(packageName, package[i]);
+					String objectFile = NativePath(CatAnyPath(outdir, packageFile));
+					
+					packageSourceFiles.Add(packageFile);
+					sourceFiles.Add(filePath);
+					sourceObjectFiles.Add(objectFile);
+				}
+				else
+				if(fileExt == ".xml") {
+					if(package[i] == "AndroidManifest.xml")
+						isAndroidManifest = true;
+				}
+			}
+		}
+	}
+	
+	if(!isAndroidManifest) {
+		PutConsole("Package " + packageName + " dosen't contain Android manifest file (\"AndroidManifest.xml\").");
+		return false;
+	}
+	
+	if (!CreateRFile(packageDir))
+		return false;
+	
+	// TODO: Javac invokage will be below...
+	
+	return !error;
+}
+
+bool AndroidSDKBuilder::Link(const Vector<String>& linkfile, const String& linkoptions,
+	                         bool createmap)
+{
+	return false;
+}
+
+bool AndroidSDKBuilder::CreateRFile(const String& packageDir)
+{
+	// PutConsole("Creating R file of - " + packageDir);
+	
+	StringStream ss;
+	int result = Execute(AaptPath() + " package -v -f -m " +
+	                     "-S " + packageDir + DIR_SEPS + "res " +
+	                     "-J " + packageDir + DIR_SEPS + "java " +
+	                     "-M " + packageDir + DIR_SEPS + "AndroidManifest.xml " +
+	                     "-I " + PlatformDir() + DIR_SEPS + "android.jar", ss);
+	
+	// PutConsole(ss.GetResult());
+	
+	if(result != 0)
+		PutConsole("Finish creating R file with error code: " + IntStr(result));
+	
+	return result == 0;
+}
+
+String AndroidSDKBuilder::BuildToolsDir() const
+{
+	return sdkPath + DIR_SEPS + "build-tools/19.1.0";
+}
+
+String AndroidSDKBuilder::PlatformDir() const
+{
+	// TODO: platform detection
+	return sdkPath + DIR_SEPS + "platforms/android-22";
+}
+
+String AndroidSDKBuilder::AaptPath() const
+{
+	// TODO: build tools detection
+	return BuildToolsDir() + DIR_SEPS + "aapt";
+}
+
+Builder *CreateAndroidSDKBuilder()
+{
+	return new AndroidSDKBuilder();
+}
+
+INITBLOCK
+{
+	RegisterBuilder("Android_SDK", &CreateAndroidSDKBuilder);
+}

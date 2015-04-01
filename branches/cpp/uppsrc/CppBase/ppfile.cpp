@@ -2,7 +2,7 @@
 
 NAMESPACE_UPP
 
-#define LTIMING(x) RTIMING(x)
+#define LTIMING(x) // RTIMING(x)
 
 void SetSpaces(String& l, int pos, int count)
 {
@@ -320,20 +320,6 @@ bool IncludesFile(const String& parent_path, const String& path, const String& i
 {
 	Index<String> visited;
 	return IncludesFile(parent_path, path, include_path, visited);
-}
-
-void GatherSources(Index<String>& include, const String& path_, const String& include_path)
-{
-	String path = NormalizePath(path_);
-	if(include.Find(path) >= 0)
-		return;
-	include.Add(path);
-	const PPFile& f = GetPPFile(path);
-	for(int i = 0; i < f.includes.GetCount(); i++) {
-		String p = GetIncludePath(f.includes[i], GetFileFolder(path), include_path);
-		if(p.GetCount())
-			GatherSources(include, p, include_path);
-	}
 }
 
 END_UPP_NAMESPACE

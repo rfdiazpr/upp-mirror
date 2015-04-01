@@ -62,8 +62,6 @@ String GetIncludePath(const String& s, const String& filedir, const String& incl
 
 bool IncludesFile(const String& parent_path, const String& header_path, const String& include_path);
 
-void GatherSources(Index<String>& include, const String& path, const String& include_path);
-
 struct Cpp {
 	bool                        incomment;
 	bool                        done;

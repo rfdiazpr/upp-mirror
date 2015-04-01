@@ -2,7 +2,7 @@
 
 NAMESPACE_UPP
 
-#define LTIMING(x) RTIMING(x)
+#define LTIMING(x) // RTIMING(x)
 
 void Cpp::Define(const char *s)
 {
@@ -61,11 +61,13 @@ String Cpp::Expand(const char *s)
 		}
 		else
 		if(iscib(*s)) {
+			LTIMING("Expand ID");
 			const char *b = s;
 			s++;
 			while(iscid(*s))
 				s++;
 			String id(b, s);
+			LTIMING("Expand ID2");
 			if(notmacro.Find(id) < 0) {
 				const CppMacro *m = macro.FindPtr(id);
 				if(!m) {
@@ -75,6 +77,7 @@ String Cpp::Expand(const char *s)
 				//		macro.Add(id, *m);
 				}
 				if(m && !id.StartsWith("__$allowed_on_")) {
+					LTIMING("Expand macro");
 					Vector<String> param;
 					const char *s0 = s;
 					while(*s && (byte)*s <= ' ')

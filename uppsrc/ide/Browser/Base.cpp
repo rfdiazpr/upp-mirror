@@ -188,81 +188,58 @@ int  GetMatchLen(const String& a, const String& b)
 	return l;
 }
 
-VectorMap<String, Vector<String> > sCppFile;
+VectorMap<String, String> sSrcFile;
 
-void BaseInfoSync()
+void GatherSources(const String& master_path, const String& path_, const String& include_path)
+{
+	String path = NormalizePath(path_);
+	if(sSrcFile.Find(path) >= 0)
+		return;
+	sSrcFile.Add(path, master_path);
+	const PPFile& f = GetPPFile(path);
+	for(int i = 0; i < f.includes.GetCount(); i++) {
+		String p = GetIncludePath(f.includes[i], GetFileFolder(path), include_path);
+		if(p.GetCount())
+			GatherSources(master_path, p, include_path);
+	}
+}
+
+void BaseInfoSync(Progress& pi)
 {
 	PPSync();
 
-	LTIMING("sCppFile make");
-	sCppFile.Clear();
+	LTIMING("sSrcFile make");
+	
+	sSrcFile.Clear();
 	const Workspace& wspc = GetIdeWorkspace();
-	for(int i = 0; i < wspc.GetCount(); i++) {
-		const Package& pk = wspc.GetPackage(i);
-		String n = wspc[i];
-		for(int i = 0; i < pk.file.GetCount(); i++) {
-			String path = SourcePath(n, pk.file[i]);
-			if(IsCPPFile(path))
-				sCppFile.GetAdd(GetFileFolder(path)).Add(path);
-		}
-	}
-}
-
-String GetMasterFile(const String& file)
-{
-	LTIMING("GetMasterFile");
-	if(IsCPPFile(file))
-		return file;
-	Index<String> srcfile;
-	String result;
-	int    mml = -1;
-	String include_path = GetIncludePath();
-	int q = sCppFile.Find(GetFileFolder(file));
-	if(q >= 0) {
-		const Vector<String>& src = sCppFile[q];
-		for(int i = 0; i < src.GetCount(); i++)
-			if(IncludesFile(src[i], file, include_path))
-				return src[i];
-	}
-	for(int q = 0; q < sCppFile.GetCount(); q++) {
-		const Vector<String>& src = sCppFile[q];
-		for(int i = 0; i < src.GetCount(); i++)
-			if(IncludesFile(src[i], file, include_path))
-				return src[i];
-	}
-	return Null;
-}
-
-void UpdateCodeBase(Progress& pi)
-{
-	BaseInfoSync();
-
-	Index<String> fp;
-	Vector<String> scan;
-	ArrayMap<String, BrowserFileInfo>& set = FileSet();
-	const Workspace& wspc = GetIdeWorkspace();
-
-	String include_path = GetIncludePath();
-	Index<String> srcfile;
-	pi.SetText("Assist++ gathering files");
+	pi.SetText("Gathering files");
 	pi.SetTotal(wspc.GetCount());
-	{ LTIMESTOP("Gather files");
 	for(int i = 0; i < wspc.GetCount(); i++) {
 		pi.Step();
 		const Package& pk = wspc.GetPackage(i);
 		String n = wspc[i];
 		for(int i = 0; i < pk.file.GetCount(); i++) {
 			String path = SourcePath(n, pk.file[i]);
-			String ext = ToLower(GetFileExt(path));
-			if(findarg(ext, ".c", ".cpp", ".cc" , ".cxx", ".icpp", ".h", ".hpp", ".hh", ".hxx") >= 0) {
-				GatherSources(srcfile, path, include_path);
-			}
-			else
-			if(findarg(ext, ".lay", ".sch", ".iml") >= 0)
-				srcfile.Add(path);
+			if(IsCPPFile(path))
+				GatherSources(path, path, GetIncludePath());
 		}
 	}
-	}
+}
+
+String GetMasterFile(const String& file)
+{
+	return sSrcFile.Get(file, Null);
+}
+
+void UpdateCodeBase(Progress& pi)
+{
+	BaseInfoSync(pi);
+
+	Index<String> fp;
+	Vector<String> scan;
+	ArrayMap<String, BrowserFileInfo>& set = FileSet();
+	const Workspace& wspc = GetIdeWorkspace();
+
 /*
 	DUMPC(srcfile);
 	
@@ -271,11 +248,11 @@ void UpdateCodeBase(Progress& pi)
 */	
 	{ LTIMESTOP("Checking files");
 	pi.SetText("Assist++ checking files");
-	pi.SetTotal(srcfile.GetCount());
+	pi.SetTotal(sSrcFile.GetCount());
 	pi.SetPos(0);
-	for(int i = 0; i < srcfile.GetCount(); i++) {
+	for(int i = 0; i < sSrcFile.GetCount(); i++) {
 		pi.Step();
-		String path = srcfile[i];
+		String path = sSrcFile.GetKey(i);
 		fp.Add(path);
 		int q = set.Find(path);
 		Time tm = FileGetTime(path);

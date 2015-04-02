@@ -7,7 +7,7 @@ String jdkPath = "/usr/lib/jvm/java-8-oracle";
 
 String AndroidSDKBuilder::GetTargetExt() const
 {
-	return "apk";
+	return ".apk";
 }
 
 bool AndroidSDKBuilder::BuildPackage(const String& packageName, Vector<String>& linkfile,
@@ -20,6 +20,7 @@ bool AndroidSDKBuilder::BuildPackage(const String& packageName, Vector<String>& 
 	
 	String packagePath = PackagePath(packageName);
 	String packageDir = GetFileFolder(packagePath);
+	
 	ChDir(packageDir);
 	PutVerbose("cd " + packageDir);
 	
@@ -66,21 +67,65 @@ bool AndroidSDKBuilder::BuildPackage(const String& packageName, Vector<String>& 
 		return false;
 	}
 	
-	if (!CreateRFile(packageDir))
+	if (!GenerateRFile(packageDir))
 		return false;
 	
-	// TODO: Javac invokage will be below...
+	// TODO: do we need to add R.java to source files???
+	
+	if(!error && HasFlag("MAIN") && !sourceFiles.IsEmpty()) {
+		String objectsDir = GetFileFolder(target) + DIR_SEPS + packageName + DIR_SEPS + "obj";
+		String linkcmd;
+		
+		if(!RealizeDirectory(objectsDir)) {
+			PutConsole("Creating directory " + objectsDir + " failed.");
+			return false;
+		}
+		
+		PutConsole(outdir);
+		
+		linkcmd << JavacPath() << " ";
+		linkcmd << "-d "<< objectsDir <<  " ";
+		linkcmd << "-classpath " << PlatformDir() << DIR_SEPS << "android.jar" << JavacDelimiter() << objectsDir << " ";
+		linkcmd << "-sourcepath " << packageDir << DIR_SEPS << "java ";
+		for(int i = 0; i < sourceFiles.GetCount(); i++) {
+			linkcmd << sourceFiles[i];
+			if(i < sourceFiles.GetCount() - 1)
+				linkcmd << " ";
+		}
+		
+		linkoptions = linkcmd;
+	}
 	
 	return !error;
 }
 
+// linkfile
+// linkoptions - compilation command
 bool AndroidSDKBuilder::Link(const Vector<String>& linkfile, const String& linkoptions,
 	                         bool createmap)
 {
+	StringStream ss;
+	
+	PutConsole("Linkoptions: " + linkoptions);
+	int time = GetTickCount();
+	PutConsole("Compiling...");
+	if(Execute(linkoptions, ss) != 0) {
+		PutConsole(ss.GetResult());
+		return false;
+	}
+	PutVerbose("compiled in " + GetPrintTime(time));
+	
 	return false;
 }
 
-bool AndroidSDKBuilder::CreateRFile(const String& packageDir)
+bool AndroidSDKBuilder::PreprocesAndroidManifest()
+{
+	// TODO: use XML module to get important information from manifest file.
+	
+	return true;
+}
+
+bool AndroidSDKBuilder::GenerateRFile(const String& packageDir)
 {
 	// PutConsole("Creating R file of - " + packageDir);
 	
@@ -114,6 +159,25 @@ String AndroidSDKBuilder::AaptPath() const
 {
 	// TODO: build tools detection
 	return BuildToolsDir() + DIR_SEPS + "aapt";
+}
+
+String AndroidSDKBuilder::DxPath() const
+{
+	return "";
+}
+
+String AndroidSDKBuilder::JavacPath() const
+{
+	return jdkPath + DIR_SEPS + "bin" + DIR_SEPS + "javac";
+}
+
+String AndroidSDKBuilder::JavacDelimiter() const
+{
+#if defined(PLATFORM_WIN32) || defined(PLATFORM_WIN64)
+	return ";";
+#else
+	return ":";
+#endif
 }
 
 Builder *CreateAndroidSDKBuilder()

@@ -193,11 +193,16 @@ public:
 	virtual bool   Link(const Vector<String>& linkfile, const String& linkoptions, bool createmap);
 
 protected:
-	bool CreateRFile(const String& packageDir);
+	bool PreprocesAndroidManifest();
+	bool GenerateRFile(const String& packageDir);
 	
 	String BuildToolsDir() const;
 	String PlatformDir() const;
 	String AaptPath() const;
+	String DxPath() const;
+	
+	String JavacPath() const;
+	String JavacDelimiter() const;
 };
 
 void DeletePCHFile(const String& pch_file);

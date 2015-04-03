@@ -184,7 +184,7 @@ private:
 	bool script_error;
 };
 
-struct AndroidSDKBuilder : CppBuilder {
+class AndroidSDKBuilder : public CppBuilder {
 public:
 	String GetTargetExt() const;
 	
@@ -194,7 +194,7 @@ public:
 
 protected:
 	bool PreprocesAndroidManifest();
-	bool GenerateRFile(const String& packageDir);
+	bool GenerateRFile();
 	
 	String BuildToolsDir() const;
 	String PlatformDir() const;
@@ -202,7 +202,17 @@ protected:
 	String DxPath() const;
 	
 	String JavacPath() const;
+	String JarsignerPath() const;
 	String JavacDelimiter() const;
+	
+	void ResetVariables();
+	
+private:
+	String androidManifestPath;
+	String packageName;
+	String packageDir;
+	String targetPackageDir;
+	String objectsDir;
 };
 
 void DeletePCHFile(const String& pch_file);

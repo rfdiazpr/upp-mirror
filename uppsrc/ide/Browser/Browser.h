@@ -23,6 +23,16 @@ bool           IsCPPFile(const String& file);
 String         GetMasterFile(const String& file);
 
 CppBase&       CodeBase();
+
+struct CppFileInfo {
+	Time                      time;
+	VectorMap<String, String> used_macro;
+
+	BrowserFileInfo() { time = Null; }
+};
+
+ArrayMap<String, BrowserFileInfo>& CppFileInfo();
+
 void           StartCodeBase();
 void           CodeBaseScan(Stream& s, const String& fn);
 void           ClearCodeBase();
@@ -97,15 +107,6 @@ Vector<ItemTextPart> ParseItemNatural(const String& name, const String& natural,
 Vector<ItemTextPart> ParseItemNatural(const String& name, const CppItem& m, const char *natural);
 Vector<ItemTextPart> ParseItemNatural(const CppItemInfo& m);
 Vector<ItemTextPart> ParseItemNatural(const CppItemInfo& m);
-
-struct BrowserFileInfo {
-	Time                      time;
-	VectorMap<String, String> used_macro;
-
-	BrowserFileInfo() { time = Null; }
-};
-
-ArrayMap<String, BrowserFileInfo>& FileSet();
 
 int GetItemHeight(const CppItem& m, int cx);
 

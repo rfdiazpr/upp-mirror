@@ -1538,29 +1538,16 @@ void Parser::Do()
 	}
 }
 
-void Parser::Do(Stream& in, const Vector<String>& ignore, CppBase& _base, const String& fn,
+void Parser::Do(Stream& in, CppBase& _base, int filei_, int filetype_,
                 Callback2<int, const String&> _err, const Vector<String>& typenames)
 {
 	LLOG("= C++ Parser ==================================== " << fn);
 	base = &_base;
 	file = PreProcess(in);
-	lex.Init(~file.text, ignore);
+	lex.Init(~file.text);
 	err = _err;
-	filei = GetCppFileIndex(fn);
-	String ext = ToLower(GetFileExt(fn));
-	if(ext == ".h")
-		filetype = FILE_H;
-	else
-	if(ext == ".hpp")
-		filetype = FILE_HPP;
-	else
-	if(ext == ".cpp")
-		filetype = FILE_CPP;
-	else
-	if(ext == ".c")
-		filetype = FILE_C;
-	else
-		filetype = FILE_OTHER;
+	filei = filei_;
+	filetype = filetype_;
 	lpos = 0;
 	line = 0;
 	if(whenFnEnd)
@@ -1601,12 +1588,11 @@ void Parser::Do(Stream& in, const Vector<String>& ignore, CppBase& _base, const 
 		}
 }
 
-void Parse(Stream& s, const Vector<String>& ignore, CppBase& base, const String& fn,
-           Callback2<int, const String&> _err)
+void Parse(Stream& s, CppBase& base, int file, int filetype, Callback2<int, const String&> _err)
 {
 	LTIMING("Parse");
 	Parser p;
-	p.Do(s, ignore, base, fn, _err);
+	p.Do(s, base, file, filetype, _err);
 }
 
 END_UPP_NAMESPACE

@@ -67,20 +67,17 @@ void CppBase::Dump(Stream& s)
 	}
 }
 
-void Remove(CppBase& base, const Vector<String>& pf)
+void CppBase::Sweep(const Index<int>& keep_file)
 {
 	int ni = 0;
-	Index<int> file;
-	for(int i = 0; i < pf.GetCount(); i++)
-		file.Add(GetCppFileIndex(pf[i]));
-	while(ni < base.GetCount()) {
-		Array<CppItem>& n = base[ni];
+	while(ni < GetCount()) {
+		Array<CppItem>& n = (*this)[ni];
 		Vector<int> nr;
 		for(int i = 0; i < n.GetCount(); i++)
-			if(file.Find(n[i].file) >= 0)
+			if(keep_file.Find(n[i].file) < 0)
 				nr.Add(i);
 		if(nr.GetCount() == n.GetCount())
-			base.Remove(ni);
+			Remove(ni);
 		else {
 			n.Remove(nr);
 			ni++;

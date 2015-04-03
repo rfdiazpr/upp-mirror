@@ -3,7 +3,7 @@
 // Hardcoded paths.
 String sdkPath = "/home/klugier/AndroidStudio/sdk";
 String sdkPlatform = "";
-String jdkPath = "/usr/lib/jvm/java-8-oracle";
+String jdkPath = "/usr/lib/jvm/java-7-oracle";
 
 String AndroidSDKBuilder::GetTargetExt() const
 {
@@ -16,18 +16,20 @@ bool AndroidSDKBuilder::BuildPackage(const String& packageName, Vector<String>& 
 	                                 const Vector<String>& all_libraries,
 	                                 int)
 {
+	ResetVariables();
+	
 	bool error = false;
 	
-	String packagePath = PackagePath(packageName);
-	String packageDir = GetFileFolder(packagePath);
+	String packageUppManifestPath = PackagePath(packageName);
+	packageDir = GetFileFolder(packageUppManifestPath);
+	this->packageName = packageName; // <- TODO: change local variables from packageName to package.
 	
 	ChDir(packageDir);
 	PutVerbose("cd " + packageDir);
 	
 	Package package;
-	package.Load(packagePath);
+	package.Load(packageUppManifestPath);
 	
-	bool isAndroidManifest = false;
 	Vector<String> packageSourceFiles; // <- Paths releated to project
 	Vector<String> sourceFiles; // <- Paths releated to operating system
 	Vector<String> sourceObjectFiles; // <- Objects file paths
@@ -55,34 +57,40 @@ bool AndroidSDKBuilder::BuildPackage(const String& packageName, Vector<String>& 
 				}
 				else
 				if(fileExt == ".xml") {
-					if(package[i] == "AndroidManifest.xml")
-						isAndroidManifest = true;
+					if(package[i] == "AndroidManifest.xml") {
+						if(androidManifestPath.GetCount()) {
+							PutConsole("AndroidManifest.xml is duplicated.");
+							return false;
+						}
+						
+						androidManifestPath = packageDir + DIR_SEPS + package[i];
+					}
 				}
 			}
 		}
 	}
 	
-	if(!isAndroidManifest) {
+	if(!androidManifestPath.GetCount()) {
 		PutConsole("Package " + packageName + " dosen't contain Android manifest file (\"AndroidManifest.xml\").");
 		return false;
 	}
 	
-	if (!GenerateRFile(packageDir))
+	if (!GenerateRFile())
 		return false;
 	
 	// TODO: do we need to add R.java to source files???
 	
 	if(!error && HasFlag("MAIN") && !sourceFiles.IsEmpty()) {
-		String objectsDir = GetFileFolder(target) + DIR_SEPS + packageName + DIR_SEPS + "obj";
-		String linkcmd;
+		// TODO: this is not good path!!!
+		targetPackageDir = GetFileFolder(target) + DIR_SEPS + packageName;
+		objectsDir = targetPackageDir + DIR_SEPS + "obj";
 		
 		if(!RealizeDirectory(objectsDir)) {
 			PutConsole("Creating directory " + objectsDir + " failed.");
 			return false;
 		}
 		
-		PutConsole(outdir);
-		
+		String linkcmd;
 		linkcmd << JavacPath() << " ";
 		linkcmd << "-d "<< objectsDir <<  " ";
 		linkcmd << "-classpath " << PlatformDir() << DIR_SEPS << "android.jar" << JavacDelimiter() << objectsDir << " ";
@@ -115,6 +123,32 @@ bool AndroidSDKBuilder::Link(const Vector<String>& linkfile, const String& linko
 	}
 	PutVerbose("compiled in " + GetPrintTime(time));
 	
+	PutConsole("Creating dex file...");
+	String dxCommand = DxPath() + " --dex --verbose " +
+	                   "--output=" + targetPackageDir + DIR_SEPS + "classes.dex " +
+	                   objectsDir;
+	// PutConsole(dxCommand);
+	if(Execute(dxCommand, ss) != 0) {
+		PutConsole(ss.GetResult());
+		return false;
+	}
+	
+	PutConsole("Creating apk file...");
+	String apkCommand = AaptPath() + " package -v -f " +
+	                    "-S " + packageDir + DIR_SEPS + "res " +
+	                    "-M " + androidManifestPath + " " +
+	                    "-I " + PlatformDir() + DIR_SEPS + "android.jar " +
+	                    "-F " + targetPackageDir + DIR_SEPS + packageName + ".unsigned.apk " +
+	                    targetPackageDir;
+	// PutConsole(apkCommand);
+	if(Execute(apkCommand, ss) != 0) {
+		PutConsole(ss.GetResult());
+		return false;
+	}
+	
+	// TODO: add debug apk signing: http://developer.android.com/tools/publishing/app-signing.html
+	// in release mode we definitly shouldn't signing apk!!!
+	
 	return false;
 }
 
@@ -125,18 +159,14 @@ bool AndroidSDKBuilder::PreprocesAndroidManifest()
 	return true;
 }
 
-bool AndroidSDKBuilder::GenerateRFile(const String& packageDir)
+bool AndroidSDKBuilder::GenerateRFile()
 {
-	// PutConsole("Creating R file of - " + packageDir);
-	
 	StringStream ss;
 	int result = Execute(AaptPath() + " package -v -f -m " +
 	                     "-S " + packageDir + DIR_SEPS + "res " +
 	                     "-J " + packageDir + DIR_SEPS + "java " +
 	                     "-M " + packageDir + DIR_SEPS + "AndroidManifest.xml " +
 	                     "-I " + PlatformDir() + DIR_SEPS + "android.jar", ss);
-	
-	// PutConsole(ss.GetResult());
 	
 	if(result != 0)
 		PutConsole("Finish creating R file with error code: " + IntStr(result));
@@ -163,12 +193,17 @@ String AndroidSDKBuilder::AaptPath() const
 
 String AndroidSDKBuilder::DxPath() const
 {
-	return "";
+	return BuildToolsDir() + DIR_SEPS + "dx";
 }
 
 String AndroidSDKBuilder::JavacPath() const
 {
 	return jdkPath + DIR_SEPS + "bin" + DIR_SEPS + "javac";
+}
+
+String AndroidSDKBuilder::JarsignerPath() const
+{
+	return jdkPath + DIR_SEPS + "bin" + DIR_SEPS + "jarsigner";
 }
 
 String AndroidSDKBuilder::JavacDelimiter() const
@@ -178,6 +213,15 @@ String AndroidSDKBuilder::JavacDelimiter() const
 #else
 	return ":";
 #endif
+}
+
+void AndroidSDKBuilder::ResetVariables()
+{
+	androidManifestPath.Clear();
+	packageName.Clear();
+	packageDir.Clear();
+	targetPackageDir.Clear();
+	objectsDir.Clear();
 }
 
 Builder *CreateAndroidSDKBuilder()

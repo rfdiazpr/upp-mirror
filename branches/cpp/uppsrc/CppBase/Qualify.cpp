@@ -226,21 +226,6 @@ void QualifyPass1(CppBase& base)
 	}
 }
 
-struct CmpCppItem {
-	bool operator()(const CppItem& a, const CppItem& b) const
-	{
-		int q = SgnCompare(a.qitem, b.qitem);
-		if(q) return q < 0;
-		q = SgnCompare(a.IsType(), b.IsType());
-		if(q) return q < 0;
-		q = SgnCompare(a.impl, b.impl);
-		if(q) return a.IsType() ? q > 0 : q < 0;
-		q = SgnCompare(GetCppFile(a.file), GetCppFile(b.file));
-		if(q) return q < 0;
-		return a.line < b.line;
-	}
-};
-
 void QualifyPass2(CppBase& base)
 {
 	LTIMING("QualifyPass2");
@@ -248,13 +233,11 @@ void QualifyPass2(CppBase& base)
 		Array<CppItem>& n = base[ni];
 		Scopefo nf(base, ni);
 		Index<int> rem;
-		bool sort = false;
 		for(int i = 0; i < n.GetCount(); i++) {
 			CppItem& m = n[i];
 			if(m.uname.GetCount() == 0 && m.name.GetCount())
 				m.uname = ToUpper(m.name);
 			if(m.serial != base.serial && !m.IsType()) {
-				sort = true;
 				m.serial = base.serial;
 				if(m.qualify_type) {
 					m.qualify_type = false;
@@ -272,8 +255,6 @@ void QualifyPass2(CppBase& base)
 			     << " impl:" << m.impl << " kind:" << (int)m.kind << " IsType:" << m.IsType()
 			     << " qtype:" << m.qtype << " tparam:" << m.tparam);
 		}
-		if(sort)
-			Sort(n, CmpCppItem());
 	}
 }
 

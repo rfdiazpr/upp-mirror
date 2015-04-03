@@ -226,6 +226,21 @@ void BaseInfoSync(Progress& pi)
 	}
 }
 
+	String ext = ToLower(GetFileExt(fn));
+	if(ext == ".h")
+		filetype = FILE_H;
+	else
+	if(ext == ".hpp")
+		filetype = FILE_HPP;
+	else
+	if(ext == ".cpp")
+		filetype = FILE_CPP;
+	else
+	if(ext == ".c")
+		filetype = FILE_C;
+	else
+		filetype = FILE_OTHER;
+
 String GetMasterFile(const String& file)
 {
 	return sSrcFile.Get(file, Null);
@@ -240,16 +255,10 @@ void UpdateCodeBase(Progress& pi)
 	ArrayMap<String, BrowserFileInfo>& set = FileSet();
 	const Workspace& wspc = GetIdeWorkspace();
 
-/*
-	DUMPC(srcfile);
-	
-	for(int i = 0; i < srcfile.GetCount(); i++)
-		LOG(srcfile[i] << " -> " << GetMasterFile(srcfile[i]));
-*/	
-	{ LTIMESTOP("Checking files");
 	pi.SetText("Assist++ checking files");
 	pi.SetTotal(sSrcFile.GetCount());
 	pi.SetPos(0);
+	Index<String>
 	for(int i = 0; i < sSrcFile.GetCount(); i++) {
 		pi.Step();
 		String path = sSrcFile.GetKey(i);
@@ -260,7 +269,6 @@ void UpdateCodeBase(Progress& pi)
 			scan.Add(path);
 		BrowserFileInfo& bf = set.GetAdd(path);
 		bf.time = tm;
-	}
 	}
 	
 	CppBase& base = CodeBase();
@@ -275,6 +283,8 @@ void UpdateCodeBase(Progress& pi)
 	if(remove.GetCount() == 0)
 		return;
 	set.Remove(rm);
+	base.Sweep(keep_file);
+
 	Remove(base, remove);
 	}
 	if(scan.GetCount()) {

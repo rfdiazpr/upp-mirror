@@ -91,10 +91,6 @@ struct Cpp {
 	typedef Cpp CLASSNAME;
 };
 
-int            GetCppFileIndex(const String& path);
-const String&  GetCppFile(int i);
-Vector<String> GetCppFiles();
-
 enum {
 	Tmarker_before_first = 255,
 #define CPPID(x)   tk_##x,
@@ -164,10 +160,8 @@ class Lex {
 	const char *pos;
 
 	Index<String> id;
-	Index<int>    ignore;
 	int           endkey;
 	int           braceslevel;
-	int           ignore_low, ignore_high;
 
 	struct Term  : Moveable<Term>{
 		const  char *ptr;
@@ -232,7 +226,7 @@ public:
 	
 	void        Dump(int pos);
 
-	void        Init(const char *s, const Vector<String>& ignore);
+	void        Init(const char *s);
 	void        StartStatCollection();
 	const LexSymbolStat & FinishStatCollection();
 
@@ -365,6 +359,7 @@ struct CppBase : ArrayMap<String, Array<CppItem> > {
 	String         serial_md5;
 
 	bool           IsType(int i) const;
+	void           Sweep(const Index<int>& keep_file);
 	
 	void           Dump(Stream& s);
 	
@@ -542,8 +537,9 @@ public:
 
 	const SrcFile &getPreprocessedFile() { return file; }
 
-	void   Do(Stream& s, const Vector<String>& ignore, CppBase& base, const String& fn,
-	          Callback2<int, const String&> err, const Vector<String>& typenames = Vector<String>());
+	void  Do(Stream& in, CppBase& _base, int file, int filetype,
+	         Callback2<int, const String&> _err,
+	         const Vector<String>& typenames = Vector<String>());
 
 	Parser() : dobody(false) { 	lex.WhenError = THISBACK(ThrowError); }
 };
@@ -579,9 +575,7 @@ String QualifyKey(const CppBase& base, const String& scope, const String& type);
 
 void   Qualify(CppBase& base);
 
-void Parse(Stream& s, const Vector<String>& ignore, CppBase& base, const String& fn,
-           Callback2<int, const String&> err);
-void Remove(CppBase& base, const Vector<String>& fn);
+void Parse(Stream& s, CppBase& base, int file, int filetype, Callback2<int, const String&> err);
 
 END_UPP_NAMESPACE
 

@@ -200,9 +200,11 @@ protected:
 	String PlatformDir() const;
 	String AaptPath() const;
 	String DxPath() const;
+	String ZipalignPath() const;
 	
 	String JavacPath() const;
 	String JarsignerPath() const;
+	String KeytoolPath() const;
 	String JavacDelimiter() const;
 	
 	void ResetVariables();

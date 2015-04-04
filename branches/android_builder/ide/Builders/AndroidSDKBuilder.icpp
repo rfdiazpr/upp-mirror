@@ -114,6 +114,7 @@ bool AndroidSDKBuilder::Link(const Vector<String>& linkfile, const String& linko
 {
 	StringStream ss;
 	
+	
 	PutConsole("Linkoptions: " + linkoptions);
 	int time = GetTickCount();
 	PutConsole("Compiling...");
@@ -134,11 +135,15 @@ bool AndroidSDKBuilder::Link(const Vector<String>& linkfile, const String& linko
 	}
 	
 	PutConsole("Creating apk file...");
+	String unsignedApkPath = targetPackageDir + DIR_SEPS + packageName + ".unsigned.apk";
+	String signedApkPath = targetPackageDir + DIR_SEPS + packageName + ".signed.apk";
+	String apkPath = targetPackageDir + DIR_SEPS + packageName + ".apk";
+	DeleteFile(unsignedApkPath);
 	String apkCommand = AaptPath() + " package -v -f " +
 	                    "-S " + packageDir + DIR_SEPS + "res " +
 	                    "-M " + androidManifestPath + " " +
 	                    "-I " + PlatformDir() + DIR_SEPS + "android.jar " +
-	                    "-F " + targetPackageDir + DIR_SEPS + packageName + ".unsigned.apk " +
+	                    "-F " + unsignedApkPath + " " +
 	                    targetPackageDir;
 	// PutConsole(apkCommand);
 	if(Execute(apkCommand, ss) != 0) {
@@ -149,7 +154,50 @@ bool AndroidSDKBuilder::Link(const Vector<String>& linkfile, const String& linko
 	// TODO: add debug apk signing: http://developer.android.com/tools/publishing/app-signing.html
 	// in release mode we definitly shouldn't signing apk!!!
 	
-	return false;
+	if(HasFlag("DEBUG")) {
+		String debugKeystorePath =  targetPackageDir + DIR_SEPS + "debug.keystore";
+		if(!FileExists(debugKeystorePath)) { 
+			PutConsole("Generating debug key...");
+			String keytoolCommand = KeytoolPath() + " -genkeypair -alias androiddebugkey -keypass android " + 
+	    		                    "-keystore " + debugKeystorePath + " " + 
+	        		                "-storepass android -dname \"CN=Android Debug,O=Android,C=US\" -validity 10000";
+			
+			//PutConsole(keytoolCommand);
+			if(Execute(keytoolCommand, ss) != 0) {
+				PutConsole(ss.GetResult());
+				return false;
+			}
+		}
+	
+		PutConsole("Signing apk file...");
+		DeleteFile(signedApkPath);
+		String jarsignerCommand = JarsignerPath() + " " +
+	    	                      "-keystore " + debugKeystorePath + " " +
+	        	                  "-storepass android " +
+	            	              "-keypass android " +
+	                	          "-signedjar " + signedApkPath + " " +
+	                    	      unsignedApkPath + " " +
+	                     	     "androiddebugkey";
+		//PutConsole(jarsignerCommand);
+		if(Execute(jarsignerCommand, ss) != 0) {
+			PutConsole(ss.GetResult());
+			return false;
+		}
+	}
+	
+	// TODO: should we align unsigned apk???
+	PutConsole("Aliging apk file...");
+	DeleteFile(apkPath);
+	String zipalignCommand = ZipalignPath() + " -v -f 4 " +
+	                         (HasFlag("DEBUG") ? signedApkPath : unsignedApkPath) + " " +
+	                         apkPath;
+	PutConsole(zipalignCommand);
+	if(Execute(zipalignCommand, ss) != 0) {
+		PutConsole(ss.GetResult());
+		return false;
+	}
+	
+	return true;
 }
 
 bool AndroidSDKBuilder::PreprocesAndroidManifest()
@@ -196,6 +244,11 @@ String AndroidSDKBuilder::DxPath() const
 	return BuildToolsDir() + DIR_SEPS + "dx";
 }
 
+String AndroidSDKBuilder::ZipalignPath() const
+{
+	return BuildToolsDir() + DIR_SEPS + "zipalign";
+}
+
 String AndroidSDKBuilder::JavacPath() const
 {
 	return jdkPath + DIR_SEPS + "bin" + DIR_SEPS + "javac";
@@ -204,6 +257,11 @@ String AndroidSDKBuilder::JavacPath() const
 String AndroidSDKBuilder::JarsignerPath() const
 {
 	return jdkPath + DIR_SEPS + "bin" + DIR_SEPS + "jarsigner";
+}
+
+String AndroidSDKBuilder::KeytoolPath() const
+{
+	return jdkPath + DIR_SEPS + "bin" + DIR_SEPS + "keytool";
 }
 
 String AndroidSDKBuilder::JavacDelimiter() const

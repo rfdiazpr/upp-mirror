@@ -360,6 +360,7 @@ struct CppBase : ArrayMap<String, Array<CppItem> > {
 
 	bool           IsType(int i) const;
 	void           Sweep(const Index<int>& keep_file);
+	void           Remove(int filei);
 	
 	void           Dump(Stream& s);
 	

@@ -24,16 +24,18 @@ String         GetMasterFile(const String& file);
 
 CppBase&       CodeBase();
 
-struct CppFileInfo {
+struct SourceFileInfo {
 	Time                      time;
 	VectorMap<String, String> used_macro;
+	String                    namespace_info;
+	String                    using_info;
+	String                    defined_macro;
 
-	BrowserFileInfo() { time = Null; }
+	SourceFileInfo() { time = Null; }
 };
 
-ArrayMap<String, BrowserFileInfo>& CppFileInfo();
-
 void           StartCodeBase();
+void           ParseSrc(Stream& in, int file, Callback2<int, const String&> error);
 void           CodeBaseScan(Stream& s, const String& fn);
 void           ClearCodeBase();
 void           RescanCodeBase();
@@ -42,12 +44,12 @@ void           SaveCodeBase();
 bool           ExistsBrowserItem(const String& item);
 void           ReQualifyCodeBase();
 
-void           ParseSrc(Stream& in, const String& fn, Callback2<int, const String&> error);
+String         PreprocessLayFile(const char *fn);
+Vector<String> PreprocessSchFile(const char *fn);
+String         PreprocessImlFile(const char *fn);
 
-void           CodeBaseScanLay(const String& fn);
-void           ScanLayFile(const char *fn);
-void           ScanSchFile(const char *fn);
-void           ScanImlFile(const char *fn);
+int            GetSourceFileIndex(const String& path);
+String         GetSourceFilePath(int file);
 
 String         MakeCodeRef(const String& scope, const String& item);
 void           SplitCodeRef(const String& ref, String& scope, String& item);

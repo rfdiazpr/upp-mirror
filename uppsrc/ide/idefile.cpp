@@ -273,8 +273,10 @@ void Ide::SaveFile0(bool always)
 		designer->Save();
 		if(tm != FileGetTime(fn))
 			TouchFile(fn);
-		if(IsProjectFile(fn) && ToUpper(GetFileExt(fn)) == ".LAY")
-			CodeBaseScanLay(fn);
+		if(IsProjectFile(fn) && ToUpper(GetFileExt(fn)) == ".LAY") {
+			FileIn in(fn);
+			CodeBaseScan(in, fn);
+		}
 		return;
 	}
 

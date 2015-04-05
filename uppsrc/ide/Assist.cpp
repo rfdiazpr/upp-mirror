@@ -920,9 +920,25 @@ void AssistEditor::DCopy()
 	String txt = Get(l, h - l);
 	StringStream ss(txt);
 	String cls = ctx.current_scope;
+/* TODO: remove
 	CppBase cpp;
 	Parser parser;
 	parser.Do(ss, IgnoreList(), cpp, Null, CNULL, Split(cls, ':'));
+*/
+	CppBase cpp;
+	Cpp pp;
+	pp.include_path = GetIncludePath();
+	pp.Preprocess(theide->editfile, ss, GetMasterFile(theide->editfile));
+
+	Parser parser;
+	parser.dobody = true;
+	StringStream pin(pp.output);
+	parser.Do(ss, cpp, Null, Null, CNULL, Split(cls, ':'));
+
+//	QualifyTypes(CodeBase(), parser.current_scope, parser.current);
+//	inbody = parser.IsInBody();
+
+
 	for(int i = 0; i < cpp.GetCount(); i++) {
 		const Array<CppItem>& n = cpp[i];
 		bool decl = decla;
@@ -1309,7 +1325,7 @@ void Ide::JumpToDefinition(const Array<CppItem>& n, int q, const String& scope)
 	String currentfile = editfile;
 	while(i < n.GetCount() && n[i].qitem == qitem) {
 		const CppItem& m = n[i];
-		int ml = GetMatchLen(editfile, GetCppFile(m.file));
+		int ml = GetMatchLen(editfile, GetSourceFilePath(m.file));
 		if(m.impl && ml > qimplml) {
 			qimplml = ml;
 			qimpl = i;
@@ -1325,7 +1341,7 @@ void Ide::JumpToDefinition(const Array<CppItem>& n, int q, const String& scope)
 		i++;
 	}
 	const CppItem& pos = n[qimpl >= 0 ? qimpl : qcpp >= 0 ? qcpp : q];
-	String path = GetCppFile(pos.file);
+	String path = GetSourceFilePath(pos.file);
 	editastext.RemoveKey(path);
 	editashex.RemoveKey(path);
 	if(ToLower(GetFileExt(path)) == ".lay") {

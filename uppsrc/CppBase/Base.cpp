@@ -85,4 +85,23 @@ void CppBase::Sweep(const Index<int>& keep_file)
 	}
 }
 
+void CppBase::Remove(int filei)
+{
+	int ni = 0;
+	while(ni < GetCount()) {
+		Array<CppItem>& n = (*this)[ni];
+		Vector<int> nr;
+		for(int i = 0; i < n.GetCount(); i++)
+			if(n[i].file == filei)
+				nr.Add(i);
+		if(nr.GetCount() == n.GetCount())
+			Remove(ni);
+		else {
+			n.Remove(nr);
+			ni++;
+		}
+	}
+}
+
+
 END_UPP_NAMESPACE

@@ -29,25 +29,14 @@ CppBase& CodeBase()
 	return b;
 }
 
-ArrayMap<String, BrowserFileInfo>& FileSet()
-{
-	static ArrayMap<String, BrowserFileInfo> x;
-	return x;
-}
-
-Vector<Browser *>& RBrowser()
-{
-	static Vector<Browser *> bp;
-	return bp;
-}
+ArrayMap<String, SourceFileInfo> source_file;
 
 static bool   s_console;
-static String s_file;
 
-void BrowserScanError(int line, const String& text)
+void BrowserScanError(int line, const String& text, int file)
 {
 	if(s_console)
-		PutConsole(String().Cat() << s_file << " (" << line << "): " << text);
+		PutConsole(String().Cat() << source_file.GetKey(file) << " (" << line << "): " << text);
 }
 
 void SaveCodeBase()
@@ -67,7 +56,7 @@ void SaveCodeBase()
 		Array<CppItem>& n = base[j];
 		for(int k = 0; k < n.GetCount(); k++) {
 			CppItem& m = n[k];
-			StringStream& o = out.GetAdd(GetCppFile(m.file));
+			StringStream& o = out.GetAdd(GetSourceFilePath(m.file));
 			s = base.GetKey(j);
 			o % s;
 			o % m;
@@ -132,7 +121,7 @@ void LoadCodeBase(Progress& pi)
 						ss % s;
 						CppItem& m = base.GetAdd(s).Add();
 						ss % m;
-						m.file = GetCppFileIndex(fn);
+						m.file = GetSourceFileIndex(fn);
 					}
 				}
 			}
@@ -205,7 +194,7 @@ void GatherSources(const String& master_path, const String& path_, const String&
 }
 
 void BaseInfoSync(Progress& pi)
-{
+{ // clears temporary caches (file times etc..)
 	PPSync();
 
 	LTIMING("sSrcFile make");
@@ -226,148 +215,124 @@ void BaseInfoSync(Progress& pi)
 	}
 }
 
-	String ext = ToLower(GetFileExt(fn));
-	if(ext == ".h")
-		filetype = FILE_H;
-	else
-	if(ext == ".hpp")
-		filetype = FILE_HPP;
-	else
-	if(ext == ".cpp")
-		filetype = FILE_CPP;
-	else
-	if(ext == ".c")
-		filetype = FILE_C;
-	else
-		filetype = FILE_OTHER;
-
 String GetMasterFile(const String& file)
 {
 	return sSrcFile.Get(file, Null);
+}
+
+int GetSourceFileIndex(const String& path)
+{
+	int q = source_file.Find(path);
+	if(q < 0) {
+		q = source_file.GetCount();
+		source_file.Add(path);
+	}
+	return q;
+}
+
+String GetSourceFilePath(int file)
+{
+	if(file < 0 || file >= source_file.GetCount())
+		return Null;
+	return source_file.GetKey(file);
 }
 
 void UpdateCodeBase(Progress& pi)
 {
 	BaseInfoSync(pi);
 
-	Index<String> fp;
-	Vector<String> scan;
-	ArrayMap<String, BrowserFileInfo>& set = FileSet();
 	const Workspace& wspc = GetIdeWorkspace();
 
 	pi.SetText("Assist++ checking files");
 	pi.SetTotal(sSrcFile.GetCount());
 	pi.SetPos(0);
-	Index<String>
+	Index<int>  keep_file;
+	Index<int>  scan_file;
 	for(int i = 0; i < sSrcFile.GetCount(); i++) {
 		pi.Step();
 		String path = sSrcFile.GetKey(i);
-		fp.Add(path);
-		int q = set.Find(path);
-		Time tm = FileGetTime(path);
-		if(q < 0 || set[q].time != tm)
-			scan.Add(path);
-		BrowserFileInfo& bf = set.GetAdd(path);
-		bf.time = tm;
+		int q = GetSourceFileIndex(path);
+		SourceFileInfo& f = source_file[q];
+		if(f.time == FileGetTime(path))
+			keep_file.Add(q);
+		else
+			scan_file.Add(q);
 	}
 	
 	CppBase& base = CodeBase();
-	Vector<String> remove = clone(scan);
-	Vector<int> rm;
-	{ LTIMESTOP("Removing files");
-	for(int i = 0; i < set.GetCount(); i++)
-		if(fp.Find(set.GetKey(i)) < 0) {
-			remove.Add(set.GetKey(i));
-			rm.Add(i);
-		}
-	if(remove.GetCount() == 0)
-		return;
-	set.Remove(rm);
+
 	base.Sweep(keep_file);
 
-	Remove(base, remove);
-	}
-	if(scan.GetCount()) {
-		LTIMESTOP("Parsing files");
-		pi.SetTotal(scan.GetCount());
-		pi.SetPos(0);
-		pi.AlignText(ALIGN_LEFT);
-		for(int i = 0; i < scan.GetCount(); i++) {
-			s_file = scan[i];
-			pi.SetText(GetFileName(GetFileFolder(s_file)) + "/" + GetFileName(s_file));
-			pi.Step();
-			String ext = ToUpper(GetFileExt(s_file));
-			if(ext == ".LAY")
-				ScanLayFile(s_file);
-			else
-			if(ext == ".IML")
-				ScanImlFile(s_file);
-			else
-			if(ext == ".SCH")
-				ScanSchFile(s_file);
-			else {
-				FileIn fi(s_file);
-				ParseSrc(fi, s_file, callback(BrowserScanError));
-			}
-		}
+	for(int i = 0; i < source_file.GetCount(); i++)
+		if(keep_file.Find(i) < 0 && scan_file.Find(i) < 0)
+			source_file.Unlink(i);
+	source_file.Sweep();
+
+	pi.SetTotal(scan_file.GetCount());
+	pi.SetPos(0);
+	pi.AlignText(ALIGN_LEFT);
+	for(int i = 0; i < scan_file.GetCount(); i++) {
+		String file = GetSourceFilePath(scan_file[i]);
+		pi.SetText(GetFileName(GetFileFolder(file)) + "/" + GetFileName(file));
+		pi.Step();
+		FileIn fi(file);
+		ParseSrc(fi, scan_file[i], callback1(BrowserScanError, i));
 	}
 }
+
+void ParseSrc(Stream& in, int file, Callback2<int, const String&> error)
+{
+	String path = GetSourceFilePath(file);
+	Vector<String> pp;
+	String ext = ToLower(GetFileExt(path));
+	int filetype = FILE_OTHER;
+	if(ext == ".lay")
+		pp.Add(PreprocessLayFile(path));
+	else
+	if(ext == ".iml")
+		pp.Add(PreprocessImlFile(path));
+	else
+	if(ext == ".sch")
+		pp.Append(PreprocessSchFile(path));
+	else {
+		Cpp cpp;
+		cpp.include_path = GetIncludePath();
+		cpp.Preprocess(path, in, GetMasterFile(GetSourceFilePath(file)));
+		pp.Add(cpp.output);
+		filetype = decode(ext, ".h", FILE_H, ".hpp", FILE_HPP,
+		                       ".cpp",FILE_CPP, ".c", FILE_C, FILE_OTHER);
+	}
+
+	for(int i = 0; i < pp.GetCount(); i++) {
+		StringStream pin(pp[i]);
+		Parse(pin, CodeBase(), file, filetype, error);
+	}
+}
+
 
 void CodeBaseScan(Stream& in, const String& fn)
 {
 	PPSync();
 
 	LTIMING("CodeBaseScan");
+	
 	TimeStop tm;
+	int file = GetSourceFileIndex(fn);
 	CppBase& base = CodeBase();
 	LLOG("Scan2 " << tm);
-	Vector<String> remove;
-	remove.Add(fn);
-	Remove(base, remove);
+	base.Remove(file);
 	LLOG("Scan3 " << tm);
-	if(ToUpper(GetFileExt(fn)) == ".SCH")
-		ScanSchFile(fn);
-	else
-	if(ToUpper(GetFileExt(fn)) == ".IML")
-		ScanImlFile(fn);
-	else
-		ParseSrc(in, fn, CNULL);
+	ParseSrc(in, file, CNULL);
 	LLOG("Scan4 " << tm);
 	FinishBase();
 	LLOG("Scan total " << tm);
 	LLOG("---------");
 }
 
-void ParseSrc(Stream& in, const String& fn, Callback2<int, const String&> error)
-{
-	Cpp cpp;
-	cpp.include_path = GetIncludePath();
-	{ LTIMING("Preprocess");
-	cpp.Preprocess(fn, in, GetMasterFile(fn));
-	}
-	
-	{ LTIMING("Parse");
-	StringStream pin(cpp.output);
-	Parse(pin, Vector<String>(), CodeBase(), fn, error);
-	}
-}
-
-void CodeBaseScanLay(const String& fn)
-{
-	LTIMING("CodeBaseScanLay");
-	Vector<String> before = SortedNests();
-	CppBase& base = CodeBase();
-	Vector<String> remove;
-	remove.Add(fn);
-	Remove(base, remove);
-	ScanLayFile(fn);
-	FinishBase();
-}
-
 void ClearCodeBase()
 {
 	CodeBase().Clear();
-	FileSet().Clear();
+	source_file.Clear();
 }
 
 void StartCodeBase()

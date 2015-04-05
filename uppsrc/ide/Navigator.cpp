@@ -83,7 +83,7 @@ void Navigator::SyncCursor()
 
 	if(!navigating) {
 		navlines.KillCursor();
-		int q = linefo.Find(GetCppFileIndex(theide->editfile));
+		int q = linefo.Find(GetSourceFileIndex(theide->editfile));
 		if(q < 0)
 			return;
 		navigating = true;
@@ -99,7 +99,7 @@ void Navigator::SyncCursor()
 void Navigator::SyncLines()
 {
 	int ln = GetCurrentLine() + 1;
-	int fi = GetCppFileIndex(theide->editfile);
+	int fi = GetSourceFileIndex(theide->editfile);
 	int q = -1;
 	for(int i = 0; i < navlines.GetCount(); i++) {
 		const NavLine& l = navlines.Get(i, 0).To<NavLine>();
@@ -121,7 +121,7 @@ void Navigator::SyncNavLines()
 	if(ii >= 0 && ii < litem.GetCount()) {
 		Vector<NavLine> l = GetNavLines(*litem[ii]);
 		for(int i = 0; i < l.GetCount(); i++) {
-			String p = GetCppFile(l[i].file);
+			String p = GetSourceFilePath(l[i].file);
 			navlines.Add(RawToValue(l[i]));
 		}
 		navlines.ScrollTo(sc);
@@ -134,7 +134,7 @@ int Navigator::LineDisplay::DoPaint(Draw& w, const Rect& r, const Value& q, Colo
 	w.DrawRect(r, paper);
 	const NavLine& l = q.To<NavLine>();
 	x += r.left;
-	String p = GetCppFile(l.file);
+	String p = GetSourceFilePath(l.file);
 	int y = r.top + (r.GetHeight() - StdFont().GetCy()) / 2;
 	PaintTeXt(w, x, y, GetFileName(GetFileFolder(p)) + "/", StdFont(), ink);
 	PaintTeXt(w, x, y, GetFileName(p), StdFont().Bold(), ink);
@@ -162,14 +162,14 @@ void Navigator::GoToNavLine()
 	int ii = navlines.GetClickPos().y;
 	if(ii >= 0 && ii < navlines.GetCount() && theide) {
 		const NavLine& l = navlines.Get(ii, 0).To<NavLine>();
-		theide->GotoPos(GetCppFile(l.file), l.line);
+		theide->GotoPos(GetSourceFilePath(l.file), l.line);
 	}
 }
 
 bool Navigator::NavLine::operator<(const NavLine& b) const
 {
-	String p1 = GetCppFile(file);
-	String p2 = GetCppFile(b.file);
+	String p1 = GetSourceFilePath(file);
+	String p2 = GetSourceFilePath(b.file);
 	return CombineCompare(!impl, !b.impl)
 	                     (GetFileExt(p1), GetFileExt(p2)) // .h > .c
 	                     (GetFileName(p1), GetFileName(p2))
@@ -212,12 +212,12 @@ void Navigator::Navigate()
 			Vector<NavLine> l = GetNavLines(m);
 			int q = l.GetCount() - 1;
 			for(int i = q; i >= 0; i--)
-				if(GetCppFile(l[i].file) == theide->editfile && l[i].line == ln) {
+				if(GetSourceFilePath(l[i].file) == theide->editfile && l[i].line == ln) {
 					q = (i + l.GetCount() - 1) % l.GetCount();
 					break;
 				}
 			if(q >= 0 && q < l.GetCount())
-				theide->GotoPos(GetCppFile(l[q].file), l[q].line);
+				theide->GotoPos(GetSourceFilePath(l[q].file), l[q].line);
 		}
 	}
 	navigating = false;
@@ -381,7 +381,7 @@ void Navigator::NavGroup(bool local)
 		if(m.kind == TYPEDEF)
 			g.Trim(max(g.ReverseFind("::"), 0));
 		if(IsNull(g))
-			g = "\xff" + GetCppFile(m.decl_file);
+			g = "\xff" + GetSourceFilePath(m.decl_file);
 		if(local)
 			if(gitem.GetCount() && gitem.TopKey() == g)
 				gitem.Top().Add(&m);
@@ -433,7 +433,7 @@ void Navigator::Search()
 	int lineno = StrInt(s);
 	gitem.Clear();
 	nitem.Clear();
-	int fileii = GetCppFileIndex(theide->editfile);
+	int fileii = GetSourceFileIndex(theide->editfile);
 	if(!IsNull(lineno)) {
 		NavItem& m = nitem.Add();
 		m.type = "Go to line " + AsString(lineno);

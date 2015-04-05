@@ -116,8 +116,15 @@ void AssistEditor::Context(Parser& parser, int pos)
 	theide->ScanFile();
 	String s = Get(0, pos);
 	StringStream ss(s);
+
+	Cpp cpp;
+	cpp.include_path = GetIncludePath();
+	cpp.Preprocess(theide->editfile, ss, GetMasterFile(theide->editfile));
+
 	parser.dobody = true;
-	parser.Do(ss, IgnoreList(), CodeBase(), Null, callback(AssistScanError));
+	StringStream pin(cpp.output);
+	parser.Do(ss, CodeBase(), Null, Null, callback(AssistScanError));
+
 	QualifyTypes(CodeBase(), parser.current_scope, parser.current);
 	inbody = parser.IsInBody();
 #ifdef _DEBUG_X_0

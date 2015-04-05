@@ -10,7 +10,7 @@ NAMESPACE_UPP
 static StaticMutex   cpp_file_mutex;
 static Index<String> cpp_file;
 
-int GetCppFileIndex(const String& path)
+int GetSourceFileIndex(const String& path)
 {
 	INTERLOCKED_(cpp_file_mutex) {
 		return cpp_file.FindAdd(path);
@@ -41,7 +41,7 @@ void  CppPos::Serialize(Stream& s)
 	s % impl % line;
 	String fn = GetCppFile(file);
 	s % fn;
-	file = GetCppFileIndex(fn);
+	file = GetSourceFileIndex(fn);
 }
 
 String SSpaces(const char *txt)

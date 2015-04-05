@@ -1068,8 +1068,7 @@ CppItem& Parser::Item(const String& scope, const String& item, const String& nam
 		current = CppItem();
 	current_key = item;
 	current_name = name;
-	Array<CppItem>& n = base->GetAdd(current_scope);
-	CppItem& im = dobody ? current : n.Add();
+	CppItem& im = dobody ? current : base->GetAdd(current_scope).Add();
 	im.item = item;
 	im.name = name;
 	im.file = filei;

@@ -2,7 +2,7 @@
 
 void AssistEditor::Annotate(const String& filename)
 {
-	int fi = GetCppFileIndex(filename);
+	int fi = GetSourceFileIndex(filename);
 	CppBase& base = CodeBase();
 	ClearAnnotations();
 	for(int j = 0; j < base.GetCount(); j++) {

@@ -81,7 +81,7 @@ void Navigator::SyncCursor()
 	search.NullText("Symbol/lineno " + k);
 	search.Tip(IsNull(search) ? String() : "Clear " + k);
 
-	if(!navigating) {
+	if(!navigating && theide->editfile.GetCount()) {
 		navlines.KillCursor();
 		int q = linefo.Find(GetSourceFileIndex(theide->editfile));
 		if(q < 0)
@@ -98,6 +98,8 @@ void Navigator::SyncCursor()
 
 void Navigator::SyncLines()
 {
+	if(IsNull(theide->editfile))
+		return;
 	int ln = GetCurrentLine() + 1;
 	int fi = GetSourceFileIndex(theide->editfile);
 	int q = -1;
@@ -433,6 +435,8 @@ void Navigator::Search()
 	int lineno = StrInt(s);
 	gitem.Clear();
 	nitem.Clear();
+	if(IsNull(theide->editfile))
+		return;
 	int fileii = GetSourceFileIndex(theide->editfile);
 	if(!IsNull(lineno)) {
 		NavItem& m = nitem.Add();

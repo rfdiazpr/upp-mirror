@@ -14,9 +14,12 @@ String CppMacro::Define(const char *s)
 	try {
 		if(!p.IsId())
 			return Null;
+		p.NoSkipSpaces(); // '#define TEST(x)' is difference form '#define TEST (x)' - later is parameterless
 		id = p.ReadId();
 		param.Clear();
 		if(p.Char('(')) {
+			p.SkipSpaces();
+			p.Spaces();
 			while(p.IsId()) {
 				if(param.GetCount())
 					param << ",";

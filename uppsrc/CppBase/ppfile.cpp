@@ -51,6 +51,19 @@ const CppMacro *FindMacro(const String& id, Index<int>& segment_id)
 	return r;
 }
 
+String GetAllMacros(const String& id, Index<int>& segment_id)
+{
+	String r;
+	int q = sAllMacros.Find(id);
+	while(q >= 0) {
+		const PPMacro& m = sAllMacros[q];
+		if(segment_id.Find(m.segment_id) >= 0)
+			r << '\n' << m.macro;
+		q = sAllMacros.FindNext(q);
+	}
+	return r;
+}
+
 void PPFile::CheckEndNamespace(Vector<int>& namespace_block, int level)
 {
 	if(namespace_block.GetCount() && namespace_block.Top() == level) {
@@ -63,6 +76,7 @@ void PPFile::Parse(Stream& in)
 {
 	for(int i = 0; i < ppmacro.GetCount(); i++)
 		sAllMacros.Unlink(ppmacro[i]);
+	ppmacro.Clear();
 	item.Clear();
 	includes.Clear();
 	bool was_using = false;
@@ -71,6 +85,8 @@ void PPFile::Parse(Stream& in)
 	bool incomment = false;
 	Vector<int> namespace_block;
 	bool next_segment = true;
+	Index<int> local_segments;
+	static int segment_serial;
 	while(!in.IsEof()) {
 		String l = in.GetLine();
 		while(*l.Last() == '\\' && !in.IsEof()) {
@@ -82,20 +98,41 @@ void PPFile::Parse(Stream& in)
 			CParser p(l);
 			if(p.Char('#')) {
 				if(p.Id("define")) {
-					static int segment_serial;
 					if(next_segment) {
 						PPItem& m = item.Add();
 						m.type = PP_DEFINES;
 						m.segment_id = ++segment_serial;
 						next_segment = false;
+						local_segments.Add(segment_serial);
 					}
 					CppMacro def;
 					String   id = def.Define(p.GetPtr());
 					if(id.GetCount()) {
-						ppmacro.Add(sAllMacros.GetCount());
-						PPMacro& m = sAllMacros.Add(id);
+						int q = sAllMacros.FindPut(id);
+						ppmacro.Add(q);
+						PPMacro& m = sAllMacros[q];
 						m.segment_id = segment_serial;
 						m.macro = def;
+					}
+				}
+				else
+				if(p.Id("undef")) {
+					if(p.IsId()) {
+						String id = p.ReadId();
+						if(FindMacro(id, local_segments)) { // heuristic: only local undefs are allowed
+							PPItem& m = item.Add();
+							m.type = PP_UNDEF;
+							m.segment_id = ++segment_serial;
+							next_segment = true;
+							local_segments.Add(segment_serial);
+							if(id.GetCount()) {
+								int q = sAllMacros.FindPut(id);
+								ppmacro.Add(q);
+								PPMacro& m = sAllMacros[q];
+								m.segment_id = segment_serial;
+								m.macro.Undef();
+							}
+						}
 					}
 				}
 				else
@@ -219,7 +256,6 @@ void PPSync()
 	sPathFileTime.Clear();
 	sIncludePath.Clear();
 	sIncludes.Clear();
-	sAllMacros.Sweep();
 }
 
 String GetIncludePath0(const char *s, const char *filedir, const String& include_path)

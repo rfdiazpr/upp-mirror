@@ -878,7 +878,7 @@ public:
 		void  SearchCode();
 		void  Goto();
 		void  GotoGlobal();
-		void  ScanFile();
+		void  ScanFile(bool check_macros);
 		bool  SwapSIf(const char *cref);
 		void  SwapS();
 		void  FindId(const String& id);

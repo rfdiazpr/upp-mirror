@@ -57,6 +57,12 @@ bool CppBase::IsType(int i) const
 	return GetKey(i).GetCount();
 }
 
+void CppBase::Serialize(Stream& s)
+{
+	ArrayMap<String, Array<CppItem> > :: Serialize(s);
+	s % serial % serial_md5;
+}
+
 void CppBase::Dump(Stream& s)
 {
 	for(int i = 0; i < GetCount(); i++) {
@@ -85,7 +91,7 @@ void CppBase::Sweep(const Index<int>& keep_file)
 	}
 }
 
-void CppBase::Remove(int filei)
+void CppBase::RemoveFile(int filei)
 {
 	int ni = 0;
 	while(ni < GetCount()) {

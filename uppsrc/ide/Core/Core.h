@@ -195,6 +195,8 @@ Vector<String> GetUppDirs();
 String GetUppDir();
 void   SetVar(const String& var, const String& val, bool save = true);
 
+String GetCurrentBuildMethod();
+
 String GetAnyFileName(const char *path);
 String GetAnyFileTitle(const char *path);
 String CatAnyPath(String path, const char *more);

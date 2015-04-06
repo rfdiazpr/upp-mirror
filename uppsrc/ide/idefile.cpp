@@ -208,12 +208,12 @@ bool Ide::IsProjectFile(const String& f) const
 	return false;
 }
 
-void Ide::ScanFile()
+void Ide::ScanFile(bool check_macros)
 {
 	if(IsCppBaseFile()) {
 		String s = ~editor;
 		StringStream ss(s);
-		CodeBaseScan(ss, editfile);
+		CodeBaseScanFile(ss, editfile, check_macros);
 	}
 }
 
@@ -273,10 +273,8 @@ void Ide::SaveFile0(bool always)
 		designer->Save();
 		if(tm != FileGetTime(fn))
 			TouchFile(fn);
-		if(IsProjectFile(fn) && ToUpper(GetFileExt(fn)) == ".LAY") {
-			FileIn in(fn);
-			CodeBaseScan(in, fn);
-		}
+		if(IsProjectFile(fn) && ToUpper(GetFileExt(fn)) == ".LAY")
+			CodeBaseScanFile(fn, true);
 		return;
 	}
 
@@ -381,7 +379,7 @@ void Ide::SaveFile0(bool always)
 	}
 
 	if(editor.IsDirty())
-		ScanFile();
+		ScanFile(true);
 
 	editor.ClearDirty();
 
@@ -571,7 +569,7 @@ void Ide::EditFile0(const String& path, byte charset, bool astext, const String&
 
 void Ide::EditFileAssistSync()
 {
-	ScanFile();
+	ScanFile(false);
 	editor.Annotate(editfile);
 	editor.SyncNavigator();
 }
@@ -689,10 +687,8 @@ void Ide::CheckFileUpdate()
 		"Would you like to reload the file or to keep changes made in the IDE ?",
 		"Reload", "Keep")) return;
 
-	if(IsCppBaseFile()) {
-		FileIn in(editfile);
-		CodeBaseScan(in, editfile);
-	}
+	if(IsCppBaseFile())
+		CodeBaseScanFile(editfile, false);
 	ReloadFile();
 }
 

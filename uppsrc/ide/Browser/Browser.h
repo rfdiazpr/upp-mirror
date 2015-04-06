@@ -16,8 +16,6 @@
 
 class Browser;
 
-void           GC_Cache();
-
 String         GetIncludePath();
 bool           IsCPPFile(const String& file);
 String         GetMasterFile(const String& file);
@@ -26,21 +24,25 @@ CppBase&       CodeBase();
 
 struct SourceFileInfo {
 	Time                      time;
-	VectorMap<String, String> used_macro;
-	String                    namespace_info;
-	String                    using_info;
-	String                    defined_macro;
+	Vector<String>            usedmacro; // used macros value at the start of file
+	String                    used_macros;
+	String                    namespace_info; // namespace defined at the start of file
+	String                    using_info; // using namespace info at the start of file
+	String                    defined_macros; // macros defined by the file
+	
+	void Serialize(Stream& s);
 
 	SourceFileInfo() { time = Null; }
 };
 
 void           StartCodeBase();
-void           ParseSrc(Stream& in, int file, Callback2<int, const String&> error);
-void           CodeBaseScan(Stream& s, const String& fn);
+bool           ParseSrc(Stream& in, int file, Callback2<int, const String&> error, bool do_macros);
+void           CodeBaseScanFile(Stream& in, const String& fn, bool check_macros);
+void           CodeBaseScanFile(const String& fn, bool check_macros);
 void           ClearCodeBase();
 void           RescanCodeBase();
 void           SyncCodeBase();
-void           SaveCodeBase();
+void           SaveCodeBase(bool force);
 bool           ExistsBrowserItem(const String& item);
 void           ReQualifyCodeBase();
 

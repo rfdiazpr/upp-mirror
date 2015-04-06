@@ -213,7 +213,6 @@ private:
 	String androidManifestPath;
 	String packageName;
 	String packageDir;
-	String targetPackageDir;
 	String objectsDir;
 };
 

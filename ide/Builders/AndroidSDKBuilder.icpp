@@ -10,7 +10,7 @@ String AndroidSDKBuilder::GetTargetExt() const
 	return ".apk";
 }
 
-bool AndroidSDKBuilder::BuildPackage(const String& packageName, Vector<String>& linkfile,
+bool AndroidSDKBuilder::BuildPackage(const String& package, Vector<String>& linkfile,
 	                                 Vector<String>&, String& linkoptions,
 	                                 const Vector<String>& all_uses,
 	                                 const Vector<String>& all_libraries,
@@ -18,28 +18,27 @@ bool AndroidSDKBuilder::BuildPackage(const String& packageName, Vector<String>& 
 {
 	ResetVariables();
 	
-	bool error = false;
-	
-	String packageUppManifestPath = PackagePath(packageName);
+	String packageUppManifestPath = PackagePath(package);
 	packageDir = GetFileFolder(packageUppManifestPath);
-	this->packageName = packageName; // <- TODO: change local variables from packageName to package.
+	packageName = package;
 	
 	ChDir(packageDir);
 	PutVerbose("cd " + packageDir);
 	
-	Package package;
-	package.Load(packageUppManifestPath);
+	Package pkg;
+	pkg.Load(packageUppManifestPath);
 	
 	Vector<String> packageSourceFiles; // <- Paths releated to project
 	Vector<String> sourceFiles; // <- Paths releated to operating system
 	Vector<String> sourceObjectFiles; // <- Objects file paths
 	Vector<String> sourceOptions;
-	for(int i = 0; i < package.GetCount(); i++) {
+	bool error = false;
+	for(int i = 0; i < pkg.GetCount(); i++) {
 		if(!IdeIsBuilding())
 			return false;
-		if(!package[i].separator) {
+		if(!pkg[i].separator) {
 			// TODO: add global options aka gop support
-			Vector<String> allPackageFiles = CustomStep(package[i], packageName, error);
+			Vector<String> allPackageFiles = CustomStep(pkg[i], package, error);
 			if(!allPackageFiles.GetCount())
 				error = true;
 			for (int j = 0; j < allPackageFiles.GetCount(); j++) {
@@ -48,7 +47,7 @@ bool AndroidSDKBuilder::BuildPackage(const String& packageName, Vector<String>& 
 				
 				if(fileExt == ".java") {
 					// TODO: how to handle project source (aka. "java") dir tree.
-					String packageFile = AppendFileName(packageName, package[i]);
+					String packageFile = AppendFileName(package, pkg[i]);
 					String objectFile = NativePath(CatAnyPath(outdir, packageFile));
 					
 					packageSourceFiles.Add(packageFile);
@@ -57,13 +56,13 @@ bool AndroidSDKBuilder::BuildPackage(const String& packageName, Vector<String>& 
 				}
 				else
 				if(fileExt == ".xml") {
-					if(package[i] == "AndroidManifest.xml") {
+					if(pkg[i] == "AndroidManifest.xml") {
 						if(androidManifestPath.GetCount()) {
 							PutConsole("AndroidManifest.xml is duplicated.");
 							return false;
 						}
 						
-						androidManifestPath = packageDir + DIR_SEPS + package[i];
+						androidManifestPath = packageDir + DIR_SEPS + pkg[i];
 					}
 				}
 			}
@@ -71,7 +70,7 @@ bool AndroidSDKBuilder::BuildPackage(const String& packageName, Vector<String>& 
 	}
 	
 	if(!androidManifestPath.GetCount()) {
-		PutConsole("Package " + packageName + " dosen't contain Android manifest file (\"AndroidManifest.xml\").");
+		PutConsole("Package " + package + " dosen't contain Android manifest file (\"AndroidManifest.xml\").");
 		return false;
 	}
 	
@@ -81,9 +80,7 @@ bool AndroidSDKBuilder::BuildPackage(const String& packageName, Vector<String>& 
 	// TODO: do we need to add R.java to source files???
 	
 	if(!error && HasFlag("MAIN") && !sourceFiles.IsEmpty()) {
-		// TODO: this is not good path!!!
-		targetPackageDir = GetFileFolder(target) + DIR_SEPS + packageName;
-		objectsDir = targetPackageDir + DIR_SEPS + "obj";
+		objectsDir = outdir + DIR_SEPS + "obj";
 		
 		if(!RealizeDirectory(objectsDir)) {
 			PutConsole("Creating directory " + objectsDir + " failed.");
@@ -114,8 +111,7 @@ bool AndroidSDKBuilder::Link(const Vector<String>& linkfile, const String& linko
 {
 	StringStream ss;
 	
-	
-	PutConsole("Linkoptions: " + linkoptions);
+	//PutConsole("Linkoptions: " + linkoptions);
 	int time = GetTickCount();
 	PutConsole("Compiling...");
 	if(Execute(linkoptions, ss) != 0) {
@@ -125,9 +121,9 @@ bool AndroidSDKBuilder::Link(const Vector<String>& linkfile, const String& linko
 	PutVerbose("compiled in " + GetPrintTime(time));
 	
 	PutConsole("Creating dex file...");
-	String dxCommand = DxPath() + " --dex --verbose " +
-	                   "--output=" + targetPackageDir + DIR_SEPS + "classes.dex " +
-	                   objectsDir;
+	String dxCommand = DxPath() + " --dex " +
+		"--output=" + outdir + DIR_SEPS + "classes.dex " +
+		objectsDir;
 	// PutConsole(dxCommand);
 	if(Execute(dxCommand, ss) != 0) {
 		PutConsole(ss.GetResult());
@@ -135,16 +131,15 @@ bool AndroidSDKBuilder::Link(const Vector<String>& linkfile, const String& linko
 	}
 	
 	PutConsole("Creating apk file...");
-	String unsignedApkPath = targetPackageDir + DIR_SEPS + packageName + ".unsigned.apk";
-	String signedApkPath = targetPackageDir + DIR_SEPS + packageName + ".signed.apk";
-	String apkPath = targetPackageDir + DIR_SEPS + packageName + ".apk";
+	String unsignedApkPath = outdir + DIR_SEPS + packageName + ".unsigned.apk";
+	String signedApkPath = outdir + DIR_SEPS + packageName + ".signed.apk";
 	DeleteFile(unsignedApkPath);
 	String apkCommand = AaptPath() + " package -v -f " +
-	                    "-S " + packageDir + DIR_SEPS + "res " +
-	                    "-M " + androidManifestPath + " " +
-	                    "-I " + PlatformDir() + DIR_SEPS + "android.jar " +
-	                    "-F " + unsignedApkPath + " " +
-	                    targetPackageDir;
+		"-S " + packageDir + DIR_SEPS + "res " +
+		"-M " + androidManifestPath + " " +
+		"-I " + PlatformDir() + DIR_SEPS + "android.jar " +
+		"-F " + unsignedApkPath + " " +
+		outdir;
 	// PutConsole(apkCommand);
 	if(Execute(apkCommand, ss) != 0) {
 		PutConsole(ss.GetResult());
@@ -155,12 +150,12 @@ bool AndroidSDKBuilder::Link(const Vector<String>& linkfile, const String& linko
 	// in release mode we definitly shouldn't signing apk!!!
 	
 	if(HasFlag("DEBUG")) {
-		String debugKeystorePath =  targetPackageDir + DIR_SEPS + "debug.keystore";
+		String debugKeystorePath = outdir + DIR_SEPS + "debug.keystore";
 		if(!FileExists(debugKeystorePath)) { 
 			PutConsole("Generating debug key...");
 			String keytoolCommand = KeytoolPath() + " -genkeypair -alias androiddebugkey -keypass android " + 
-	    		                    "-keystore " + debugKeystorePath + " " + 
-	        		                "-storepass android -dname \"CN=Android Debug,O=Android,C=US\" -validity 10000";
+				"-keystore " + debugKeystorePath + " " + 
+				"-storepass android -dname \"CN=Android Debug,O=Android,C=US\" -validity 10000";
 			
 			//PutConsole(keytoolCommand);
 			if(Execute(keytoolCommand, ss) != 0) {
@@ -172,12 +167,12 @@ bool AndroidSDKBuilder::Link(const Vector<String>& linkfile, const String& linko
 		PutConsole("Signing apk file...");
 		DeleteFile(signedApkPath);
 		String jarsignerCommand = JarsignerPath() + " " +
-	    	                      "-keystore " + debugKeystorePath + " " +
-	        	                  "-storepass android " +
-	            	              "-keypass android " +
-	                	          "-signedjar " + signedApkPath + " " +
-	                    	      unsignedApkPath + " " +
-	                     	     "androiddebugkey";
+			"-keystore " + debugKeystorePath + " " +
+			"-storepass android " +
+			"-keypass android " +
+			"-signedjar " + signedApkPath + " " +
+			unsignedApkPath + " " +
+			"androiddebugkey";
 		//PutConsole(jarsignerCommand);
 		if(Execute(jarsignerCommand, ss) != 0) {
 			PutConsole(ss.GetResult());
@@ -187,11 +182,11 @@ bool AndroidSDKBuilder::Link(const Vector<String>& linkfile, const String& linko
 	
 	// TODO: should we align unsigned apk???
 	PutConsole("Aliging apk file...");
-	DeleteFile(apkPath);
+	DeleteFile(target);
 	String zipalignCommand = ZipalignPath() + " -v -f 4 " +
-	                         (HasFlag("DEBUG") ? signedApkPath : unsignedApkPath) + " " +
-	                         apkPath;
-	PutConsole(zipalignCommand);
+		(HasFlag("DEBUG") ? signedApkPath : unsignedApkPath) + " " +
+		target;
+	//PutConsole(zipalignCommand);
 	if(Execute(zipalignCommand, ss) != 0) {
 		PutConsole(ss.GetResult());
 		return false;
@@ -209,17 +204,21 @@ bool AndroidSDKBuilder::PreprocesAndroidManifest()
 
 bool AndroidSDKBuilder::GenerateRFile()
 {
+	// QUESTION: what is the best way to handle res/java folder in upp package structure???
+	
 	StringStream ss;
-	int result = Execute(AaptPath() + " package -v -f -m " +
-	                     "-S " + packageDir + DIR_SEPS + "res " +
-	                     "-J " + packageDir + DIR_SEPS + "java " +
-	                     "-M " + packageDir + DIR_SEPS + "AndroidManifest.xml " +
-	                     "-I " + PlatformDir() + DIR_SEPS + "android.jar", ss);
+	String aaptCommand = AaptPath() + " package -v -f -m " +
+		"-S " + packageDir + DIR_SEPS + "res " +
+		"-J " + packageDir + DIR_SEPS + "java " +
+		"-M " + packageDir + DIR_SEPS + "AndroidManifest.xml " +
+		"-I " + PlatformDir() + DIR_SEPS + "android.jar";
 	
-	if(result != 0)
-		PutConsole("Finish creating R file with error code: " + IntStr(result));
+	if(Execute(aaptCommand, ss)) {
+		PutConsole(ss.GetResult());
+		return false;
+	}
 	
-	return result == 0;
+	return true;
 }
 
 String AndroidSDKBuilder::BuildToolsDir() const
@@ -278,7 +277,6 @@ void AndroidSDKBuilder::ResetVariables()
 	androidManifestPath.Clear();
 	packageName.Clear();
 	packageDir.Clear();
-	targetPackageDir.Clear();
 	objectsDir.Clear();
 }
 

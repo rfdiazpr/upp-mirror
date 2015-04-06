@@ -15,7 +15,10 @@ void Cpp::Define(const char *s)
 const char *Cpp::SkipString(const char *s)
 {
 	CParser p(s);
-	p.ReadOneString(*s);
+	try {
+		p.ReadOneString(*s);
+	}
+	catch(CParser::Error) {}
 	s = p.GetPtr();
 	while((byte)*(s - 1) <= ' ')
 		s--;
@@ -72,9 +75,6 @@ String Cpp::Expand(const char *s)
 				const CppMacro *m = macro.FindPtr(id);
 				if(!m) {
 					m = FindMacro(id, segment_id);
-					//TODO benchmark this
-				//	if(m)
-				//		macro.Add(id, *m);
 				}
 				if(m && !id.StartsWith("__$allowed_on_")) {
 					LTIMING("Expand macro");
@@ -129,6 +129,9 @@ String Cpp::Expand(const char *s)
 			r.Cat(id);
 		}
 		else
+		if(*s == '\"')
+			s = SkipString(s);
+		else
 		if(s[0] == '/' && s[1] == '*') {
 			incomment = true;
 			s += 2;
@@ -146,7 +149,7 @@ String Cpp::Expand(const char *s)
 }
 
 bool Cpp::Preprocess(const String& sourcefile, Stream& in, const String& currentfile,
-                     const Index<String> *get_macros)
+                     bool get_macros)
 {
 	macro.Clear();
 	macro.Reserve(1000);
@@ -157,6 +160,9 @@ bool Cpp::Preprocess(const String& sourcefile, Stream& in, const String& current
                                       "__AuToQuOtE;__xin;__xout;"
                                       "$drv_group;$allowed_on_parameter",
                                       ';');
+	for(int i = 0; i < ignorelist.GetCount(); i++)
+		macro.GetAdd(ignorelist[i]).param = ".";
+	std_macros = macro.GetCount();
 
 	static Index<String> kw;
 	ONCELOCK {
@@ -168,8 +174,6 @@ bool Cpp::Preprocess(const String& sourcefile, Stream& in, const String& current
 	}
 	notmacro = clone(kw);
 
-	for(int i = 0; i < ignorelist.GetCount(); i++)
-		macro.GetAdd(ignorelist[i]).param = ".";
 	done = false;
 	incomment = false;
 	Index<String> visited;
@@ -178,22 +182,21 @@ bool Cpp::Preprocess(const String& sourcefile, Stream& in, const String& current
 }
 
 void Cpp::Do(const String& sourcefile, Stream& in, const String& currentfile,
-             Index<String>& visited, const Index<String> *get_macros)
+             Index<String>& visited, bool get_macros)
 {
 	if(visited.Find(currentfile) >= 0 || visited.GetCount() > 20000)
 		return;
 	visited.Add(currentfile);
 	String current_folder = GetFileFolder(currentfile);
-	if(sourcefile != currentfile) {
+	bool notthefile = sourcefile != currentfile;
+	if(notthefile || get_macros) {
 		const PPFile& pp = GetPPFile(currentfile);
-	#ifdef _DEBUG
-	//	pp.Dump();
-	#endif
 		for(int i = 0; i < pp.item.GetCount() && !done; i++) {
 			const PPItem& m = pp.item[i];
 			if(m.type == PP_DEFINES) {
 				LTIMING("PP_DEFINES");
-				segment_id.Add(m.segment_id);
+				if(notthefile) // if getting macros, we are interested in included macros only
+					segment_id.FindAdd(m.segment_id);
 			}
 			else
 			if(m.type == PP_INCLUDE) {
@@ -211,56 +214,68 @@ void Cpp::Do(const String& sourcefile, Stream& in, const String& currentfile,
 			if(m.type == PP_USING)
 				namespace_using.FindAdd(m.text);
 		}
-		return;
+		if(sourcefile != currentfile)
+			return;
 	}
 	
-	done = true;
-	if(get_macros)
-		return;
-	
-	LTIMING("Expand");
-	incomment = false;
-	StringBuffer result;
-	result.Clear();
-	result.Reserve(16384);
-	int lineno = 0;
-	bool incomment = false;
-	while(!in.IsEof()) {
-		String l = in.GetLine();
-		lineno++;
-		int el = 0;
-		while(*l.Last() == '\\' && !in.IsEof()) {
-			el++;
-			l.Trim(l.GetLength() - 1);
-			l.Cat(in.GetLine());
-		}
-		RemoveComments(l, incomment);
-		CParser p(l);
-		if(p.Char('#')) {
-			if(p.Id("define")) {
-				result.Cat(l + "\n");
-				LTIMING("Expand define");
-				Define(p.GetPtr());
+	if(!get_macros) {
+		LTIMING("Expand");
+		incomment = false;
+		StringBuffer result;
+		result.Clear();
+		result.Reserve(16384);
+		int lineno = 0;
+		bool incomment = false;
+		while(!in.IsEof()) {
+			String l = in.GetLine();
+			lineno++;
+			int el = 0;
+			while(*l.Last() == '\\' && !in.IsEof()) {
+				el++;
+				l.Trim(l.GetLength() - 1);
+				l.Cat(in.GetLine());
 			}
-			else {
-				result.Cat('\n');
-				if(p.Id("include")) {
-					LTIMING("Expand include");
-					String hdr = Expand(p.GetPtr());
-					String header_path = GetIncludePath(hdr, current_folder, include_path);
-					if(header_path.GetCount())
-						Do(Null, NilStream(), header_path, visited, NULL);
+			RemoveComments(l, incomment);
+			CParser p(l);
+			if(p.Char('#')) {
+				if(p.Id("define")) {
+					result.Cat(l + "\n");
+					LTIMING("Expand define");
+					Define(p.GetPtr());
+				}
+				else {
+					result.Cat('\n');
+					if(p.Id("include")) {
+						// TODO? problem with order, perhaps create special segments for local macros
+						LTIMING("Expand include");
+						String hdr = Expand(p.GetPtr());
+						String header_path = GetIncludePath(hdr, current_folder, include_path);
+						if(header_path.GetCount())
+							Do(Null, NilStream(), header_path, visited, NULL);
+					}
 				}
 			}
+			else {
+				LTIMING("Expand expand");
+				result.Cat(Expand(l) + "\n");
+			}
+			while(el--)
+				result.Cat("\n");
 		}
-		else {
-			LTIMING("Expand expand");
-			result.Cat(Expand(l) + "\n");
-		}
-		while(el--)
-			result.Cat("\n");
+		output = result;
 	}
-	output = result;
+	defined_macros.Clear();
+	for(int i = std_macros; i < macro.GetCount(); i++)
+		defined_macros << macro.GetKey(i) << macro[i] << ';';
+	done = true;
+}
+
+String Cpp::GetUsedMacroValues(const Vector<String>& m)
+{
+	String r;
+	for(int i = 0; i < m.GetCount(); i++)
+		r << '#' << m[i] << GetAllMacros(m[i], segment_id) << "\n";
+	return r;
 }
 
 END_UPP_NAMESPACE

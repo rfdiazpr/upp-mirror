@@ -185,6 +185,12 @@ bool Ide::IdeIsDebug() const
 	return debugger;
 }
 
+String GetCurrentBuildMethod()
+{
+	Ide *ide = dynamic_cast<Ide *>(TheIde());
+	return ide ? ide->method : String();
+}
+
 void Ide::IdeEndDebug()
 {
 	console.Kill();
@@ -1053,7 +1059,7 @@ void AppMain___()
 	#ifdef PLATFORM_POSIX
 		StoreAsXMLFile(UpdaterCfg(),"SourceUpdater",ConfigFile("updates.xml"));
 	#endif
-		SaveCodeBase();
+		SaveCodeBase(false);
 		DelTemps();
 		ReduceCache();
 #ifndef _DEBUG

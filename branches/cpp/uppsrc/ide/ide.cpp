@@ -187,7 +187,7 @@ bool Ide::OpenMainPackage()
 
 void Ide::NewMainPackage()
 {
-	SaveCodeBase();
+	SaveCodeBase(false);
 	OpenMainPackage();
 }
 

@@ -12,6 +12,8 @@ struct CppMacro : Moveable<CppMacro> {
 	String        body;
 	
 	String Define(const char *s);
+	void   Undef()                   { body = "\x7f"; }
+	bool   IsUndef() const           { return body[0] == '\x7f' && body[1] == '\0'; }
 
 	String Expand(const Vector<String>& p) const;
 	
@@ -20,6 +22,7 @@ struct CppMacro : Moveable<CppMacro> {
 
 enum PPItemType {
 	PP_DEFINES,
+	PP_UNDEF,
 	PP_INCLUDE,
 	PP_USING,
 	PP_NAMESPACE,
@@ -53,6 +56,7 @@ private:
 };
 
 const CppMacro *FindMacro(const String& id, Index<int>& segments);
+String          GetAllMacros(const String& id, Index<int>& segment_id);
 
 void PPSync();
 
@@ -70,12 +74,14 @@ struct Cpp {
 	
 	Index<int>                  segment_id;
 	VectorMap<String, CppMacro> macro;
+	int                         std_macros;
 	Index<String>               notmacro;
 
 	String                      output;
 	Index<String>               usedmacro;
 	Index<String>               namespace_using;
 	Vector<String>              namespace_stack;
+	String                      defined_macros;
 	
 	void   Define(const char *s);
 
@@ -83,10 +89,12 @@ struct Cpp {
 	void   ParamAdd(Vector<String>& param, const char *b, const char *e);
 	String Expand(const char *s);
 	void   Do(const String& sourcefile, Stream& in, const String& currentfile,
-	          Index<String>& visited, const Index<String> *get_macros);
+	          Index<String>& visited, bool get_macros);
 
 	bool   Preprocess(const String& sourcefile, Stream& in, const String& currentfile,
-	                  const Index<String> *get_macros = NULL);
+	                  bool just_get_macros = false);
+
+	String GetUsedMacroValues(const Vector<String>& m);
 	
 	typedef Cpp CLASSNAME;
 };
@@ -360,8 +368,10 @@ struct CppBase : ArrayMap<String, Array<CppItem> > {
 
 	bool           IsType(int i) const;
 	void           Sweep(const Index<int>& keep_file);
-	void           Remove(int filei);
-	
+	void           RemoveFile(int filei);
+
+	void           Serialize(Stream& s);
+
 	void           Dump(Stream& s);
 	
 	CppBase() { serial = 0; }

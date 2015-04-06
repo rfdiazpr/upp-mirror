@@ -262,7 +262,7 @@ bool Ide::SwapSIf(const char *cref)
 			GotoCpp(n[typei]);
 		return false;
 	}
-	if(count < 1)
+	if(count < 1 || IsNull(editfile))
 		return false;
 	int file = GetSourceFileIndex(editfile);
 	int line = p.current.line;

@@ -132,6 +132,17 @@ number is returned. Unlinked elements are ignored.&]
 is not in AMap.&]
 [s3;%- &]
 [s4;%- &]
+[s5;:AMap`:`:FindNext`(int`)const:%- [@(0.0.255) int]_[* FindNext]([@(0.0.255) int]_[*@3 i])_
+[@(0.0.255) const]&]
+[s2; Retrieves the position of next element with the same key as 
+element at the specified position. If multi`-key ordering is 
+not broken and more than one element with that value exists in 
+AMap, the lowest position greater than specified one is retrieved 
+(so that positions got by subsequent calls to FindNext are in 
+ascending order). When there are no more elements with required 
+key, a negative number is returned. Unlinked elements are ignored.&]
+[s3; &]
+[s4;%- &]
 [s5;:AMap`:`:Find`(const K`&`,unsigned`)const:%- [@(0.0.255) int]_[* Find]([@(0.0.255) cons
 t]_[*@4 K][@(0.0.255) `&]_[*@3 k], [@(0.0.255) unsigned]_[*@3 h])_[@(0.0.255) const]&]
 [s2; Retrieves the position of next element with the same key as 
@@ -178,7 +189,7 @@ is not in AMap.&]
 as element at the specified position. If multi`-key ordering 
 is not broken and more than one element with that value exists 
 in AMap, the greatest position lower than specified one is retrieved 
-(so that positions got by subsequent calls to FindNext are in 
+(so that positions got by subsequent calls to FindPrev are in 
 descending order). When there are no more elements with required 
 key, a negative number is returned. Unlinked elements are ignored.&]
 [s7; [*C@3 i]-|Position of element.&]

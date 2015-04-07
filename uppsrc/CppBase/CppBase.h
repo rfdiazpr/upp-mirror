@@ -55,7 +55,7 @@ private:
 	void CheckEndNamespace(Vector<int>& namespace_block, int level);
 };
 
-const CppMacro *FindMacro(const String& id, Index<int>& segments);
+const CppMacro *FindMacro(const String& id, Index<int>& segment_id, int& segmenti);
 String          GetAllMacros(const String& id, Index<int>& segment_id);
 
 void PPSync();
@@ -67,13 +67,15 @@ String GetIncludePath(const String& s, const String& filedir, const String& incl
 bool IncludesFile(const String& parent_path, const String& header_path, const String& include_path);
 
 struct Cpp {
+	static Index<String>        kw;
+
 	bool                        incomment;
 	bool                        done;
 	
 	String                      include_path;
 	
 	Index<int>                  segment_id;
-	VectorMap<String, CppMacro> macro;
+	VectorMap<String, PPMacro>  macro;
 	int                         std_macros;
 	Index<String>               notmacro;
 

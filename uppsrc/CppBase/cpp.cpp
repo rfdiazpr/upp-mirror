@@ -4,14 +4,6 @@ NAMESPACE_UPP
 
 #define LTIMING(x) // RTIMING(x)
 
-void Cpp::Define(const char *s)
-{
-	CppMacro m;
-	String id = m.Define(s);
-	if(id.GetCount())
-		macro.GetAdd(id) = pick(m);
-}
-
 const char *Cpp::SkipString(const char *s)
 {
 	CParser p(s);
@@ -72,10 +64,13 @@ String Cpp::Expand(const char *s)
 			String id(b, s);
 			LTIMING("Expand ID2");
 			if(notmacro.Find(id) < 0) {
-				const CppMacro *m = macro.FindPtr(id);
-				if(!m) {
-					m = FindMacro(id, segment_id);
-				}
+				const PPMacro *pp = macro.FindPtr(id);
+				int segmenti = pp ? segment_id.Find(pp->segment_id) : -1;
+				const CppMacro *m = FindMacro(id, segment_id, segmenti);
+				if(!m && pp)
+					m = &pp->macro;
+				if(m && m->IsUndef())
+					m = NULL;
 				if(m && !id.StartsWith("__$allowed_on_")) {
 					LTIMING("Expand macro");
 					Vector<String> param;
@@ -148,6 +143,8 @@ String Cpp::Expand(const char *s)
 	return r;
 }
 
+Index<String> Cpp::kw;
+
 bool Cpp::Preprocess(const String& sourcefile, Stream& in, const String& currentfile,
                      bool get_macros)
 {
@@ -160,11 +157,15 @@ bool Cpp::Preprocess(const String& sourcefile, Stream& in, const String& current
                                       "__AuToQuOtE;__xin;__xout;"
                                       "$drv_group;$allowed_on_parameter",
                                       ';');
-	for(int i = 0; i < ignorelist.GetCount(); i++)
-		macro.GetAdd(ignorelist[i]).param = ".";
+
+	for(int i = 0; i < ignorelist.GetCount(); i++) {
+		PPMacro& pp = macro.GetAdd(ignorelist[i]);
+		pp.macro.param = ".";
+		pp.segment_id = -1;
+	}
+
 	std_macros = macro.GetCount();
 
-	static Index<String> kw;
 	ONCELOCK {
 		const char **h = CppKeyword();
 		while(*h) {
@@ -226,6 +227,8 @@ void Cpp::Do(const String& sourcefile, Stream& in, const String& currentfile,
 		result.Reserve(16384);
 		int lineno = 0;
 		bool incomment = false;
+		int segment_serial = 0;
+		segment_id.Add(--segment_serial);
 		while(!in.IsEof()) {
 			String l = in.GetLine();
 			lineno++;
@@ -240,8 +243,26 @@ void Cpp::Do(const String& sourcefile, Stream& in, const String& currentfile,
 			if(p.Char('#')) {
 				if(p.Id("define")) {
 					result.Cat(l + "\n");
-					LTIMING("Expand define");
-					Define(p.GetPtr());
+					CppMacro m;
+					String id = m.Define(p.GetPtr());
+					if(id.GetCount()) {
+						PPMacro& pp = macro.GetAdd(id);
+						pp.macro = m;
+						pp.segment_id = segment_serial;
+						notmacro.Trim(kw.GetCount());
+					}
+				}
+				else
+				if(p.Id("undef")) {
+					result.Cat(l + "\n");
+					if(p.IsId()) {
+						segment_id.Add(--segment_serial);
+						PPMacro& m = macro.GetAdd(p.ReadId());
+						m.segment_id = segment_serial;
+						m.macro.Undef();
+						notmacro.Trim(kw.GetCount());
+						segment_id.Add(--segment_serial);
+					}
 				}
 				else {
 					result.Cat('\n');
@@ -252,6 +273,7 @@ void Cpp::Do(const String& sourcefile, Stream& in, const String& currentfile,
 						String header_path = GetIncludePath(hdr, current_folder, include_path);
 						if(header_path.GetCount())
 							Do(Null, NilStream(), header_path, visited, NULL);
+						segment_id.Add(--segment_serial);
 					}
 				}
 			}
@@ -266,7 +288,7 @@ void Cpp::Do(const String& sourcefile, Stream& in, const String& currentfile,
 	}
 	defined_macros.Clear();
 	for(int i = std_macros; i < macro.GetCount(); i++)
-		defined_macros << macro.GetKey(i) << macro[i] << ';';
+		defined_macros << macro.GetKey(i) << macro[i].macro << ';';
 	done = true;
 }
 

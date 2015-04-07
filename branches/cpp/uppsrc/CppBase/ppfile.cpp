@@ -38,14 +38,17 @@ void RemoveComments(String& l, bool& incomment)
 
 static VectorMap<String, PPMacro> sAllMacros;
 
-const CppMacro *FindMacro(const String& id, Index<int>& segment_id)
+const CppMacro *FindMacro(const String& id, Index<int>& segment_id, int& segmenti)
 {
 	const CppMacro *r = NULL;
 	int q = sAllMacros.Find(id);
 	while(q >= 0) {
 		const PPMacro& m = sAllMacros[q];
-		if(segment_id.Find(m.segment_id) >= 0)
+		int si = segment_id.Find(m.segment_id);
+		if(si >= segmenti) {
+			segmenti = si;
 			r = &m.macro;
+		}
 		q = sAllMacros.FindNext(q);
 	}
 	return r;
@@ -119,7 +122,8 @@ void PPFile::Parse(Stream& in)
 				if(p.Id("undef")) {
 					if(p.IsId()) {
 						String id = p.ReadId();
-						if(FindMacro(id, local_segments)) { // heuristic: only local undefs are allowed
+						int segmenti = -1;
+						if(FindMacro(id, local_segments, segmenti)) { // heuristic: only local undefs are allowed
 							PPItem& m = item.Add();
 							m.type = PP_UNDEF;
 							m.segment_id = ++segment_serial;

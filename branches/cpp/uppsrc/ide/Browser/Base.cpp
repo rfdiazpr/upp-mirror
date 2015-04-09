@@ -142,7 +142,7 @@ String GetMasterFile(const String& file)
 
 int GetSourceFileIndex(const String& path)
 {
-	return source_file.Put(path);
+	return source_file.PutDefault(path);
 }
 
 String GetSourceFilePath(int file)

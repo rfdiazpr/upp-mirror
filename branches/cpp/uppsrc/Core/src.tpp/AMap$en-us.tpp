@@ -267,8 +267,18 @@ Value is transfered using deep copy constructor.&]
 [s7; [*C@3 x]-|Value.&]
 [s3;%- &]
 [s4;%- &]
-[s5;:AMap`:`:PutPick`(const K`&`,pick`_ T`&`):%- [@(0.0.255) int]_[* PutPick]([@(0.0.255) c
-onst]_[*@4 K][@(0.0.255) `&]_[*@3 k], [@(0.128.128) pick`_]_[*@4 T][@(0.0.255) `&]_[*@3 x])&]
+[s5;:AMap`:`:PutDefault`(const K`&`):%- [@(0.0.255) int]_[* PutDefault]([@(0.0.255) const]_
+[*@4 K][@(0.0.255) `&]_[*@3 k])&]
+[s2; Similar to Put, but value is default constructed.&]
+[s6; T must have deep copy constructor.&]
+[s6; Invalidates multi`-key ordering.&]
+[s6; Invalidates iterators to AMap.&]
+[s6; Invalidates references to keys.&]
+[s6; Invalidates references to VectorMap values.&]
+[s3; &]
+[s4;%- &]
+[s5;:AMap`:`:PutPick`(const K`&`,T rval`_`):%- [@(0.0.255) int]_[* PutPick]([@(0.0.255) con
+st]_[*@4 K][@(0.0.255) `&]_[*@3 k], [*@4 T]_[@(0.0.255) rval`_]_[*@3 x])&]
 [s2; If there are any unlinked elements in AMap, one of them is replaced 
 by the specified key/value pair. If there is no unlinked element, 
 the key/value pair is added at the end of AIndex using [* Add]. 

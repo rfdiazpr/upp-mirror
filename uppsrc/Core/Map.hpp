@@ -422,6 +422,17 @@ int AMap<K, T, V, HashFn>::Put(const K& k, const T& x)
 }
 
 template <class K, class T, class V, class HashFn>
+int AMap<K, T, V, HashFn>::PutDefault(const K& k)
+{
+	int i = key.Put(k);
+	if(i >= value.GetCount()) {
+		ASSERT(i == value.GetCount());
+		value.Add();
+	}
+	return i;
+}
+
+template <class K, class T, class V, class HashFn>
 int AMap<K, T, V, HashFn>::PutPick(const K& k, T rval_ x)
 {
 	int i = key.Put(k);

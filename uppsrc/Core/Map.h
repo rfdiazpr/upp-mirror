@@ -21,6 +21,7 @@ public:
 	int      FindAddPick(const K& k, T rval_ init);
 
 	int      Put(const K& k, const T& x);
+	int      PutDefault(const K& k);
 	int      PutPick(const K& k, T rval_ x);
 	T&       Put(const K& k);
 

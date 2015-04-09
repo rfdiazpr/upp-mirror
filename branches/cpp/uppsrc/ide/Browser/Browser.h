@@ -1,6 +1,8 @@
 #ifndef _Browser_Browser_h
 #define _Browser_Browser_h
 
+#define fuck3
+
 #include <CtrlLib/CtrlLib.h>
 #include <CppBase/CppBase.h>
 #include <ide/Common/Common.h>

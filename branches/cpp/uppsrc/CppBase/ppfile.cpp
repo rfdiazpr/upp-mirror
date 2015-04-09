@@ -77,6 +77,7 @@ void PPFile::CheckEndNamespace(Vector<int>& namespace_block, int level)
 
 void PPFile::Parse(Stream& in)
 {
+	RTIMING("PPFile::Parse");
 	for(int i = 0; i < ppmacro.GetCount(); i++)
 		sAllMacros.Unlink(ppmacro[i]);
 	ppmacro.Clear();
@@ -111,11 +112,10 @@ void PPFile::Parse(Stream& in)
 					CppMacro def;
 					String   id = def.Define(p.GetPtr());
 					if(id.GetCount()) {
-						int q = sAllMacros.FindPut(id);
-						ppmacro.Add(q);
-						PPMacro& m = sAllMacros[q];
+						PPMacro m;
 						m.segment_id = segment_serial;
 						m.macro = def;
+						ppmacro.Add(sAllMacros.Put(id, m));
 					}
 				}
 				else
@@ -130,11 +130,10 @@ void PPFile::Parse(Stream& in)
 							next_segment = true;
 							local_segments.Add(segment_serial);
 							if(id.GetCount()) {
-								int q = sAllMacros.FindPut(id);
-								ppmacro.Add(q);
-								PPMacro& m = sAllMacros[q];
+								PPMacro m;
 								m.segment_id = segment_serial;
-								m.macro.Undef();
+								m.macro.SetUndef();
+								ppmacro.Add(sAllMacros.Put(id, m));
 							}
 						}
 					}
@@ -264,6 +263,7 @@ void PPSync()
 
 String GetIncludePath0(const char *s, const char *filedir, const String& include_path)
 {
+	RTIMING("GetIncludePath0");
 	while(IsSpace(*s))
 		s++;
 	int type = *s;
@@ -288,6 +288,7 @@ String GetIncludePath0(const char *s, const char *filedir, const String& include
 
 FileTime GetFileTimeCached(const String& p)
 {
+	RTIMING("GetFileTimeCached");
 	int q = sPathFileTime.Find(p);
 	if(q >= 0)
 		return sPathFileTime[q];
@@ -300,10 +301,14 @@ String GetIncludePath(const String& s, const String& filedir, const String& incl
 {
 	RTIMING("GetIncludePath");
 	String key;
-	key << s << "#" << filedir << "#" << include_path;
+	{ RTIMING("GetIncludePath1");
+	key << s << "#" << filedir << "#" << include_path; // TODO: Global include path
+	}
+	{ RTIMING("GetIncludePath2");
 	int q = sIncludePath.Find(key);
 	if(q >= 0)
 		return sIncludePath[q];
+	}
 	String p = GetIncludePath0(s, filedir, include_path);
 	sIncludePath.Add(key, p);
 	return p;

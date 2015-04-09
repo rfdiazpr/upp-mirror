@@ -19,6 +19,7 @@ file
 	CodeBrowser.cpp optimize_speed,
 	Browser.lay,
 	Browser.iml,
+	todo.txt,
 	Topic readonly separator,
 	TopicBase.cpp,
 	Reference.cpp,

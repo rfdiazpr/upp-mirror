@@ -204,6 +204,7 @@ void Cpp::Do(const String& sourcefile, Stream& in, const String& currentfile,
 				String s = GetIncludePath(m.text, current_folder, include_path);
 				if(s.GetCount())
 					Do(sourcefile, in, s, visited, get_macros);
+				RHITCOUNT("GetIncludePath 1"); //TODO: Optimize!
 			}
 			else
 			if(m.type == PP_NAMESPACE)
@@ -259,7 +260,7 @@ void Cpp::Do(const String& sourcefile, Stream& in, const String& currentfile,
 						segment_id.Add(--segment_serial);
 						PPMacro& m = macro.GetAdd(p.ReadId());
 						m.segment_id = segment_serial;
-						m.macro.Undef();
+						m.macro.SetUndef();
 						notmacro.Trim(kw.GetCount());
 						segment_id.Add(--segment_serial);
 					}

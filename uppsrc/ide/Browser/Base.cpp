@@ -99,6 +99,7 @@ bool IsCPPFile(const String& path)
 
 void GatherSources(const String& master_path, const String& path_, const String& include_path)
 {
+	RHITCOUNT("GatherSources");
 	String path = NormalizePath(path_);
 	if(sSrcFile.Find(path) >= 0)
 		return;
@@ -119,6 +120,7 @@ void BaseInfoSync(Progress& pi)
 	
 	sSrcFile.Clear();
 	const Workspace& wspc = GetIdeWorkspace();
+	RTIMING("Gathering files");
 	pi.SetText("Gathering files");
 	pi.SetTotal(wspc.GetCount());
 	for(int i = 0; i < wspc.GetCount(); i++) {
@@ -140,7 +142,7 @@ String GetMasterFile(const String& file)
 
 int GetSourceFileIndex(const String& path)
 {
-	return source_file.FindPut(path);
+	return source_file.Put(path);
 }
 
 String GetSourceFilePath(int file)
@@ -152,6 +154,7 @@ String GetSourceFilePath(int file)
 
 bool CheckFile(const SourceFileInfo& f, const String& path)
 {
+	RTIMING("CheckFile");
 	if(f.time != FileGetTime(path))
 		return false;
 	Cpp pp;
@@ -159,8 +162,8 @@ bool CheckFile(const SourceFileInfo& f, const String& path)
 	FileIn in(path);
 	pp.Preprocess(path, in, GetMasterFile(path), true);
 	String used_macros = pp.GetUsedMacroValues(f.usedmacro);
-	LDUMP(used_macros);
-	LDUMP(f.used_macros);
+	DDUMP(used_macros);
+	DDUMP(f.used_macros);
 	return f.used_macros == used_macros;
 }
 
@@ -183,11 +186,11 @@ void UpdateCodeBase(Progress& pi)
 		String path = sSrcFile.GetKey(i);
 		int q = GetSourceFileIndex(path);
 		const SourceFileInfo& f = source_file[q];
-		LLOG("=========== " << path);
+		DLOG("=========== " << path);
 		if(CheckFile(f, path))
 			keep_file.Add(q);
 		else {
-			LLOG("PARSE!");
+			DLOG("PARSE!");
 			parse_file.Add(q);
 		}
 	}
@@ -201,7 +204,6 @@ void UpdateCodeBase(Progress& pi)
 			LLOG("Unlink " << i);
 			source_file.Unlink(i);
 		}
-	source_file.Sweep();
 
 	pi.SetTotal(parse_file.GetCount());
 	pi.SetPos(0);

@@ -7,56 +7,6 @@ NAMESPACE_UPP
 #pragma optimize("t", on)
 #endif
 
-static StaticMutex   cpp_file_mutex;
-static Index<String> cpp_file;
-
-int GetSourceFileIndex(const String& path)
-{
-	INTERLOCKED_(cpp_file_mutex) {
-		return cpp_file.FindAdd(path);
-	}
-	return -1;
-}
-
-const String& GetCppFile(int i)
-{
-	INTERLOCKED_(cpp_file_mutex) {
-		return cpp_file[i];
-	}
-	static String x;
-	return x;
-}
-
-Vector<String> GetCppFiles()
-{
-	INTERLOCKED_(cpp_file_mutex) {
-		return clone(cpp_file.GetKeys());
-	}
-	return Vector<String>();
-}
-
-/*
-void  CppPos::Serialize(Stream& s)
-{
-	s % impl % line;
-	String fn = GetCppFile(file);
-	s % fn;
-	file = GetSourceFileIndex(fn);
-}
-
-String SSpaces(const char *txt)
-{
-	StringBuffer r;
-	while(*txt)
-		if(*txt == ' ') {
-			while((byte)*txt <= ' ' && *txt) txt++;
-			r.Cat(' ');
-		}
-		else
-			r.Cat(*txt++);
-	return r;
-}
-*/
 void SLPos(SrcFile& res)
 {
 	res.linepos.Add(res.text.GetLength());

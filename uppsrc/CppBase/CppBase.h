@@ -12,7 +12,7 @@ struct CppMacro : Moveable<CppMacro> {
 	String        body;
 	
 	String Define(const char *s);
-	void   Undef()                   { body = "\x7f"; }
+	void   SetUndef()                { body = "\x7f"; }
 	bool   IsUndef() const           { return body[0] == '\x7f' && body[1] == '\0'; }
 
 	String Expand(const Vector<String>& p) const;

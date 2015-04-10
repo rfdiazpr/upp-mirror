@@ -191,23 +191,32 @@ public:
 	virtual bool   BuildPackage(const String& packageName, Vector<String>& linkfile, Vector<String>&, String& linkoptions,
 		const Vector<String>& all_uses, const Vector<String>& all_libraries, int optimize);
 	virtual bool   Link(const Vector<String>& linkfile, const String& linkoptions, bool createmap);
+	
+protected:
+	bool MovePackageFileToAndroidProject(const String& packagePath, const String& androidProjectPath); 
+	bool RealizePackageSourcesDirectory(const String& packageName);
 
 protected:
 	bool PreprocesAndroidManifest();
 	bool GenerateRFile();
+	
+	String GetAndroidProjectDirectory() const;
+	String GetAndroidProjectSourcesDirectory() const;
+	String GetAndroidProjectResourcesDirectory() const;
+	String GetAndroidProjectBuildDirectory() const;
+	String GetAndroidProjectClassesDirectory() const;
 	
 	String BuildToolsDir() const;
 	String PlatformDir() const;
 	String AaptPath() const;
 	String DxPath() const;
 	String ZipalignPath() const;
+	String AndroidJarPath() const;
 	
 	String JavacPath() const;
 	String JarsignerPath() const;
 	String KeytoolPath() const;
 	String JavacDelimiter() const;
-	
-	void ResetVariables();
 	
 private:
 	String androidManifestPath;

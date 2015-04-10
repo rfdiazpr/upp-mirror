@@ -429,6 +429,10 @@ int AMap<K, T, V, HashFn>::PutDefault(const K& k)
 		ASSERT(i == value.GetCount());
 		value.Add();
 	}
+	else {
+		DestroyArray(&value[i], &value[i] + 1);
+		ConstructArray(&value[i], &value[i] + 1);
+	}
 	return i;
 }
 
@@ -449,8 +453,11 @@ template <class K, class T, class V, class HashFn>
 T&  AMap<K, T, V, HashFn>::Put(const K& k)
 {
 	int i = key.Put(k);
-	if(i < value.GetCount())
+	if(i < value.GetCount()) {
+		DestroyArray(&value[i], &value[i] + 1);
+		ConstructArray(&value[i], &value[i] + 1);
 		return value[i];
+	}
 	else {
 		ASSERT(i == value.GetCount());
 		return value.Add();

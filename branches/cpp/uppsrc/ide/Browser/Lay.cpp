@@ -3,6 +3,8 @@
 #define LTIMING(x) // RTIMING(x)
 #define LDUMP(x)   // DUMP(x)
 
+TEST2
+
 void LaySkipRest(CParser& p)
 {
 	int lvl = 1;

@@ -124,8 +124,11 @@ String Cpp::Expand(const char *s)
 			r.Cat(id);
 		}
 		else
-		if(*s == '\"')
-			s = SkipString(s);
+		if(*s == '\"') {
+			const char *e = SkipString(s);
+			r.Cat(s, e);
+			s = e;
+		}
 		else
 		if(s[0] == '/' && s[1] == '*') {
 			incomment = true;
@@ -161,8 +164,9 @@ bool Cpp::Preprocess(const String& sourcefile, Stream& in, const String& current
 	for(int i = 0; i < ignorelist.GetCount(); i++) {
 		PPMacro& pp = macro.GetAdd(ignorelist[i]);
 		pp.macro.param = ".";
-		pp.segment_id = -1;
+		pp.segment_id = -999999999;
 	}
+	segment_id.Add(-999999999);
 
 	std_macros = macro.GetCount();
 
@@ -268,10 +272,8 @@ void Cpp::Do(const String& sourcefile, Stream& in, const String& currentfile,
 				else {
 					result.Cat('\n');
 					if(p.Id("include")) {
-						// TODO? problem with order, perhaps create special segments for local macros
 						LTIMING("Expand include");
-						String hdr = Expand(p.GetPtr());
-						String header_path = GetIncludePath(hdr, current_folder, include_path);
+						String header_path = GetIncludePath(p.GetPtr(), current_folder, include_path);
 						if(header_path.GetCount())
 							Do(Null, NilStream(), header_path, visited, NULL);
 						segment_id.Add(--segment_serial);

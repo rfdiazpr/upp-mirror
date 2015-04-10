@@ -46,7 +46,7 @@ void SaveCodeBase(bool force)
 {
 	RealizeDirectory(ConfigFile("cfg"));
 	StringStream ss;
-	Store(callback(SerializeCodeBase), ss, 0x00000);
+	Store(callback(SerializeCodeBase), ss, 0x00010);
 	String data = ss.GetResult();
 	String path = CodeBaseCacheFile();
 	if(force || data.GetCount() > GetFileLength(path)) {
@@ -142,7 +142,7 @@ String GetMasterFile(const String& file)
 
 int GetSourceFileIndex(const String& path)
 {
-	return source_file.PutDefault(path);
+	return source_file.FindPut(path);
 }
 
 String GetSourceFilePath(int file)
@@ -155,6 +155,8 @@ String GetSourceFilePath(int file)
 bool CheckFile(const SourceFileInfo& f, const String& path)
 {
 	RTIMING("CheckFile");
+	DDUMP(f.time);
+	DDUMP(FileGetTime(path));
 	if(f.time != FileGetTime(path))
 		return false;
 	Cpp pp;
@@ -186,7 +188,7 @@ void UpdateCodeBase(Progress& pi)
 		String path = sSrcFile.GetKey(i);
 		int q = GetSourceFileIndex(path);
 		const SourceFileInfo& f = source_file[q];
-		DLOG("=========== " << path);
+		DLOG("== CHECK == " << q << ": " << path);
 		if(CheckFile(f, path))
 			keep_file.Add(q);
 		else {
@@ -200,7 +202,7 @@ void UpdateCodeBase(Progress& pi)
 	base.Sweep(keep_file);
 
 	for(int i = 0; i < source_file.GetCount(); i++)
-		if(keep_file.Find(i) < 0 && parse_file.Find(i) < 0) {
+		if(keep_file.Find(i) < 0 && parse_file.Find(i) < 0 && !source_file.IsUnlinked(i)) {
 			LLOG("Unlink " << i);
 			source_file.Unlink(i);
 		}
@@ -222,7 +224,7 @@ void UpdateCodeBase(Progress& pi)
 bool ParseSrc(Stream& in, int file, Callback2<int, const String&> error, bool do_macros)
 {
 	String path = GetSourceFilePath(file);
-	LLOG("====== Parse " << path);
+	DLOG("====== Parse " << file << ": " << path);
 	Vector<String> pp;
 	String ext = ToLower(GetFileExt(path));
 	int filetype = FILE_OTHER;
@@ -246,11 +248,12 @@ bool ParseSrc(Stream& in, int file, Callback2<int, const String&> error, bool do
 		                       ".cpp",FILE_CPP, ".c", FILE_C, FILE_OTHER);
 		if(do_macros) {
 			sfi.usedmacro = cpp.usedmacro.PickKeys();
-			LDUMP(sfi.usedmacro);
+			DDUMP(sfi.usedmacro);
 			sfi.used_macros = cpp.GetUsedMacroValues(sfi.usedmacro);
-			LDUMP(sfi.used_macros);
-			sfi.time = GetFileTime(path);
-			LDUMP(cpp.defined_macros);
+			DDUMP(sfi.used_macros);
+			sfi.time = FileGetTime(path);
+			DDUMP(cpp.defined_macros);
+			DDUMP(sfi.time);
 			if(sfi.defined_macros != cpp.defined_macros) {
 				sfi.defined_macros = cpp.defined_macros;
 				b = true;
@@ -267,7 +270,7 @@ bool ParseSrc(Stream& in, int file, Callback2<int, const String&> error, bool do
 
 void CodeBaseScanFile(Stream& in, const String& fn, bool check_macros)
 {
-	LLOG("===== CodeBaseScanFile " << fn);
+	DLOG("===== CodeBaseScanFile " << fn);
 
 	PPSync();
 
@@ -275,6 +278,9 @@ void CodeBaseScanFile(Stream& in, const String& fn, bool check_macros)
 	
 	TimeStop tm;
 	int file = GetSourceFileIndex(fn);
+	_DBG_ for(int i = 0; i < source_file.GetCount(); i++)
+		DLOG(source_file.GetKey(i) << " " << source_file.IsUnlinked(i));
+	DDUMP(file);
 	CppBase& base = CodeBase();
 	LLOG("Scan2 " << tm);
 	base.RemoveFile(file);

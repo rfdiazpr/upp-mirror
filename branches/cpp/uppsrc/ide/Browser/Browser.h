@@ -1,8 +1,6 @@
 #ifndef _Browser_Browser_h
 #define _Browser_Browser_h
 
-#define TEST2 void JustATest() { _DBG_ }
-
 #include <CtrlLib/CtrlLib.h>
 #include <CppBase/CppBase.h>
 #include <ide/Common/Common.h>

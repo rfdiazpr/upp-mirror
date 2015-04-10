@@ -1,0 +1,1 @@
+#define MACRO(x) void main() { x; }x

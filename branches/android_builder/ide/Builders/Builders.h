@@ -205,6 +205,7 @@ protected:
 	String GetAndroidProjectResourcesDirectory() const;
 	String GetAndroidProjectBuildDirectory() const;
 	String GetAndroidProjectClassesDirectory() const;
+	String GetAndroidProjectBinDirectory() const;
 	
 	String BuildToolsDir() const;
 	String PlatformDir() const;

@@ -17,12 +17,13 @@ struct CppMacro : Moveable<CppMacro> {
 
 	String Expand(const Vector<String>& p) const;
 	
+	void   Serialize(Stream& s)      { s % param % body; }
+	
 	String ToString() const;
 };
 
 enum PPItemType {
 	PP_DEFINES,
-	PP_UNDEF,
 	PP_INCLUDE,
 	PP_USING,
 	PP_NAMESPACE,
@@ -33,20 +34,26 @@ struct PPItem {
 	int      type;
 	String   text;
 	int      segment_id;
+	
+	void     Serialize(Stream& s) { s % type % text % segment_id; }
 };
 
 struct PPMacro : Moveable<PPMacro> {
 	CppMacro  macro;
 	int       segment_id;
+	
+	void Serialize(Stream& s) { s % macro % segment_id; }
+	
+	String ToString() const   { return AsString(macro) + " " + AsString(segment_id); }
 };
 
 struct PPFile { // contains "macro extract" of file, only info about macros defined and namespaces
-	FileTime       filetime;
+ 	Time           filetime;
 	Array<PPItem>  item;
 	Index<String>  includes;
 	
 	void Parse(Stream& in);
-	
+	void Serialize(Stream& s) { s % filetime % item % includes; }
 	void Dump() const;
 
 private:
@@ -60,11 +67,16 @@ String          GetAllMacros(const String& id, Index<int>& segment_id);
 
 void PPSync();
 
+void SerializePPFiles(Stream& s);
+void SweepPPFiles(const Index<String>& keep);
+
 const PPFile& GetPPFile(const char *path);
 
 String GetIncludePath(const String& s, const String& filedir, const String& include_path);
 
 bool IncludesFile(const String& parent_path, const String& header_path, const String& include_path);
+
+const PPFile& GetFlatPPFile(const char *path, const String& include_path);
 
 struct Cpp {
 	static Index<String>        kw;
@@ -74,29 +86,32 @@ struct Cpp {
 	
 	String                      include_path;
 	
-	Index<int>                  segment_id;
-	VectorMap<String, PPMacro>  macro;
-	int                         std_macros;
-	Index<String>               notmacro;
+	Index<int>                  segment_id; // segments of included macros
+	VectorMap<String, PPMacro>  macro; // macros defined
+	int                         std_macros; // standard macros (keywords and trick - fixed)
+	Index<String>               notmacro; // accelerator / expanding helper
 
-	String                      output;
-	Index<String>               usedmacro;
+	String                      output; // preprocessed file
+//	Index<String>               usedmacro;
 	Index<String>               namespace_using;
 	Vector<String>              namespace_stack;
-	String                      defined_macros;
+	
+	Index<String>               ids; // all ids in the file
 	
 	void   Define(const char *s);
 
 	static const char *SkipString(const char *s);
 	void   ParamAdd(Vector<String>& param, const char *b, const char *e);
 	String Expand(const char *s);
+	void   DoFlatInclude(const String& header_path);
 	void   Do(const String& sourcefile, Stream& in, const String& currentfile,
 	          Index<String>& visited, bool get_macros);
 
 	bool   Preprocess(const String& sourcefile, Stream& in, const String& currentfile,
 	                  bool just_get_macros = false);
 
-	String GetUsedMacroValues(const Vector<String>& m);
+	VectorMap<String, String> GetDefinedMacros();
+	String GetIncludedMacroValues(const Vector<String>& id);
 	
 	typedef Cpp CLASSNAME;
 };

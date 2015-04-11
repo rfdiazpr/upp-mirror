@@ -2,7 +2,7 @@
 
 NAMESPACE_UPP
 
-#define LTIMING(x) // RTIMING(x)
+#define LTIMING(x)  RTIMING(x)
 
 void SetSpaces(String& l, int pos, int count)
 {
@@ -37,9 +37,25 @@ void RemoveComments(String& l, bool& incomment)
 }
 
 static VectorMap<String, PPMacro> sAllMacros;
+static ArrayMap<String, PPFile>   sPPfile;
+static int                        sPPserial;
+
+void SerializePPFiles(Stream& s)
+{
+	s % sAllMacros % sPPfile % sPPserial;
+}
+
+void SweepPPFiles(const Index<String>& keep)
+{
+	for(int i = 0; i < sPPfile.GetCount(); i++)
+		if(keep.Find(sPPfile.GetKey(i)) < 0)
+			sPPfile.Unlink(i);
+}
 
 const CppMacro *FindMacro(const String& id, Index<int>& segment_id, int& segmenti)
 {
+//	DLOG("*** FindMacro " << sAllMacros);
+//	DUMP(segment_id);
 	const CppMacro *r = NULL;
 	int q = sAllMacros.Find(id);
 	while(q >= 0) {
@@ -90,7 +106,6 @@ void PPFile::Parse(Stream& in)
 	Vector<int> namespace_block;
 	bool next_segment = true;
 	Index<int> local_segments;
-	static int segment_serial;
 	while(!in.IsEof()) {
 		String l = in.GetLine();
 		while(*l.Last() == '\\' && !in.IsEof()) {
@@ -105,15 +120,15 @@ void PPFile::Parse(Stream& in)
 					if(next_segment) {
 						PPItem& m = item.Add();
 						m.type = PP_DEFINES;
-						m.segment_id = ++segment_serial;
+						m.segment_id = ++sPPserial;
 						next_segment = false;
-						local_segments.Add(segment_serial);
+						local_segments.Add(sPPserial);
 					}
 					CppMacro def;
 					String   id = def.Define(p.GetPtr());
 					if(id.GetCount()) {
 						PPMacro m;
-						m.segment_id = segment_serial;
+						m.segment_id = sPPserial;
 						m.macro = def;
 						ppmacro.Add(sAllMacros.Put(id, m));
 					}
@@ -125,13 +140,13 @@ void PPFile::Parse(Stream& in)
 						int segmenti = -1;
 						if(FindMacro(id, local_segments, segmenti)) { // heuristic: only local undefs are allowed
 							PPItem& m = item.Add();
-							m.type = PP_UNDEF;
-							m.segment_id = ++segment_serial;
+							m.type = PP_DEFINES;
+							m.segment_id = ++sPPserial;
 							next_segment = true;
-							local_segments.Add(segment_serial);
+							local_segments.Add(sPPserial);
 							if(id.GetCount()) {
 								PPMacro m;
-								m.segment_id = segment_serial;
+								m.segment_id = sPPserial;
 								m.macro.SetUndef();
 								ppmacro.Add(sAllMacros.Put(id, m));
 							}
@@ -250,15 +265,17 @@ void PPFile::Dump() const
 	DUMPC(includes);
 }
 
-static ArrayMap<String, FileTime>  sPathFileTime;
+static VectorMap<String, Time>     sPathFileTime;
 static VectorMap<String, String>   sIncludePath;
 static VectorMap<String, bool>     sIncludes;
+static ArrayMap<String, PPFile>    sFlatPP;
 
 void PPSync()
 {
 	sPathFileTime.Clear();
 	sIncludePath.Clear();
 	sIncludes.Clear();
+	sFlatPP.Clear();
 }
 
 String GetIncludePath0(const char *s, const char *filedir, const String& include_path)
@@ -286,13 +303,13 @@ String GetIncludePath0(const char *s, const char *filedir, const String& include
 	return Null;
 }
 
-FileTime GetFileTimeCached(const String& p)
+Time GetFileTimeCached(const String& p)
 {
 	RTIMING("GetFileTimeCached");
 	int q = sPathFileTime.Find(p);
 	if(q >= 0)
 		return sPathFileTime[q];
-	FileTime m = GetFileTime(p);
+	Time m = FileGetTime(p);
 	sPathFileTime.Add(p, m);
 	return m;
 }
@@ -316,9 +333,8 @@ String GetIncludePath(const String& s, const String& filedir, const String& incl
 
 const PPFile& GetPPFile(const char *path)
 {
-	static ArrayMap<String, PPFile> file;
-	FileTime tm = GetFileTimeCached(path);
-	PPFile& f = file.GetAdd(path);
+	Time tm = GetFileTimeCached(path);
+	PPFile& f = sPPfile.GetPut(path);
 	if(f.filetime != tm) {
 		f.filetime = tm;
 		LTIMING("PP read");
@@ -335,6 +351,7 @@ bool IsSameFile(const String& f1, const String& f2)
 
 bool IncludesFile(const String& parent_path, const String& path, const String& include_path, Index<String>& visited)
 {
+	HITCOUNT("IncludesFile0");
 	if(visited.Find(parent_path) >= 0)
 		return false;
 	visited.Add(parent_path);
@@ -342,20 +359,20 @@ bool IncludesFile(const String& parent_path, const String& path, const String& i
 		return true;
 	const PPFile& f = GetPPFile(parent_path);
 	for(int i = 0; i < f.includes.GetCount(); i++) {
-		String p = GetIncludePath(f.includes[i], GetFileFolder(parent_path), include_path);
-		if(p.GetCount()) {
-			String key = p + "#" + path;
-			int q = sIncludes.Find(key);
-			if(q >= 0) {
-				if(sIncludes[q])
-					return true;
-			}
-			else {
-				bool b = IncludesFile(p, path, include_path, visited);
-				sIncludes.Add(key, b);
-				if(b)
-					return true;
-			}
+		String key = path + "#" + f.includes[i];
+		int q = sIncludes.Find(key);
+		if(q >= 0) {
+			HITCOUNT("IncludesFile cached");
+			if(sIncludes[q])
+				return true;
+		}
+		else {
+			HITCOUNT("IncludesFile getpath");
+			String p = GetIncludePath(f.includes[i], GetFileFolder(parent_path), include_path);
+			bool   b = p.GetCount() && IncludesFile(p, path, include_path, visited);
+			sIncludes.Add(key, b);
+			if(b)
+				return true;
 		}
 	}
 	return false;
@@ -363,8 +380,37 @@ bool IncludesFile(const String& parent_path, const String& path, const String& i
 
 bool IncludesFile(const String& parent_path, const String& path, const String& include_path)
 {
+	LTIMING("IncludesFile");
 	Index<String> visited;
 	return IncludesFile(parent_path, path, include_path, visited);
+}
+
+void CreateFlatPP(PPFile& fp, const char *path, Index<String>& visited, const String& include_path)
+{
+	if(visited.Find(path) >= 0)
+		return;
+	visited.Add(path);
+	const PPFile& pp = GetPPFile(path);
+	for(int i = 0; i < pp.item.GetCount(); i++) {
+		const PPItem& m = pp.item[i];
+		if(m.type == PP_INCLUDE) {
+			String s = GetIncludePath(m.text, GetFileFolder(path), include_path);
+			if(s.GetCount())
+				CreateFlatPP(fp, s, visited, include_path);
+		}
+		else
+			fp.item.Add(m);
+	}
+}
+
+const PPFile& GetFlatPPFile(const char *path, const String& include_path)
+{
+	int q = sFlatPP.Find(path);
+	if(q >= 0)
+		return sFlatPP[q];
+	Index<String> visited;
+	CreateFlatPP(sFlatPP.Add(path), path, visited, include_path);
+	return sFlatPP.Top();
 }
 
 END_UPP_NAMESPACE

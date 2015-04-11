@@ -46,7 +46,10 @@ String CppMacro::ToString() const
 		h.Replace(".", "...");
 		r << "(" << h << ")";
 	}
-	r << ' ' << body;
+	if(IsUndef())
+		r << " #undef";
+	else
+		r << ' ' << body;
 	return r;
 }
 

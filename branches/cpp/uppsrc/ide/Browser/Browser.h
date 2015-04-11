@@ -24,11 +24,11 @@ CppBase&       CodeBase();
 
 struct SourceFileInfo {
 	Time                      time;
-	Vector<String>            usedmacro; // used macros value at the start of file
-	String                    used_macros;
+	Vector<String>            ids; // all identifiers in the file
+	String                    included_id_macros; // included macros from ids set
 	String                    namespace_info; // namespace defined at the start of file
 	String                    using_info; // using namespace info at the start of file
-	String                    defined_macros; // macros defined by the file
+	VectorMap<String, String> defined_macros; // macros defined by the file
 	
 	void Serialize(Stream& s);
 
@@ -36,7 +36,7 @@ struct SourceFileInfo {
 };
 
 void           StartCodeBase();
-bool           ParseSrc(Stream& in, int file, Callback2<int, const String&> error, bool do_macros);
+Vector<String> ParseSrc(Stream& in, int file, Callback2<int, const String&> error, bool do_macros, bool get_changes);
 void           CodeBaseScanFile(Stream& in, const String& fn, bool check_macros);
 void           CodeBaseScanFile(const String& fn, bool check_macros);
 void           ClearCodeBase();

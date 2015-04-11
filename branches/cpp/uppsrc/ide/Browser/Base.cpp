@@ -14,12 +14,12 @@ ArrayMap<String, SourceFileInfo> source_file;
 
 void SourceFileInfo::Serialize(Stream& s)
 {
-	s % time % usedmacro % used_macros % namespace_info % using_info % defined_macros;
+	s % time % ids % included_id_macros % namespace_info % using_info % defined_macros;
 }
 
 String CodeBaseCacheFile()
 {
-	return AppendFileName(ConfigFile("cfg"), GetVarsName() + '.' + GetCurrentBuildMethod() + ".codebase");
+	return AppendFileName(ConfigFile("cfg/codebase"), GetVarsName() + '.' + GetCurrentBuildMethod() + ".codebase");
 }
 
 CppBase& CodeBase()
@@ -39,17 +39,18 @@ void BrowserScanError(int line, const String& text, int file)
 void SerializeCodeBase(Stream& s)
 {
 	source_file.Serialize(s);
-	// TODO: Serialize PP files?
+	SerializePPFiles(s);
 }
 
 void SaveCodeBase(bool force)
 {
-	RealizeDirectory(ConfigFile("cfg"));
+	LLOG("Save code base");
+	RealizeDirectory(ConfigFile("cfg/codebase"));
 	StringStream ss;
-	Store(callback(SerializeCodeBase), ss, 0x00010);
+	Store(callback(SerializeCodeBase), ss, 1);
 	String data = ss.GetResult();
 	String path = CodeBaseCacheFile();
-	if(force || data.GetCount() > GetFileLength(path)) {
+	if(/*force || data.GetCount() > GetFileLength(path)*/1) {
 		SaveFile(path, data); // TODO: LZ4?
 	#if 0
 		{ LTIMING("LZ4 compress");
@@ -62,7 +63,7 @@ void SaveCodeBase(bool force)
 
 void LoadCodeBase()
 {
-	LoadFromFile(callback(SerializeCodeBase), CodeBaseCacheFile(), 0x00000);
+	LoadFromFile(callback(SerializeCodeBase), CodeBaseCacheFile(), 1);
 }
 
 void FinishBase()
@@ -87,11 +88,6 @@ Vector<String> SortedNests()
 	return n;
 }
 
-String GetIncludePath()
-{
-	return TheIde() ? TheIde()->IdeGetIncludePath() : Null;
-}
-
 bool IsCPPFile(const String& path)
 {
 	return findarg(ToLower(GetFileExt(path)) , ".c", ".cpp", ".cc" , ".cxx", ".icpp") >= 0;
@@ -112,13 +108,15 @@ void GatherSources(const String& master_path, const String& path_, const String&
 	}
 }
 
+String sIncludePath;
+
 void BaseInfoSync(Progress& pi)
 { // clears temporary caches (file times etc..)
 	PPSync();
 
-	LTIMING("sSrcFile make");
-	
+	TIMESTOP("Gathering files");
 	sSrcFile.Clear();
+	sIncludePath = 	TheIde() ? TheIde()->IdeGetIncludePath() : Null;
 	const Workspace& wspc = GetIdeWorkspace();
 	RTIMING("Gathering files");
 	pi.SetText("Gathering files");
@@ -133,6 +131,11 @@ void BaseInfoSync(Progress& pi)
 				GatherSources(path, path, GetIncludePath());
 		}
 	}
+}
+
+String GetIncludePath()
+{
+	return sIncludePath;
 }
 
 String GetMasterFile(const String& file)
@@ -155,18 +158,19 @@ String GetSourceFilePath(int file)
 bool CheckFile(const SourceFileInfo& f, const String& path)
 {
 	RTIMING("CheckFile");
-	DDUMP(f.time);
-	DDUMP(FileGetTime(path));
+	LDUMP(f.time);
+	LDUMP(FileGetTime(path));
 	if(f.time != FileGetTime(path))
 		return false;
+	RTIMING("CheckFile 2");
 	Cpp pp;
 	pp.include_path = GetIncludePath();
 	FileIn in(path);
 	pp.Preprocess(path, in, GetMasterFile(path), true);
-	String used_macros = pp.GetUsedMacroValues(f.usedmacro);
-	DDUMP(used_macros);
-	DDUMP(f.used_macros);
-	return f.used_macros == used_macros;
+	String included_id_macros = pp.GetIncludedMacroValues(f.ids);
+	LDUMP(included_id_macros);
+	LDUMP(f.included_id_macros);
+	return f.included_id_macros == included_id_macros;
 }
 
 static int parse_file_count;
@@ -175,6 +179,8 @@ static int keep_file_count;
 void UpdateCodeBase(Progress& pi)
 {
 	BaseInfoSync(pi);
+
+	SweepPPFiles(sSrcFile.GetIndex());
 
 	const Workspace& wspc = GetIdeWorkspace();
 
@@ -188,11 +194,11 @@ void UpdateCodeBase(Progress& pi)
 		String path = sSrcFile.GetKey(i);
 		int q = GetSourceFileIndex(path);
 		const SourceFileInfo& f = source_file[q];
-		DLOG("== CHECK == " << q << ": " << path);
+		LLOG("== CHECK == " << q << ": " << path);
 		if(CheckFile(f, path))
 			keep_file.Add(q);
 		else {
-			DLOG("PARSE!");
+			LLOG("PARSE!");
 			parse_file.Add(q);
 		}
 	}
@@ -217,19 +223,19 @@ void UpdateCodeBase(Progress& pi)
 		FileIn fi(path);
 		LDUMP(path);
 		LDUMP(parse_file[i]);
-		ParseSrc(fi, parse_file[i], callback1(BrowserScanError, i), true);
+		ParseSrc(fi, parse_file[i], callback1(BrowserScanError, i), true, false);
 	}
 }
 
-bool ParseSrc(Stream& in, int file, Callback2<int, const String&> error, bool do_macros)
+Vector<String> ParseSrc(Stream& in, int file, Callback2<int, const String&> error, bool do_macros, bool get_changes)
 {
+	Vector<String> cm;
 	String path = GetSourceFilePath(file);
-	DLOG("====== Parse " << file << ": " << path);
+	LLOG("====== Parse " << file << ": " << path);
 	Vector<String> pp;
 	String ext = ToLower(GetFileExt(path));
 	int filetype = FILE_OTHER;
 	SourceFileInfo& sfi = source_file[file];
-	String defined_macros;
 	bool b = false;
 	if(ext == ".lay")
 		pp.Add(PreprocessLayFile(path));
@@ -243,20 +249,36 @@ bool ParseSrc(Stream& in, int file, Callback2<int, const String&> error, bool do
 		Cpp cpp;
 		cpp.include_path = GetIncludePath();
 		cpp.Preprocess(path, in, GetMasterFile(GetSourceFilePath(file)));
+		LLOG(path << ": " << cpp.ids.GetCount());
+		LDUMP(cpp.ids);
 		pp.Add(cpp.output);
 		filetype = decode(ext, ".h", FILE_H, ".hpp", FILE_HPP,
 		                       ".cpp",FILE_CPP, ".c", FILE_C, FILE_OTHER);
 		if(do_macros) {
-			sfi.usedmacro = cpp.usedmacro.PickKeys();
-			DDUMP(sfi.usedmacro);
-			sfi.used_macros = cpp.GetUsedMacroValues(sfi.usedmacro);
-			DDUMP(sfi.used_macros);
+			sfi.ids = cpp.ids.PickKeys();
+			sfi.included_id_macros = cpp.GetIncludedMacroValues(sfi.ids);
+			LDUMP(sfi.ids);
 			sfi.time = FileGetTime(path);
-			DDUMP(cpp.defined_macros);
-			DDUMP(sfi.time);
-			if(sfi.defined_macros != cpp.defined_macros) {
-				sfi.defined_macros = cpp.defined_macros;
-				b = true;
+			LDUMP(sfi.time);
+			VectorMap<String, String> dm = cpp.GetDefinedMacros();
+			LDUMP(dm);
+			if(sfi.defined_macros != dm) {
+				LTIMING("Find changed macros");
+				if(get_changes) {
+					Buffer<bool> found(sfi.defined_macros.GetCount(), false);
+					for(int i = 0; i < dm.GetCount(); i++) {
+						String id = dm.GetKey(i);
+						int q = sfi.defined_macros.Find(id);
+						if(q < 0 || sfi.defined_macros[q] != dm[i])
+							cm.Add(id);
+						if(q >= 0)
+							found[q] = true;
+					}
+					for(int i = 0; i < sfi.defined_macros.GetCount(); i++)
+						if(!found[i])
+							cm.Add(sfi.defined_macros.GetKey(i));
+				}
+				sfi.defined_macros = pick(dm);
 			}
 		}
 	}
@@ -265,12 +287,12 @@ bool ParseSrc(Stream& in, int file, Callback2<int, const String&> error, bool do
 		StringStream pin(pp[i]);
 		Parse(pin, CodeBase(), file, filetype, error);
 	}
-	return b;
+	return cm;
 }
 
 void CodeBaseScanFile(Stream& in, const String& fn, bool check_macros)
 {
-	DLOG("===== CodeBaseScanFile " << fn);
+	LLOG("===== CodeBaseScanFile " << fn);
 
 	PPSync();
 
@@ -278,20 +300,16 @@ void CodeBaseScanFile(Stream& in, const String& fn, bool check_macros)
 	
 	TimeStop tm;
 	int file = GetSourceFileIndex(fn);
-	_DBG_ for(int i = 0; i < source_file.GetCount(); i++)
-		DLOG(source_file.GetKey(i) << " " << source_file.IsUnlinked(i));
-	DDUMP(file);
 	CppBase& base = CodeBase();
 	LLOG("Scan2 " << tm);
 	base.RemoveFile(file);
 	LLOG("Scan3 " << tm);
 	SourceFileInfo& f = source_file[file];
-	String dm = f.defined_macros;
-	bool b = ParseSrc(in, file, CNULL, check_macros);
-	LDUMP(dm);
+	Vector<String> cm = ParseSrc(in, file, CNULL, check_macros, true);
+	LDUMP(cm);
 	LDUMP(f.defined_macros);
 	LDUMP(check_macros);
-	if(f.defined_macros != dm && check_macros)
+	if(cm.GetCount() && check_macros)
 		SyncCodeBase();
 	LLOG("Scan4 " << tm);
 	FinishBase();

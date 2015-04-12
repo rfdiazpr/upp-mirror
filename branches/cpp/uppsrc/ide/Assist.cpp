@@ -927,7 +927,7 @@ void AssistEditor::DCopy()
 */
 	CppBase cpp;
 	Cpp pp;
-	pp.include_path = GetIncludePath();
+	PPSync(GetIncludePath());
 	pp.Preprocess(theide->editfile, ss, GetMasterFile(theide->editfile));
 
 	Parser parser;

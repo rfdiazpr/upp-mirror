@@ -93,7 +93,7 @@ bool IsCPPFile(const String& path)
 	return findarg(ToLower(GetFileExt(path)) , ".c", ".cpp", ".cc" , ".cxx", ".icpp") >= 0;
 }
 
-void GatherSources(const String& master_path, const String& path_, const String& include_path)
+void GatherSources(const String& master_path, const String& path_)
 {
 	RHITCOUNT("GatherSources");
 	String path = NormalizePath(path_);
@@ -102,21 +102,18 @@ void GatherSources(const String& master_path, const String& path_, const String&
 	sSrcFile.Add(path, master_path);
 	const PPFile& f = GetPPFile(path);
 	for(int i = 0; i < f.includes.GetCount(); i++) {
-		String p = GetIncludePath(f.includes[i], GetFileFolder(path), include_path);
+		String p = GetIncludePath(f.includes[i], GetFileFolder(path));
 		if(p.GetCount())
-			GatherSources(master_path, p, include_path);
+			GatherSources(master_path, p);
 	}
 }
 
-String sIncludePath;
-
 void BaseInfoSync(Progress& pi)
 { // clears temporary caches (file times etc..)
-	PPSync();
+	PPSync(TheIde()->IdeGetIncludePath());
 
 	TIMESTOP("Gathering files");
 	sSrcFile.Clear();
-	sIncludePath = 	TheIde() ? TheIde()->IdeGetIncludePath() : Null;
 	const Workspace& wspc = GetIdeWorkspace();
 	RTIMING("Gathering files");
 	pi.SetText("Gathering files");
@@ -128,14 +125,9 @@ void BaseInfoSync(Progress& pi)
 		for(int i = 0; i < pk.file.GetCount(); i++) {
 			String path = SourcePath(n, pk.file[i]);
 			if(IsCPPFile(path))
-				GatherSources(path, path, GetIncludePath());
+				GatherSources(path, path);
 		}
 	}
-}
-
-String GetIncludePath()
-{
-	return sIncludePath;
 }
 
 String GetMasterFile(const String& file)
@@ -164,7 +156,6 @@ bool CheckFile(const SourceFileInfo& f, const String& path)
 		return false;
 	RTIMING("CheckFile 2");
 	Cpp pp;
-	pp.include_path = GetIncludePath();
 	FileIn in(path);
 	pp.Preprocess(path, in, GetMasterFile(path), true);
 	String included_id_macros = pp.GetIncludedMacroValues(f.ids);
@@ -247,7 +238,6 @@ Vector<String> ParseSrc(Stream& in, int file, Callback2<int, const String&> erro
 		pp.Append(PreprocessSchFile(path));
 	else {
 		Cpp cpp;
-		cpp.include_path = GetIncludePath();
 		cpp.Preprocess(path, in, GetMasterFile(GetSourceFilePath(file)));
 		LLOG(path << ": " << cpp.ids.GetCount());
 		LDUMP(cpp.ids);
@@ -294,7 +284,7 @@ void CodeBaseScanFile(Stream& in, const String& fn, bool check_macros)
 {
 	LLOG("===== CodeBaseScanFile " << fn);
 
-	PPSync();
+	PPSync(TheIde()->IdeGetIncludePath());
 
 	LTIMING("CodeBaseScan");
 	

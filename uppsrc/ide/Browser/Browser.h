@@ -23,7 +23,7 @@ CppBase&       CodeBase();
 
 struct SourceFileInfo {
 	Time                      time;
-	Vector<String>            ids; // all identifiers in the file
+	Index<String>             ids; // all identifiers in the file
 	String                    included_id_macros; // included macros from ids set
 	String                    namespace_info; // namespace defined at the start of file
 	String                    using_info; // using namespace info at the start of file
@@ -41,7 +41,7 @@ void           CodeBaseScanFile(const String& fn, bool check_macros);
 void           ClearCodeBase();
 void           RescanCodeBase();
 void           SyncCodeBase();
-void           SaveCodeBase(bool force);
+void           SaveCodeBase();
 bool           ExistsBrowserItem(const String& item);
 void           ReQualifyCodeBase();
 

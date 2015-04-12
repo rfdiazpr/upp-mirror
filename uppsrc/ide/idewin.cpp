@@ -1059,7 +1059,7 @@ void AppMain___()
 	#ifdef PLATFORM_POSIX
 		StoreAsXMLFile(UpdaterCfg(),"SourceUpdater",ConfigFile("updates.xml"));
 	#endif
-		SaveCodeBase(false);
+		SaveCodeBase();
 		DelTemps();
 		ReduceCache();
 #ifndef _DEBUG

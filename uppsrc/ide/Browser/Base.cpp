@@ -3,10 +3,10 @@
 #include <plugin/lz4/lz4.h>
 
 #define LTIMING(x)    RTIMING(x)
-#define LLOG(x)
+#define LLOG(x)       DLOG(x)
 #define LTIMESTOP(x)  RTIMESTOP(x)
 
-#define LDUMP(x)
+#define LDUMP(x)      DDUMP(x)
 
 
 VectorMap<String, String>        sSrcFile;
@@ -42,23 +42,22 @@ void SerializeCodeBase(Stream& s)
 	SerializePPFiles(s);
 }
 
-void SaveCodeBase(bool force)
+void SaveCodeBase()
 {
+	LTIMING("SaveCodeBase");
 	LLOG("Save code base");
 	RealizeDirectory(ConfigFile("cfg/codebase"));
 	StringStream ss;
 	Store(callback(SerializeCodeBase), ss, 1);
 	String data = ss.GetResult();
 	String path = CodeBaseCacheFile();
-	if(/*force || data.GetCount() > GetFileLength(path)*/1) {
-		SaveFile(path, data); // TODO: LZ4?
-	#if 0
-		{ LTIMING("LZ4 compress");
-		SaveFile(path + ".lz4", LZ4Compress(data)); }
-		{ LTIMING("zlib compress");
-		SaveFile(path + ".z", ZCompress(data)); }
-	#endif
-	}
+	SaveFile(path, data); // TODO: LZ4?
+#if 0
+	{ LTIMING("LZ4 compress");
+	SaveFile(path + ".lz4", LZ4Compress(data)); }
+	{ LTIMING("zlib compress");
+	SaveFile(path + ".z", ZCompress(data)); }
+#endif
 }
 
 void LoadCodeBase()
@@ -76,6 +75,7 @@ void ReQualifyCodeBase()
 	Qualify(CodeBase());
 }
 
+/*
 Vector<String> SortedNests()
 {
 	LTIMING("SortedNests()");
@@ -87,6 +87,7 @@ Vector<String> SortedNests()
 	Sort(n);
 	return n;
 }
+*/
 
 bool IsCPPFile(const String& path)
 {
@@ -128,6 +129,8 @@ void BaseInfoSync(Progress& pi)
 				GatherSources(path, path);
 		}
 	}
+
+	SweepPPFiles(sSrcFile.GetIndex());
 }
 
 String GetMasterFile(const String& file)
@@ -158,20 +161,31 @@ bool CheckFile(const SourceFileInfo& f, const String& path)
 	Cpp pp;
 	FileIn in(path);
 	pp.Preprocess(path, in, GetMasterFile(path), true);
-	String included_id_macros = pp.GetIncludedMacroValues(f.ids);
+	String included_id_macros = pp.GetIncludedMacroValues(f.ids.GetKeys());
 	LDUMP(included_id_macros);
 	LDUMP(f.included_id_macros);
 	return f.included_id_macros == included_id_macros;
 }
 
-static int parse_file_count;
-static int keep_file_count;
+void ParseFiles(Progress& pi, const Index<int> parse_file)
+{
+	pi.SetTotal(parse_file.GetCount());
+	pi.SetPos(0);
+	pi.AlignText(ALIGN_LEFT);
+	for(int i = 0; i < parse_file.GetCount(); i++) {
+		String path = GetSourceFilePath(parse_file[i]);
+		pi.SetText(GetFileName(GetFileFolder(path)) + "/" + GetFileName(path));
+		pi.Step();
+		FileIn fi(path);
+		LDUMP(path);
+		LDUMP(parse_file[i]);
+		ParseSrc(fi, parse_file[i], callback1(BrowserScanError, i), true, false);
+	}
+}
 
 void UpdateCodeBase(Progress& pi)
 {
 	BaseInfoSync(pi);
-
-	SweepPPFiles(sSrcFile.GetIndex());
 
 	const Workspace& wspc = GetIdeWorkspace();
 
@@ -203,19 +217,8 @@ void UpdateCodeBase(Progress& pi)
 			LLOG("Unlink " << i);
 			source_file.Unlink(i);
 		}
-
-	pi.SetTotal(parse_file.GetCount());
-	pi.SetPos(0);
-	pi.AlignText(ALIGN_LEFT);
-	for(int i = 0; i < parse_file.GetCount(); i++) {
-		String path = GetSourceFilePath(parse_file[i]);
-		pi.SetText(GetFileName(GetFileFolder(path)) + "/" + GetFileName(path));
-		pi.Step();
-		FileIn fi(path);
-		LDUMP(path);
-		LDUMP(parse_file[i]);
-		ParseSrc(fi, parse_file[i], callback1(BrowserScanError, i), true, false);
-	}
+	
+	ParseFiles(pi, parse_file);
 }
 
 Vector<String> ParseSrc(Stream& in, int file, Callback2<int, const String&> error, bool do_macros, bool get_changes)
@@ -246,7 +249,7 @@ Vector<String> ParseSrc(Stream& in, int file, Callback2<int, const String&> erro
 		                       ".cpp",FILE_CPP, ".c", FILE_C, FILE_OTHER);
 		if(do_macros) {
 			sfi.ids = cpp.ids.PickKeys();
-			sfi.included_id_macros = cpp.GetIncludedMacroValues(sfi.ids);
+			sfi.included_id_macros = cpp.GetIncludedMacroValues(sfi.ids.GetKeys());
 			LDUMP(sfi.ids);
 			sfi.time = FileGetTime(path);
 			LDUMP(sfi.time);
@@ -256,7 +259,7 @@ Vector<String> ParseSrc(Stream& in, int file, Callback2<int, const String&> erro
 				LTIMING("Find changed macros");
 				if(get_changes) {
 					Buffer<bool> found(sfi.defined_macros.GetCount(), false);
-					for(int i = 0; i < dm.GetCount(); i++) {
+					for(int i = 0; i < dm.GetCount() && cm.GetCount() < 10; i++) {
 						String id = dm.GetKey(i);
 						int q = sfi.defined_macros.Find(id);
 						if(q < 0 || sfi.defined_macros[q] != dm[i])
@@ -264,7 +267,7 @@ Vector<String> ParseSrc(Stream& in, int file, Callback2<int, const String&> erro
 						if(q >= 0)
 							found[q] = true;
 					}
-					for(int i = 0; i < sfi.defined_macros.GetCount(); i++)
+					for(int i = 0; i < sfi.defined_macros.GetCount() && cm.GetCount() < 10; i++)
 						if(!found[i])
 							cm.Add(sfi.defined_macros.GetKey(i));
 				}
@@ -280,6 +283,16 @@ Vector<String> ParseSrc(Stream& in, int file, Callback2<int, const String&> erro
 	return cm;
 }
 
+bool HasIntersection(const Index<String>& ids, const Vector<String>& cm)
+{
+	if(cm.GetCount() >= 10)
+		return true;
+	for(int i = 0; i < cm.GetCount(); i++)
+		if(ids.Find(cm[i]) >= 0)
+			return true;
+	return false;
+}
+
 void CodeBaseScanFile(Stream& in, const String& fn, bool check_macros)
 {
 	LLOG("===== CodeBaseScanFile " << fn);
@@ -288,23 +301,39 @@ void CodeBaseScanFile(Stream& in, const String& fn, bool check_macros)
 
 	LTIMING("CodeBaseScan");
 	
-	TimeStop tm;
 	int file = GetSourceFileIndex(fn);
 	CppBase& base = CodeBase();
-	LLOG("Scan2 " << tm);
 	base.RemoveFile(file);
-	LLOG("Scan3 " << tm);
 	SourceFileInfo& f = source_file[file];
 	Vector<String> cm = ParseSrc(in, file, CNULL, check_macros, true);
 	LDUMP(cm);
 	LDUMP(f.defined_macros);
 	LDUMP(check_macros);
-	if(cm.GetCount() && check_macros)
-		SyncCodeBase();
-	LLOG("Scan4 " << tm);
+	if(cm.GetCount() && check_macros) {
+		DLOG("Checking " << cm);
+		Progress pi;
+		BaseInfoSync(pi);
+		pi.SetText("Checking source files");
+		pi.SetTotal(sSrcFile.GetCount());
+		pi.SetPos(0);
+		Index<int>  parse_file;
+		for(int i = 0; i < sSrcFile.GetCount(); i++) {
+			pi.Step();
+			String path = sSrcFile.GetKey(i);
+			int q = GetSourceFileIndex(path);			
+			const SourceFileInfo& f = source_file[q];
+			DDUMP(path);
+			DDUMP(f.ids);
+			if(HasIntersection(f.ids, cm) && IncludesFile(path, fn) && !CheckFile(f, path))
+				parse_file.Add(q);
+		}
+		
+		CodeBase().RemoveFiles(parse_file);
+		
+		ParseFiles(pi, parse_file);
+	}
+
 	FinishBase();
-	LLOG("Scan total " << tm);
-	LLOG("---------");
 }
 
 void CodeBaseScanFile(const String& fn, bool check_macros)
@@ -324,25 +353,22 @@ void StartCodeBase()
 	static int start;
 	if(start) return;
 	start++;
-	if(CodeBase().GetCount() == 0) {
-		Progress pi;
-		pi.Title("Parsing source files");
-		LoadCodeBase();
-		UpdateCodeBase(pi);
-		FinishBase();
-		SaveCodeBase(parse_file_count > keep_file_count / 4); // Simple heuristic
-	}
+	Progress pi;
+	pi.Title("Parsing source files");
+	LoadCodeBase();
+	UpdateCodeBase(pi);
+	FinishBase();
+	SaveCodeBase();
 	start--;
 }
 
 void SyncCodeBase()
 {
-	if(CodeBase().GetCount()) {
-		Progress pi;
-		pi.Title("Parsing source files");
-		UpdateCodeBase(pi);
-		FinishBase();
-	}
+	RTIMING("SyncCodeBase");
+	Progress pi;
+	pi.Title("Parsing source files");
+	UpdateCodeBase(pi);
+	FinishBase();
 }
 
 void RescanCodeBase()
@@ -350,7 +376,7 @@ void RescanCodeBase()
 	ClearCodeBase();
 	s_console = true;
 	Progress pi;
-	pi.Title("Assist++");
+	pi.Title("Parsing source files");
 	UpdateCodeBase(pi);
 	FinishBase();
 	s_console = false;

@@ -382,6 +382,7 @@ struct CppBase : ArrayMap<String, Array<CppItem> > {
 
 	bool           IsType(int i) const;
 	void           Sweep(const Index<int>& keep_file);
+	void           RemoveFiles(const Index<int>& remove_file);
 	void           RemoveFile(int filei);
 
 	void           Serialize(Stream& s);

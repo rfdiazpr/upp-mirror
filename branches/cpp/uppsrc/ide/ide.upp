@@ -17,8 +17,7 @@ uses
 	usvn,
 	TextDiffCtrl,
 	TabBar,
-	ide/Designers,
-	plugin/lz4;
+	ide/Designers;
 
 uses(POSIX) ide\SrcUpdater;
 

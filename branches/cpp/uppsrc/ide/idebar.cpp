@@ -576,6 +576,7 @@ void Ide::BrowseMenu(Bar& menu)
 			menu.Add(!designer, "Insert", THISBACK(InsertMenu));
 			menu.MenuSeparator();
 			menu.Add("Rescan code", THISBACK(RescanCode));
+			menu.Add("Sync code", callback(SyncCodeBase)); // TODO: Do this when needed
 			menu.MenuSeparator();
 		}
 		menu.AddMenu(AK_CALC, IdeImg::calc(), THISBACK1(ToggleBottom, BCALC))

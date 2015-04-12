@@ -378,8 +378,10 @@ void Ide::SaveFile0(bool always)
 		fd.filetime = edittime = ff.GetLastWriteTime();
 	}
 
-	if(editor.IsDirty())
+	if(editor.IsDirty()) {
+		text_updated.Kill();
 		ScanFile(true);
+	}
 
 	editor.ClearDirty();
 

@@ -192,7 +192,7 @@ bool Cpp::Preprocess(const String& sourcefile, Stream& in, const String& current
 void Cpp::DoFlatInclude(const String& header_path)
 {
 	if(header_path.GetCount()) {
-		const PPFile& pp = GetFlatPPFile(header_path, include_path);
+		const PPFile& pp = GetFlatPPFile(header_path);
 		for(int i = 0; i < pp.item.GetCount() && !done; i++) {
 			const PPItem& m = pp.item[i];
 			if(m.type == PP_DEFINES)
@@ -229,9 +229,9 @@ void Cpp::Do(const String& sourcefile, Stream& in, const String& currentfile,
 			}
 			else
 			if(m.type == PP_INCLUDE) {
-				String s = GetIncludePath(m.text, current_folder, include_path);
+				String s = GetIncludePath(m.text, current_folder);
 				if(s.GetCount()) {
-					if(notthefile && IncludesFile(s, sourcefile, include_path)) {
+					if(notthefile && IncludesFile(s, sourcefile)) {
 						LLOG("Include IN " << s);
 						Do(sourcefile, in, s, visited, get_macros);
 						RHITCOUNT("Include IN");
@@ -306,7 +306,7 @@ void Cpp::Do(const String& sourcefile, Stream& in, const String& currentfile,
 					result.Cat('\n');
 					if(p.Id("include")) {
 						LTIMING("Expand include");
-						DoFlatInclude(GetIncludePath(p.GetPtr(), current_folder, include_path));
+						DoFlatInclude(GetIncludePath(p.GetPtr(), current_folder));
 						segment_id.Add(--segment_serial);
 					}
 				}

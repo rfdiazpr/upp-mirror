@@ -16,7 +16,6 @@
 
 class Browser;
 
-String         GetIncludePath();
 bool           IsCPPFile(const String& file);
 String         GetMasterFile(const String& file);
 

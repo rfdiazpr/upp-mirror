@@ -117,8 +117,8 @@ void AssistEditor::Context(Parser& parser, int pos)
 	String s = Get(0, pos);
 	StringStream ss(s);
 
+	PPSync(GetIncludePath());
 	Cpp cpp;
-	cpp.include_path = GetIncludePath();
 	cpp.Preprocess(theide->editfile, ss, GetMasterFile(theide->editfile));
 
 	parser.dobody = true;

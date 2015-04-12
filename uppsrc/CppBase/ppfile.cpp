@@ -269,16 +269,23 @@ static VectorMap<String, Time>     sPathFileTime;
 static VectorMap<String, String>   sIncludePath;
 static VectorMap<String, bool>     sIncludes;
 static ArrayMap<String, PPFile>    sFlatPP;
+static String                      sInclude_Path;
 
-void PPSync()
+void PPSync(const String& include_path)
 {
 	sPathFileTime.Clear();
 	sIncludePath.Clear();
 	sIncludes.Clear();
 	sFlatPP.Clear();
+	sInclude_Path = include_path;
 }
 
-String GetIncludePath0(const char *s, const char *filedir, const String& include_path)
+String GetIncludePath()
+{
+	return sInclude_Path;
+}
+
+String GetIncludePath0(const char *s, const char *filedir)
 {
 	RTIMING("GetIncludePath0");
 	while(IsSpace(*s))
@@ -295,7 +302,7 @@ String GetIncludePath0(const char *s, const char *filedir, const String& include
 					if(FileExists(fn))
 						return fn;
 				}
-				return GetFileOnPath(name, include_path, false);
+				return GetFileOnPath(name, GetIncludePath(), false);
 			}
 			name.Cat(*s++);
 		}
@@ -314,19 +321,19 @@ Time GetFileTimeCached(const String& p)
 	return m;
 }
 
-String GetIncludePath(const String& s, const String& filedir, const String& include_path)
+String GetIncludePath(const String& s, const String& filedir)
 {
 	RTIMING("GetIncludePath");
 	String key;
 	{ RTIMING("GetIncludePath1");
-	key << s << "#" << filedir << "#" << include_path; // TODO: Global include path
+	key << s << "#" << filedir << "#" << GetIncludePath();
 	}
 	{ RTIMING("GetIncludePath2");
 	int q = sIncludePath.Find(key);
 	if(q >= 0)
 		return sIncludePath[q];
 	}
-	String p = GetIncludePath0(s, filedir, include_path);
+	String p = GetIncludePath0(s, filedir);
 	sIncludePath.Add(key, p);
 	return p;
 }
@@ -349,7 +356,7 @@ bool IsSameFile(const String& f1, const String& f2)
 	return NormalizePath(f1) == NormalizePath(f2);
 }
 
-bool IncludesFile(const String& parent_path, const String& path, const String& include_path, Index<String>& visited)
+bool IncludesFile(const String& parent_path, const String& path, Index<String>& visited)
 {
 	HITCOUNT("IncludesFile0");
 	if(visited.Find(parent_path) >= 0)
@@ -368,8 +375,8 @@ bool IncludesFile(const String& parent_path, const String& path, const String& i
 		}
 		else {
 			HITCOUNT("IncludesFile getpath");
-			String p = GetIncludePath(f.includes[i], GetFileFolder(parent_path), include_path);
-			bool   b = p.GetCount() && IncludesFile(p, path, include_path, visited);
+			String p = GetIncludePath(f.includes[i], GetFileFolder(parent_path));
+			bool   b = p.GetCount() && IncludesFile(p, path, visited);
 			sIncludes.Add(key, b);
 			if(b)
 				return true;
@@ -378,14 +385,14 @@ bool IncludesFile(const String& parent_path, const String& path, const String& i
 	return false;
 }
 
-bool IncludesFile(const String& parent_path, const String& path, const String& include_path)
+bool IncludesFile(const String& parent_path, const String& path)
 {
 	LTIMING("IncludesFile");
 	Index<String> visited;
-	return IncludesFile(parent_path, path, include_path, visited);
+	return IncludesFile(parent_path, path, visited);
 }
 
-void CreateFlatPP(PPFile& fp, const char *path, Index<String>& visited, const String& include_path)
+void CreateFlatPP(PPFile& fp, const char *path, Index<String>& visited)
 {
 	if(visited.Find(path) >= 0)
 		return;
@@ -394,22 +401,22 @@ void CreateFlatPP(PPFile& fp, const char *path, Index<String>& visited, const St
 	for(int i = 0; i < pp.item.GetCount(); i++) {
 		const PPItem& m = pp.item[i];
 		if(m.type == PP_INCLUDE) {
-			String s = GetIncludePath(m.text, GetFileFolder(path), include_path);
+			String s = GetIncludePath(m.text, GetFileFolder(path));
 			if(s.GetCount())
-				CreateFlatPP(fp, s, visited, include_path);
+				CreateFlatPP(fp, s, visited);
 		}
 		else
 			fp.item.Add(m);
 	}
 }
 
-const PPFile& GetFlatPPFile(const char *path, const String& include_path)
+const PPFile& GetFlatPPFile(const char *path)
 {
 	int q = sFlatPP.Find(path);
 	if(q >= 0)
 		return sFlatPP[q];
 	Index<String> visited;
-	CreateFlatPP(sFlatPP.Add(path), path, visited, include_path);
+	CreateFlatPP(sFlatPP.Add(path), path, visited);
 	return sFlatPP.Top();
 }
 

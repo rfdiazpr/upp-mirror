@@ -65,26 +65,23 @@ private:
 const CppMacro *FindMacro(const String& id, Index<int>& segment_id, int& segmenti);
 String          GetAllMacros(const String& id, Index<int>& segment_id);
 
-void PPSync();
+void   PPSync(const String& include_path);
+String GetIncludePath();
 
-void SerializePPFiles(Stream& s);
-void SweepPPFiles(const Index<String>& keep);
+void   SerializePPFiles(Stream& s);
+void   SweepPPFiles(const Index<String>& keep);
 
 const PPFile& GetPPFile(const char *path);
 
-String GetIncludePath(const String& s, const String& filedir, const String& include_path);
-
-bool IncludesFile(const String& parent_path, const String& header_path, const String& include_path);
-
-const PPFile& GetFlatPPFile(const char *path, const String& include_path);
+String GetIncludePath(const String& s, const String& filedir);
+bool   IncludesFile(const String& parent_path, const String& header_path);
+const  PPFile& GetFlatPPFile(const char *path); // with #includes resolved
 
 struct Cpp {
 	static Index<String>        kw;
 
 	bool                        incomment;
 	bool                        done;
-	
-	String                      include_path;
 	
 	Index<int>                  segment_id; // segments of included macros
 	VectorMap<String, PPMacro>  macro; // macros defined

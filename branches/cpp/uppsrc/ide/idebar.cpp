@@ -443,6 +443,8 @@ void Ide::BuildFileMenu(Bar& menu)
 		menu.Add(b, "Show assembler code for " + GetFileName(editfile), THISBACK1(Preprocess, true))
 			.Key(AK_ASSEMBLERCODE)
 			.Help("Compile the file into assembler code");
+	if(console.verbosebuild)
+		menu.Add(b, "Internal Preprocess " + GetFileName(editfile), IdeImg::Header(), THISBACK(PreprocessInternal));
 }
 
 void Ide::BuildPackageMenu(Bar& menu)

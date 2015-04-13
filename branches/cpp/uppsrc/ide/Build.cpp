@@ -155,6 +155,25 @@ void Ide::FileCompile()
 	SetErrorEditor();
 }
 
+void Ide::PreprocessInternal()
+{
+	if(editor.GetLength() >= 1000000) // Sanity...
+		return;
+	int l = editor.GetCurrentLine();
+	PPSync(GetIncludePath());
+	String pfn = ConfigFile(GetFileTitle(editfile) + ".i.tmp");
+	Cpp cpp;
+	StringStream in(editor.Get());
+	cpp.Preprocess(editfile, in, GetMasterFile(editfile));
+	Upp::SaveFile(pfn, cpp.output);
+	HideBottom();
+	EditFile(pfn);
+	EditAsText();
+	if(!editor.IsReadOnly())
+		ToggleReadOnly();
+	editor.SetCursor(editor.GetPos(l));
+}
+
 void Ide::Preprocess(bool asmout) {
 	if(editfile.IsEmpty())
 		return;

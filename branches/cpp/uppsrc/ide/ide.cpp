@@ -146,10 +146,10 @@ void Ide::SetMain(const String& package)
 	SetHdependDirs();
 	SetBar();
 	HideBottom();
+	SyncUsc();
+	NewCodeBase();
 	if(IsNull(e))
 		e = GetFirstFile();
-	SyncUsc();
-	StartCodeBase();
 	EditFile(e);
 }
 

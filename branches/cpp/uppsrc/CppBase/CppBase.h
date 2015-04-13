@@ -71,6 +71,8 @@ String GetIncludePath();
 void   SerializePPFiles(Stream& s);
 void   SweepPPFiles(const Index<String>& keep);
 
+String GetSegmentFile(int segment_id);
+
 const PPFile& GetPPFile(const char *path);
 
 String GetIncludePath(const String& s, const String& filedir);
@@ -517,6 +519,7 @@ class Parser {
 	void   Resume(int bl);
 
 	void   MatchPars();
+	bool   VCAttribute();
 	bool   TryDecl();
 	void   Statement();
 	void   Locals(const String& type);

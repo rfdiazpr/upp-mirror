@@ -111,9 +111,6 @@ void LoadCodeBase()
 	TryLoadCodeBase(AppendFileName(CodeBaseCacheDir(), GetVarsName() + ".*." + GetCurrentBuildMethod() + ".codebase")) ||
 	TryLoadCodeBase(AppendFileName(CodeBaseCacheDir(), GetVarsName() + ".*.codebase")) ||
 	TryLoadCodeBase(AppendFileName(CodeBaseCacheDir(), "*.codebase"));
-	
-		return;
-	;
 }
 
 void FinishBase()

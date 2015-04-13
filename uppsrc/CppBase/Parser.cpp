@@ -505,8 +505,8 @@ String Parser::SimpleType(Decla& d)
 
 void Parser::Qualifier()
 {
-	Key(tk_const);
-	Key(tk_volatile);
+	while(Key(tk_const) || Key(tk_volatile) || VCAttribute())
+		;
 	if(Key(tk_throw)) {
 		while(lex != t_eof && !Key(')'))
 			++lex;
@@ -707,7 +707,7 @@ Array<Parser::Decl> Parser::Declaration0(bool l0, bool more)
 		if(Key(tk_virtual))
 			d.s_virtual = true;
 		else
-		if(!(Key(tk_inline) || Key(tk_force_inline) || Key(tk___inline)))
+		if(!(Key(tk_inline) || Key(tk_force_inline) || Key(tk___inline) || VCAttribute()))
 			break;
 	}
 	Qualifier();
@@ -852,13 +852,33 @@ String NoTemplatePars(const String& s)
 	return q >= 0 ? s.Mid(0, q) : s;
 }
 
+bool Parser::VCAttribute()
+{
+	if(lex[0] == '[') // Skip Visual C++ attribute
+		for(;;) {
+			if(lex[0] == ']') {
+				++lex;
+				return true;
+			}
+			if(lex[0] == t_eof)
+				return false;
+			++lex;
+		}
+	return false;
+}
+
 bool Parser::TryDecl()
 {
+	for(;;) {
+		if(lex[0] == tk_static || lex[0] == tk_const || lex[0] == tk_auto ||
+	       lex[0] == tk_register || lex[0] == tk_volatile)
+	    	++lex;
+		else
+		if(!VCAttribute())
+			break;
+	}
+	int t = lex[0];
 	int q = 0;
-	while(lex[0] == tk_static || lex[0] == tk_const || lex[0] == tk_auto ||
-	      lex[0] == tk_register || lex[0] == tk_volatile)
-	      	++lex;
-	int t = lex[q];
 	if(t == tk_int || t == tk_bool || t == tk_float || t == tk_double || t == tk_void ||
 	   t == tk_long || t == tk_signed || t == tk_unsigned || t == tk_short ||
 	   t == tk_char || t == tk___int8 || t == tk___int16 || t == tk___int32 || t == tk___int64) {

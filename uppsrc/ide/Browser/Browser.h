@@ -34,7 +34,7 @@ struct SourceFileInfo {
 	SourceFileInfo() { time = Null; }
 };
 
-void           StartCodeBase();
+void           NewCodeBase();
 Vector<String> ParseSrc(Stream& in, int file, Callback2<int, const String&> error, bool do_macros, bool get_changes);
 void           CodeBaseScanFile(Stream& in, const String& fn, bool check_macros);
 void           CodeBaseScanFile(const String& fn, bool check_macros);

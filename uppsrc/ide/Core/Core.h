@@ -196,6 +196,7 @@ String GetUppDir();
 void   SetVar(const String& var, const String& val, bool save = true);
 
 String GetCurrentBuildMethod();
+String GetCurrentMainPackage();
 
 String GetAnyFileName(const char *path);
 String GetAnyFileTitle(const char *path);

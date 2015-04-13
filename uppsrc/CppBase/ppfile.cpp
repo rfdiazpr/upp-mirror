@@ -3,6 +3,7 @@
 NAMESPACE_UPP
 
 #define LTIMING(x)  RTIMING(x)
+#define LLOG(x)     LOG(x)
 
 void SetSpaces(String& l, int pos, int count)
 {
@@ -52,16 +53,25 @@ void SweepPPFiles(const Index<String>& keep)
 			sPPfile.Unlink(i);
 }
 
+String GetSegmentFile(int segment_id)
+{
+	for(int i = 0; i < sPPfile.GetCount(); i++) {
+		const Array<PPItem>& m = sPPfile[i].item;
+		for(int j = 0; j < m.GetCount(); j++)
+			if(m[j].type == PP_DEFINES && m[j].segment_id == segment_id)
+				return sPPfile.GetKey(i);
+	}
+	return "<not found>";
+}
+
 const CppMacro *FindMacro(const String& id, Index<int>& segment_id, int& segmenti)
 {
-//	DLOG("*** FindMacro " << sAllMacros);
-//	DUMP(segment_id);
 	const CppMacro *r = NULL;
 	int q = sAllMacros.Find(id);
 	while(q >= 0) {
 		const PPMacro& m = sAllMacros[q];
 		int si = segment_id.Find(m.segment_id);
-		if(si >= segmenti) {
+		if(si > segmenti) {
 			segmenti = si;
 			r = &m.macro;
 		}
@@ -397,6 +407,7 @@ void CreateFlatPP(PPFile& fp, const char *path, Index<String>& visited)
 	if(visited.Find(path) >= 0)
 		return;
 	visited.Add(path);
+	LLOG("CreateFlatPP " << path << LOG_BEGIN);
 	const PPFile& pp = GetPPFile(path);
 	for(int i = 0; i < pp.item.GetCount(); i++) {
 		const PPItem& m = pp.item[i];
@@ -408,16 +419,39 @@ void CreateFlatPP(PPFile& fp, const char *path, Index<String>& visited)
 		else
 			fp.item.Add(m);
 	}
+	LLOG(LOG_END);
+}
+
+const PPFile& GetFlatPPFile(const char *path, Index<String>& visited)
+{
+	LLOG("GetFlatPPFile " << path);
+	int q = sFlatPP.Find(path);
+	if(q >= 0)
+		return sFlatPP[q];
+	PPFile& fp = sFlatPP.Add(path);
+	const PPFile& pp = GetPPFile(path);
+	for(int i = 0; i < pp.item.GetCount(); i++) {
+		const PPItem& m = pp.item[i];
+		if(m.type == PP_INCLUDE) {
+			String s = GetIncludePath(m.text, GetFileFolder(path));
+			if(s.GetCount() && visited.Find(s) < 0) {
+				visited.Add(s);
+				const PPFile& pp = GetFlatPPFile(s, visited);
+				for(int i = 0; i < pp.item.GetCount(); i++)
+					fp.item.Add(pp.item[i]);
+			}
+		}
+		else
+			fp.item.Add(m);
+	}
+	return fp;
 }
 
 const PPFile& GetFlatPPFile(const char *path)
 {
-	int q = sFlatPP.Find(path);
-	if(q >= 0)
-		return sFlatPP[q];
 	Index<String> visited;
-	CreateFlatPP(sFlatPP.Add(path), path, visited);
-	return sFlatPP.Top();
+	visited.Add(path);
+	return GetFlatPPFile(path, visited);
 }
 
 END_UPP_NAMESPACE

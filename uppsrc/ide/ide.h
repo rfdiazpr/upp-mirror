@@ -836,6 +836,7 @@ public:
 		void  ToggleStopOnErrors();
 		One<Host> CreateHostRunDir();
 		void  OpenOutputFolder();
+		void  PreprocessInternal();
 
 	void      DebugMenu(Bar& menu);
 		void  RunArgs();
@@ -949,7 +950,7 @@ public:
 	};
 	
 	FindLineErrorCache error_cache;
-	void      ConsoleLine(const String& line);
+	void      ConsoleLine(const String& line, bool assist = false);
 	void      ConsoleRunEnd();
 	void      SyncErrorsMessage();
 	void      ShowError();

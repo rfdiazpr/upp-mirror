@@ -3,7 +3,7 @@
 NAMESPACE_UPP
 
 #define LTIMING(x)  RTIMING(x)
-#define LLOG(x)
+#define LLOG(x)     // DLOG(x)
 
 const char *Cpp::SkipString(const char *s)
 {
@@ -161,7 +161,7 @@ bool Cpp::Preprocess(const String& sourcefile, Stream& in, const String& current
 	Vector<String> ignorelist = Split("__declspec;__cdecl;"
                                       "__out;__in;__inout;__deref_in;__deref_inout;__deref_out;"
                                       "__AuToQuOtE;__xin;__xout;"
-                                      "$drv_group;$allowed_on_parameter",
+                                      "$drv_group;$allowed_on_parameter;__clrcall",
                                       ';');
 
 	for(int i = 0; i < ignorelist.GetCount(); i++) {

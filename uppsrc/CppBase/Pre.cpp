@@ -19,7 +19,7 @@ SrcFile::SrcFile() :
 {
 }
 
-SrcFile PreProcess(Stream& in)
+SrcFile PreProcess(Stream& in) // This is not really C preprocess, only removes (or processes comments) and directives
 {
 	SrcFile res;
 	bool include = true;

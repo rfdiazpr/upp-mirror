@@ -3,10 +3,10 @@
 #include <plugin/lz4/lz4.h>
 
 #define LTIMING(x)    RTIMING(x)
-#define LLOG(x)       DLOG(x)
+#define LLOG(x)       // DLOG(x)
 #define LTIMESTOP(x)  RTIMESTOP(x)
 
-#define LDUMP(x)      DDUMP(x)
+#define LDUMP(x)      // DDUMP(x)
 
 
 VectorMap<String, String>        sSrcFile;
@@ -17,9 +17,44 @@ void SourceFileInfo::Serialize(Stream& s)
 	s % time % ids % included_id_macros % namespace_info % using_info % defined_macros;
 }
 
+String CodeBaseCacheDir()
+{
+	return ConfigFile("cfg/codebase");
+}
+
+void ReduceCodeBaseCache()
+{
+	struct FileInfo {
+		String path;
+		Time   time;
+		int64  length;
+		
+		bool operator<(const FileInfo& a) const { return time > a.time; }
+	};
+	Array<FileInfo> file;
+	FindFile ff(AppendFileName(CodeBaseCacheDir(), "*.*"));
+	int64 total = 0;
+	while(ff) {
+		if(ff.IsFile()) {
+			FileInfo& m = file.Add();
+			m.path = ff.GetPath();
+			m.time = ff.GetLastAccessTime();
+			m.length = ff.GetLength();
+			total += m.length;
+		}
+		ff.Next();
+	}
+	Sort(file);
+	while(total > 120000000 && file.GetCount()) {
+		DeleteFile(file.Top().path);
+		total -= file.Top().length;
+		file.Drop();
+	}
+}
+
 String CodeBaseCacheFile()
 {
-	return AppendFileName(ConfigFile("cfg/codebase"), GetVarsName() + '.' + GetCurrentBuildMethod() + ".codebase");
+	return AppendFileName(CodeBaseCacheDir(), GetVarsName() + '.' + GetCurrentMainPackage() + '.' + GetCurrentBuildMethod() + ".codebase");
 }
 
 CppBase& CodeBase()
@@ -30,10 +65,12 @@ CppBase& CodeBase()
 
 static bool   s_console;
 
+void IdePutErrorLine(const String& line);
+
 void BrowserScanError(int line, const String& text, int file)
 {
 	if(s_console)
-		PutConsole(String().Cat() << source_file.GetKey(file) << " (" << line << "): " << text);
+		IdePutErrorLine(String().Cat() << source_file.GetKey(file) << " (" << line << "): " << text);
 }
 
 void SerializeCodeBase(Stream& s)
@@ -51,18 +88,32 @@ void SaveCodeBase()
 	Store(callback(SerializeCodeBase), ss, 1);
 	String data = ss.GetResult();
 	String path = CodeBaseCacheFile();
-	SaveFile(path, data); // TODO: LZ4?
-#if 0
-	{ LTIMING("LZ4 compress");
-	SaveFile(path + ".lz4", LZ4Compress(data)); }
-	{ LTIMING("zlib compress");
-	SaveFile(path + ".z", ZCompress(data)); }
-#endif
+	SaveFile(path, ZCompress(data)); // TODO: LZ4?
+}
+
+bool TryLoadCodeBase(const char *path)
+{
+	FindFile ff(path);
+	while(ff) {
+		StringStream ss(ZDecompress(LoadFile(ff.GetPath())));
+		if(Load(callback(SerializeCodeBase), ss, 1)) {
+			LLOG("Loaded " << ff.GetPath());
+			return true;
+		}
+		ff.Next();
+	}
+	return false;
 }
 
 void LoadCodeBase()
 {
-	LoadFromFile(callback(SerializeCodeBase), CodeBaseCacheFile(), 1);
+	TryLoadCodeBase(CodeBaseCacheFile()) ||
+	TryLoadCodeBase(AppendFileName(CodeBaseCacheDir(), GetVarsName() + ".*." + GetCurrentBuildMethod() + ".codebase")) ||
+	TryLoadCodeBase(AppendFileName(CodeBaseCacheDir(), GetVarsName() + ".*.codebase")) ||
+	TryLoadCodeBase(AppendFileName(CodeBaseCacheDir(), "*.codebase"));
+	
+		return;
+	;
 }
 
 void FinishBase()
@@ -310,7 +361,6 @@ void CodeBaseScanFile(Stream& in, const String& fn, bool check_macros)
 	LDUMP(f.defined_macros);
 	LDUMP(check_macros);
 	if(cm.GetCount() && check_macros) {
-		DLOG("Checking " << cm);
 		Progress pi;
 		BaseInfoSync(pi);
 		pi.SetText("Checking source files");
@@ -322,8 +372,6 @@ void CodeBaseScanFile(Stream& in, const String& fn, bool check_macros)
 			String path = sSrcFile.GetKey(i);
 			int q = GetSourceFileIndex(path);			
 			const SourceFileInfo& f = source_file[q];
-			DDUMP(path);
-			DDUMP(f.ids);
 			if(HasIntersection(f.ids, cm) && IncludesFile(path, fn) && !CheckFile(f, path))
 				parse_file.Add(q);
 		}
@@ -348,8 +396,9 @@ void ClearCodeBase()
 	source_file.Clear();
 }
 
-void StartCodeBase()
+void NewCodeBase()
 {
+	ReduceCodeBaseCache();
 	static int start;
 	if(start) return;
 	start++;

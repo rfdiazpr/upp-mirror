@@ -1,1 +1,1 @@
-[attribyte] void test([attribyte] const int a);
+[attribute] void test([attribute] const int a);

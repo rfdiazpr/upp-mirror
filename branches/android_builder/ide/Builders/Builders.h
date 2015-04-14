@@ -200,12 +200,13 @@ protected:
 	bool PreprocesAndroidManifest();
 	bool GenerateRFile();
 	
-	String GetAndroidProjectDirectory() const;
-	String GetAndroidProjectSourcesDirectory() const;
-	String GetAndroidProjectResourcesDirectory() const;
-	String GetAndroidProjectBuildDirectory() const;
-	String GetAndroidProjectClassesDirectory() const;
-	String GetAndroidProjectBinDirectory() const;
+	String GetAndroidSandboxDir() const;
+	String GetAndroidProjectDir() const;
+	String GetAndroidProjectSourcesDir() const;
+	String GetAndroidProjectResourcesDir() const;
+	String GetAndroidProjectBuildDir() const;
+	String GetAndroidProjectClassesDir() const;
+	String GetAndroidProjectBinDir() const;
 	
 	String BuildToolsDir() const;
 	String PlatformDir() const;
@@ -219,11 +220,6 @@ protected:
 	String KeytoolPath() const;
 	String JavacDelimiter() const;
 	
-private:
-	String androidManifestPath;
-	String packageName;
-	String packageDir;
-	String objectsDir;
 };
 
 void DeletePCHFile(const String& pch_file);

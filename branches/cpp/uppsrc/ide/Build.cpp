@@ -23,7 +23,7 @@ void Ide::DoProcessEvents()
 
 void Ide::ReQualifyCodeBase()
 {
-	::ReQualifyCodeBase();
+	FinishCodeBase();
 }
 
 String Ide::GetMain()

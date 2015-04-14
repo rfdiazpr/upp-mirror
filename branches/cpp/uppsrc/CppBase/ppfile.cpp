@@ -5,6 +5,11 @@ NAMESPACE_UPP
 #define LTIMING(x)  RTIMING(x)
 #define LLOG(x)     LOG(x)
 
+bool IsCPPFile(const String& path)
+{
+	return findarg(ToLower(GetFileExt(path)) , ".c", ".cpp", ".cc" , ".cxx", ".icpp") >= 0;
+}
+
 void SetSpaces(String& l, int pos, int count)
 {
 	StringBuffer s = l;

@@ -16,7 +16,6 @@
 
 class Browser;
 
-bool           IsCPPFile(const String& file);
 String         GetMasterFile(const String& file);
 
 CppBase&       CodeBase();
@@ -39,11 +38,12 @@ Vector<String> ParseSrc(Stream& in, int file, Callback2<int, const String&> erro
 void           CodeBaseScanFile(Stream& in, const String& fn, bool check_macros);
 void           CodeBaseScanFile(const String& fn, bool check_macros);
 void           ClearCodeBase();
+void           CheckCodeBase();
 void           RescanCodeBase();
 void           SyncCodeBase();
 void           SaveCodeBase();
 bool           ExistsBrowserItem(const String& item);
-void           ReQualifyCodeBase();
+void           FinishCodeBase();
 
 String         PreprocessLayFile(const char *fn);
 Vector<String> PreprocessSchFile(const char *fn);

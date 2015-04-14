@@ -113,17 +113,19 @@ void LoadCodeBase()
 	TryLoadCodeBase(AppendFileName(CodeBaseCacheDir(), "*.codebase"));
 }
 
-void FinishBase()
+void FinishCodeBase()
 {
+	RTIMING("FinishBase");
+
 	Qualify(CodeBase());
 }
 
+/*
 void ReQualifyCodeBase()
 {
 	Qualify(CodeBase());
 }
 
-/*
 Vector<String> SortedNests()
 {
 	LTIMING("SortedNests()");
@@ -136,11 +138,6 @@ Vector<String> SortedNests()
 	return n;
 }
 */
-
-bool IsCPPFile(const String& path)
-{
-	return findarg(ToLower(GetFileExt(path)) , ".c", ".cpp", ".cc" , ".cxx", ".icpp") >= 0;
-}
 
 void GatherSources(const String& master_path, const String& path_)
 {
@@ -161,7 +158,7 @@ void BaseInfoSync(Progress& pi)
 { // clears temporary caches (file times etc..)
 	PPSync(TheIde()->IdeGetIncludePath());
 
-	TIMESTOP("Gathering files");
+	RTIMESTOP("Gathering files");
 	sSrcFile.Clear();
 	const Workspace& wspc = GetIdeWorkspace();
 	RTIMING("Gathering files");
@@ -231,10 +228,8 @@ void ParseFiles(Progress& pi, const Index<int> parse_file)
 	}
 }
 
-void UpdateCodeBase(Progress& pi)
+void UpdateCodeBase2(Progress& pi)
 {
-	BaseInfoSync(pi);
-
 	const Workspace& wspc = GetIdeWorkspace();
 
 	pi.SetText("Checking source files");
@@ -261,12 +256,17 @@ void UpdateCodeBase(Progress& pi)
 	base.Sweep(keep_file);
 
 	for(int i = 0; i < source_file.GetCount(); i++)
-		if(keep_file.Find(i) < 0 && parse_file.Find(i) < 0 && !source_file.IsUnlinked(i)) {
-			LLOG("Unlink " << i);
+		if(keep_file.Find(i) < 0 && parse_file.Find(i) < 0 && !source_file.IsUnlinked(i))
 			source_file.Unlink(i);
-		}
 	
 	ParseFiles(pi, parse_file);
+}
+
+void UpdateCodeBase(Progress& pi)
+{
+	BaseInfoSync(pi);
+
+	UpdateCodeBase2(pi);
 }
 
 Vector<String> ParseSrc(Stream& in, int file, Callback2<int, const String&> error, bool do_macros, bool get_changes)
@@ -378,7 +378,7 @@ void CodeBaseScanFile(Stream& in, const String& fn, bool check_macros)
 		ParseFiles(pi, parse_file);
 	}
 
-	FinishBase();
+	FinishCodeBase();
 }
 
 void CodeBaseScanFile(const String& fn, bool check_macros)
@@ -393,28 +393,49 @@ void ClearCodeBase()
 	source_file.Clear();
 }
 
+void SyncCodeBase()
+{
+	RTIMING("SyncCodeBase");
+	RTIMESTOP("SyncCodeBase");
+	Progress pi;
+	pi.Title("Parsing source files");
+	UpdateCodeBase(pi);
+	FinishCodeBase();
+}
+
 void NewCodeBase()
 {
 	ReduceCodeBaseCache();
 	static int start;
 	if(start) return;
 	start++;
-	Progress pi;
-	pi.Title("Parsing source files");
 	LoadCodeBase();
-	UpdateCodeBase(pi);
-	FinishBase();
+	SyncCodeBase();
 	SaveCodeBase();
 	start--;
 }
 
-void SyncCodeBase()
+void CheckCodeBase()
 {
-	RTIMING("SyncCodeBase");
+	RTIMESTOP("CheckCodeBase");
 	Progress pi;
 	pi.Title("Parsing source files");
-	UpdateCodeBase(pi);
-	FinishBase();
+	BaseInfoSync(pi);
+	for(int i = 0; i < sSrcFile.GetCount(); i++)
+		if(source_file.Find(sSrcFile.GetKey(i)) < 0) {
+			UpdateCodeBase2(pi);
+			FinishCodeBase();
+			return;
+		}
+	for(int i = 0; i < source_file.GetCount(); i++)
+		if(!source_file.IsUnlinked(i)) {
+			String path = source_file.GetKey(i);
+			if(sSrcFile.Find(source_file.GetKey(i)) < 0 || source_file[i].time != FileGetTime(path)) {
+				UpdateCodeBase2(pi);
+				FinishCodeBase();
+				return;
+			}
+		}
 }
 
 void RescanCodeBase()
@@ -424,7 +445,7 @@ void RescanCodeBase()
 	Progress pi;
 	pi.Title("Parsing source files");
 	UpdateCodeBase(pi);
-	FinishBase();
+	FinishCodeBase();
 	s_console = false;
 }
 

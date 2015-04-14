@@ -5,6 +5,8 @@
 
 NAMESPACE_UPP
 
+bool           IsCPPFile(const String& file);
+
 void RemoveComments(String& l, bool& incomment);
 
 struct CppMacro : Moveable<CppMacro> {

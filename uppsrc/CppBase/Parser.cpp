@@ -609,7 +609,7 @@ void Parser::Declarator(Decl& d, const char *p)
 	}
 	if(Key('(')) {
 		if(inbody || (lex < 256 || lex == tk_true || lex == tk_false)
-		   && lex != ')' && lex != t_dblcolon) {
+		   && lex != ')' && lex != '[' && lex != t_dblcolon) {
 			int level = 0;
 			for(;;) {
 				if(lex == t_eof) break;

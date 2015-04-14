@@ -19,7 +19,7 @@ void Test(const char *path)
 	errs.Clear();
 
 	Parser p;
-	p.Do(in, Vector<String>(), base, path, callback(AddError));
+	p.Do(in, base, 0, 0, callback(AddError));
 
 	if(errs.GetCount())
 		DUMPC(errs);
@@ -39,7 +39,7 @@ void Test(const char *path)
 	
 	p.dobody = true;
 	in.Seek(0);
-	p.Do(in, Vector<String>(), base, path, callback(AddError));
+	p.Do(in, base, 0, 0, callback(AddError));
 	
 	out << "<locals> {\n";
 	for(int i = 0; i < p.local.GetCount(); i++) {

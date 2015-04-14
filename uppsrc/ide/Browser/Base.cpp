@@ -91,16 +91,24 @@ void SaveCodeBase()
 	SaveFile(path, ZCompress(data)); // TODO: LZ4?
 }
 
-bool TryLoadCodeBase(const char *path)
+bool TryLoadCodeBase(const char *pattern)
 {
-	FindFile ff(path);
-	while(ff) {
-		StringStream ss(ZDecompress(LoadFile(ff.GetPath())));
+	FindFile ff(pattern);
+	String path;
+	int64  len = -1;
+	while(ff) { // Load biggest file, as it has the most chances to have the data we need
+		if(ff.IsFile() && ff.GetLength() > len) {
+			path = ff.GetPath();
+			len = ff.GetLength();
+		}
+		ff.Next();
+	}
+	if(path.GetCount()) {
+		StringStream ss(ZDecompress(LoadFile(path)));
 		if(Load(callback(SerializeCodeBase), ss, 1)) {
 			LLOG("Loaded " << ff.GetPath());
 			return true;
 		}
-		ff.Next();
 	}
 	return false;
 }

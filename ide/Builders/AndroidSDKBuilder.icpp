@@ -21,8 +21,7 @@ bool AndroidSDKBuilder::BuildPackage(const String& package, Vector<String>& link
 	const bool isMainPackage = HasFlag("MAIN");
 	const bool isResourcesPackage = HasFlag("ANDROID_RESOURCES_PACKAGE");
 	String uppManifestPath = PackagePath(package);
-	packageDir = GetFileFolder(uppManifestPath);
-	packageName = package;
+	String packageDir = GetFileFolder(uppManifestPath);
 	
 	ChDir(packageDir);
 	PutVerbose("cd " + packageDir);
@@ -62,7 +61,7 @@ bool AndroidSDKBuilder::BuildPackage(const String& package, Vector<String>& link
 					if(packageFileDirectory.Find(package + DIR_SEPS) != -1)
 						packageFileDirectory.Remove(0, String(package + DIR_SEPS).GetCount());
 					String filePathInAndroidProject;
-					filePathInAndroidProject << GetAndroidProjectResourcesDirectory() << DIR_SEPS;
+					filePathInAndroidProject << GetAndroidProjectResourcesDir() << DIR_SEPS;
 					filePathInAndroidProject <<	packageFileDirectory << DIR_SEPS;
 					filePathInAndroidProject <<	fileName;
 					
@@ -72,7 +71,7 @@ bool AndroidSDKBuilder::BuildPackage(const String& package, Vector<String>& link
 				else
 				if(fileExt == ".java") {
 					String filePathInAndroidProject;
-					filePathInAndroidProject << GetAndroidProjectSourcesDirectory() << DIR_SEPS;
+					filePathInAndroidProject << GetAndroidProjectSourcesDir() << DIR_SEPS;
 					filePathInAndroidProject <<	packageFileDirectory << DIR_SEPS;
 					filePathInAndroidProject <<	fileName;
 					
@@ -90,7 +89,7 @@ bool AndroidSDKBuilder::BuildPackage(const String& package, Vector<String>& link
 							return false;
 						}
 						
-						if(!FileCopy(filePath, GetAndroidProjectDirectory() + DIR_SEPS + "AndroidManifest.xml")) {
+						if(!FileCopy(filePath, GetAndroidProjectDir() + DIR_SEPS + "AndroidManifest.xml")) {
 							error = true;
 							continue;
 						}
@@ -107,14 +106,15 @@ bool AndroidSDKBuilder::BuildPackage(const String& package, Vector<String>& link
 	}
 	
 	if(!isResourcesPackage && !error && !javaSourceFiles.IsEmpty()) {
-		if(!RealizeDirectory(GetAndroidProjectClassesDirectory()))
+		if(!RealizeDirectory(GetAndroidProjectClassesDir()))
 			return false;
 		
 		String compileCmd;
-		compileCmd << JavacPath() << " ";
-		compileCmd << "-d "<< GetAndroidProjectClassesDirectory() <<  " ";
-		compileCmd << "-classpath " << AndroidJarPath() << JavacDelimiter() << GetAndroidProjectBuildDirectory() << " ";
-		compileCmd << "-sourcepath " << GetAndroidProjectSourcesDirectory() << " ";
+		compileCmd << JavacPath();
+		compileCmd << (HasFlag("DEBUG") ? " -g" : " -g:none");
+		compileCmd << " -d "<< GetAndroidProjectClassesDir();
+		compileCmd << " -classpath " << AndroidJarPath() << JavacDelimiter() << GetAndroidProjectBuildDir();
+		compileCmd << " -sourcepath " << GetAndroidProjectSourcesDir() << " ";
 		for(int i = 0; i < javaSourceFiles.GetCount(); i++) {
 			compileCmd << javaSourceFiles[i];
 			if(i < javaSourceFiles.GetCount() - 1)
@@ -136,6 +136,7 @@ bool AndroidSDKBuilder::Link(const Vector<String>& linkfile, const String& linko
 	
 	// We need to compile java packages in this place, because we need to generate "R.java" file before...
 	// We don't know which packages contain resources.
+	PutConsole("Compiling java sources...");
 	bool error = false;
 	int time = GetTickCount();
 	for(int i = 0; i < linkfile.GetCount(); i++) {
@@ -149,11 +150,11 @@ bool AndroidSDKBuilder::Link(const Vector<String>& linkfile, const String& linko
 		return false;
 	
 	PutConsole("Creating dex file...");
-	RealizeDirectory(GetAndroidProjectBinDirectory());
+	RealizeDirectory(GetAndroidProjectBinDir());
 	String dxCmd;
 	dxCmd << DxPath() << " --dex ";
-	dxCmd << "--output=" << GetAndroidProjectBinDirectory() << DIR_SEPS << "classes.dex ";
-	dxCmd << GetAndroidProjectClassesDirectory();
+	dxCmd << "--output=" << GetAndroidProjectBinDir() << DIR_SEPS << "classes.dex ";
+	dxCmd << GetAndroidProjectClassesDir();
 	// PutConsole(dxCmd);
 	if(Execute(dxCmd, ss) != 0) {
 		PutConsole(ss.GetResult());
@@ -161,17 +162,17 @@ bool AndroidSDKBuilder::Link(const Vector<String>& linkfile, const String& linko
 	}
 	
 	PutConsole("Creating apk file...");
-	String unsignedApkPath = GetFileFolder(target) + DIR_SEPS + GetFileTitle(target) + ".unsigned.apk";
-	String signedApkPath = GetFileFolder(target) + DIR_SEPS + GetFileTitle(target) + ".signed.apk";
+	String unsignedApkPath = GetAndroidSandboxDir() + DIR_SEPS + GetFileTitle(target) + ".unsigned.apk";
+	String signedApkPath = GetAndroidSandboxDir() + DIR_SEPS + GetFileTitle(target) + ".signed.apk";
 	DeleteFile(unsignedApkPath);
 	String apkCmd;
 	apkCmd << AaptPath() << " package -v -f";
-	if(DirectoryExists(GetAndroidProjectResourcesDirectory()))
-		apkCmd << " -S " << GetAndroidProjectResourcesDirectory();
-	apkCmd << " -M " << GetAndroidProjectDirectory() << DIR_SEPS << "AndroidManifest.xml";
+	if(DirectoryExists(GetAndroidProjectResourcesDir()))
+		apkCmd << " -S " << GetAndroidProjectResourcesDir();
+	apkCmd << " -M " << GetAndroidProjectDir() << DIR_SEPS << "AndroidManifest.xml";
 	apkCmd << " -I " << AndroidJarPath();
 	apkCmd << " -F " << unsignedApkPath;
-	apkCmd << " " << GetAndroidProjectBinDirectory();
+	apkCmd << " " << GetAndroidProjectBinDir();
 	// PutConsole(apkCmd);
 	if(Execute(apkCmd, ss) != 0) {
 		PutConsole(ss.GetResult());
@@ -180,7 +181,7 @@ bool AndroidSDKBuilder::Link(const Vector<String>& linkfile, const String& linko
 	
 	// In release mode we definitly shouldn't signing apk!!!
 	if(HasFlag("DEBUG")) {
-		String debugKeystorePath = GetFileFolder(target) + DIR_SEPS + "debug.keystore";
+		String debugKeystorePath = GetAndroidSandboxDir() + DIR_SEPS + "debug.keystore";
 		if(!FileExists(debugKeystorePath)) { 
 			PutConsole("Generating debug key...");
 			String keytoolCmd;
@@ -236,7 +237,7 @@ bool AndroidSDKBuilder::MovePackageFileToAndroidProject(const String& packagePat
 
 bool AndroidSDKBuilder::RealizePackageSourcesDirectory(const String& packageName)
 {
-	return RealizeDirectory(GetAndroidProjectSourcesDirectory() + DIR_SEPS + packageName);
+	return RealizeDirectory(GetAndroidProjectSourcesDir() + DIR_SEPS + packageName);
 }
 
 bool AndroidSDKBuilder::PreprocesAndroidManifest()
@@ -248,12 +249,13 @@ bool AndroidSDKBuilder::PreprocesAndroidManifest()
 
 bool AndroidSDKBuilder::GenerateRFile()
 {
-	if(DirectoryExists(GetAndroidProjectResourcesDirectory())) {
+	// TODO: gen in gen folder
+	if(DirectoryExists(GetAndroidProjectResourcesDir())) {
 		StringStream ss;
 		String aaptCommand = AaptPath() + " package -v -f -m " +
-			"-S " + GetAndroidProjectDirectory() + DIR_SEPS + "res " +
-			"-J " + GetAndroidProjectDirectory() + DIR_SEPS + "java " +
-			"-M " + GetAndroidProjectDirectory() + DIR_SEPS + "AndroidManifest.xml " +
+			"-S " + GetAndroidProjectDir() + DIR_SEPS + "res " +
+			"-J " + GetAndroidProjectDir() + DIR_SEPS + "java " +
+			"-M " + GetAndroidProjectDir() + DIR_SEPS + "AndroidManifest.xml " +
 			"-I " + PlatformDir() + DIR_SEPS + "android.jar";
 	
 		if(Execute(aaptCommand, ss) != 0) {
@@ -265,34 +267,43 @@ bool AndroidSDKBuilder::GenerateRFile()
 	return true;
 }
 
-String AndroidSDKBuilder::GetAndroidProjectDirectory() const
+String AndroidSDKBuilder::GetAndroidSandboxDir() const
 {
-	return GetFileFolder(target) + DIR_SEPS + "AndroidProject";
+	int targetExtLen = GetTargetExt().GetCount();
+	String mainPackageName = GetFileName(target);
+	mainPackageName.Remove(mainPackageName.GetCount() - targetExtLen, targetExtLen);
+	
+	return GetFileFolder(target) + DIR_SEPS + mainPackageName;
 }
 
-String AndroidSDKBuilder::GetAndroidProjectSourcesDirectory() const
+String AndroidSDKBuilder::GetAndroidProjectDir() const
 {
-	return GetAndroidProjectDirectory() + DIR_SEPS + "java";
+	return GetAndroidSandboxDir() + DIR_SEPS + "AndroidProject";
 }
 
-String AndroidSDKBuilder::GetAndroidProjectResourcesDirectory() const
+String AndroidSDKBuilder::GetAndroidProjectSourcesDir() const
 {
-	return GetAndroidProjectDirectory() + DIR_SEPS + "res";
+	return GetAndroidProjectDir() + DIR_SEPS + "java";
 }
 
-String AndroidSDKBuilder::GetAndroidProjectBuildDirectory() const
+String AndroidSDKBuilder::GetAndroidProjectResourcesDir() const
 {
-	return GetAndroidProjectDirectory() + DIR_SEPS + "build";
+	return GetAndroidProjectDir() + DIR_SEPS + "res";
 }
 
-String AndroidSDKBuilder::GetAndroidProjectClassesDirectory() const
+String AndroidSDKBuilder::GetAndroidProjectBuildDir() const
 {
-	return GetAndroidProjectBuildDirectory() + DIR_SEPS + "classes";
+	return GetAndroidProjectDir() + DIR_SEPS + "build";
 }
 
-String AndroidSDKBuilder::GetAndroidProjectBinDirectory() const
+String AndroidSDKBuilder::GetAndroidProjectClassesDir() const
 {
-	return GetAndroidProjectBuildDirectory() + DIR_SEPS + "bin";
+	return GetAndroidProjectBuildDir() + DIR_SEPS + "classes";
+}
+
+String AndroidSDKBuilder::GetAndroidProjectBinDir() const
+{
+	return GetAndroidProjectBuildDir() + DIR_SEPS + "bin";
 }
 
 String AndroidSDKBuilder::BuildToolsDir() const

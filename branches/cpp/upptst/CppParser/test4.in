@@ -1,0 +1,16 @@
+__inline
+char *
+__insecure__strlwr_l(
+[SA_Pre(     Null=SA_No,       NullTerminated=SA_Yes)]
+[SA_Pre(Deref=1,       Valid=SA_Yes)]
+[SA_Post(       NullTerminated=SA_Yes)]
+[SA_Post(Deref=1,       Valid=SA_Yes)] char *_String,
+[SA_Pre(   Null=SA_Maybe)] [SA_Pre(Deref=1,       Valid=SA_Yes)]
+[SA_Pre(Deref=1,  Access=SA_Read)] _locale_t _Locale)
+{
+	char *  _strlwr_l([SA_Pre(     Null=SA_No,       NullTerminated=SA_Yes)]
+                      [SA_Pre(Deref=1,       Valid=SA_Yes)]
+                      [SA_Post(       NullTerminated=SA_Yes)]
+                      [SA_Post(Deref=1,       Valid=SA_Yes)]
+                      char *_String,
+                      [SA_Pre(   Null=SA_Maybe)] [SA_Pre(Deref=1,       Valid=SA_Yes)]                    [SA_Pre(Deref=1,  Access=SA_Read)] _locale_t _Locale);         return _strlwr_l(_String, _Locale);     }     extern "C++"     {     template <typename _T>     inline          char *     _strlwr_l(_T &_String,                                          [SA_Pre(   Null=SA_Maybe)] [SA_Pre(Deref=1,       Valid=SA_Yes)]                    [SA_Pre(Deref=1,  Access=SA_Read)] _locale_t _Locale)  throw()     {         return __insecure__strlwr_l(static_cast<char *>(_String), _Locale);     }     template <typename _T>     inline          char *     _strlwr_l(const _T &_String,                                          [SA_Pre(   Null=SA_Maybe)] [SA_Pre(Deref=1,       Valid=SA_Yes)]                    [SA_Pre(Deref=1,  Access=SA_Read)] _locale_t _Locale)  throw()     {         return __insecure__strlwr_l(static_cast<char *>(_String), _Locale);     }     template <>     inline          char *     _strlwr_l(char * &_String,                                          [SA_Pre(   Null=SA_Maybe)] [SA_Pre(Deref=1,       Valid=SA_Yes)]                    [SA_Pre(Deref=1,  Access=SA_Read)] _locale_t _Locale)  throw()     {         return __insecure__strlwr_l(_String, _Locale);     }     template <size_t _Size>     inline     char *     _strlwr_l([SA_Pre(Deref=1,     Null=SA_No,       NullTerminated=SA_Yes,WritableElementsConst=_Size)]     [SA_Pre(Deref=2,       Valid=SA_Yes)]                           [SA_Post(Deref=1,     Null=SA_No,       NullTerminated=SA_Yes)] [SA_Post(Deref=2,       Valid=SA_Yes)] char (&_String)[_Size],                                          [SA_Pre(   Null=SA_Maybe)] [SA_Pre(Deref=1,       Valid=SA_Yes)]                    [SA_Pre(Deref=1,  Access=SA_Read)] _locale_t _Locale)  throw()     {         return ((_strlwr_s_l(_String, _Size, _Locale)) == 0 ? _String : 0);     }     template <>     inline          char *     _strlwr_l<1>(char (&_String)[1],                                          [SA_Pre(   Null=SA_Maybe)] [SA_Pre(Deref=1,       Valid=SA_Yes)]                    [SA_Pre(Deref=1,  Access=SA_Read)] _locale_t _Locale)  throw()     {         return ((_strlwr_s_l(_String, 1, _Locale)) == 0 ? _String : 0);     }     }

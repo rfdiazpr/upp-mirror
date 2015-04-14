@@ -19,7 +19,7 @@ void Test(const char *path)
 	errs.Clear();
 
 	Parser p;
-	p.Do(in, Vector<String>(), base, path, callback(AddError));
+	p.Do(in, base, 0, 0, callback(AddError));
 
 	if(errs.GetCount())
 		DUMPC(errs);
@@ -39,7 +39,7 @@ void Test(const char *path)
 	
 	p.dobody = true;
 	in.Seek(0);
-	p.Do(in, Vector<String>(), base, path, callback(AddError));
+	p.Do(in, base, 0, 0, callback(AddError));
 	
 	out << "<locals> {\n";
 	for(int i = 0; i < p.local.GetCount(); i++) {
@@ -56,7 +56,7 @@ void Test(const char *path)
 
 CONSOLE_APP_MAIN {
 	StdLogSetup(LOG_COUT|LOG_FILE);
-	Test(GetDataFile("test1.in"));
+	Test(GetDataFile("test4.in"));
 	/*
 	FindFile ff(GetDataFile("test1.in"));
 	while(ff) {

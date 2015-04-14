@@ -15,7 +15,8 @@ file
 	test4.in,
 	test4.out,
 	test5.in,
-	test5.out;
+	test5.out,
+	test6.in;
 
 mainconfig
 	"" = "",

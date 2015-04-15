@@ -106,7 +106,7 @@ void ResolveTParam(Vector<String>& type, const Vector<String>& tparam)
 
 void AssistScanError(int line, const String& text)
 {
-#ifdef _DEBUG_X_0
+#ifdef _DEBUG
 	PutVerbose(String().Cat() << "(" << line << "): " << text);
 #endif
 }
@@ -123,13 +123,16 @@ void AssistEditor::Context(Parser& parser, int pos)
 
 	parser.dobody = true;
 	StringStream pin(cpp.output);
-	parser.Do(ss, CodeBase(), Null, Null, callback(AssistScanError));
+	// needs CodeBase to identify type names
+	parser.Do(pin, CodeBase(), Null, Null, callback(AssistScanError));
 
-	QualifyTypes(CodeBase(), parser.current_scope, parser.current);
+//	QualifyTypes(CodeBase(), parser.current_scope, parser.current);
 	inbody = parser.IsInBody();
-#ifdef _DEBUG_X_0
+#ifdef _DEBUG
 	PutVerbose("body: " + AsString(inbody));
 	PutVerbose("scope: " + AsString(parser.current_scope));
+	for(int i = 0; i < parser.local.GetCount(); i++)
+		PutVerbose(parser.local.GetKey(i) + ": " + parser.local[i].type);
 #endif
 }
 

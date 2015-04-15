@@ -54,7 +54,7 @@ void SerializePPFiles(Stream& s)
 void SweepPPFiles(const Index<String>& keep)
 {
 	for(int i = 0; i < sPPfile.GetCount(); i++)
-		if(keep.Find(sPPfile.GetKey(i)) < 0)
+		if(keep.Find(sPPfile.GetKey(i)) < 0 && !sPPfile.IsUnlinked(i))
 			sPPfile.Unlink(i);
 }
 

@@ -77,6 +77,7 @@ void SerializeCodeBase(Stream& s)
 {
 	source_file.Serialize(s);
 	SerializePPFiles(s);
+	CodeBase().Serialize(s);
 }
 
 void SaveCodeBase()
@@ -85,10 +86,10 @@ void SaveCodeBase()
 	LLOG("Save code base");
 	RealizeDirectory(ConfigFile("cfg/codebase"));
 	StringStream ss;
-	Store(callback(SerializeCodeBase), ss, 1);
+	Store(callback(SerializeCodeBase), ss, 2);
 	String data = ss.GetResult();
 	String path = CodeBaseCacheFile();
-	SaveFile(path, ZCompress(data)); // TODO: LZ4?
+	SaveFile(path, LZ4Compress(data)); // TODO: LZ4?
 }
 
 bool TryLoadCodeBase(const char *pattern)
@@ -104,8 +105,9 @@ bool TryLoadCodeBase(const char *pattern)
 		ff.Next();
 	}
 	if(path.GetCount()) {
-		StringStream ss(ZDecompress(LoadFile(path)));
-		if(Load(callback(SerializeCodeBase), ss, 1)) {
+		LTIMING("Load code base");
+		StringStream ss(LZ4Decompress(LoadFile(path)));
+		if(Load(callback(SerializeCodeBase), ss, 2)) {
 			LLOG("Loaded " << ff.GetPath());
 			return true;
 		}

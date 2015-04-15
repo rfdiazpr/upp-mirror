@@ -4,7 +4,8 @@ uses
 	CppBase,
 	ide\Common,
 	PdfDraw,
-	RichEdit;
+	RichEdit,
+	plugin/lz4;
 
 file
 	Browser.h options(BUILDER_OPTION) PCH,

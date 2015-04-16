@@ -1,9 +1,14 @@
 #include "Builders.h"
 
 // Hardcoded paths.
-String sdkPath = "/home/klugier/AndroidStudio/sdk";
-String sdkPlatform = "";
-String jdkPath = "/usr/lib/jvm/java-7-oracle";
+static String sdkPath = "/home/klugier/AndroidStudio/sdk";
+static String jdkPath = "/usr/lib/jvm/java-7-oracle";
+
+AndroidSDKBuilder::AndroidSDKBuilder() :
+	androidSDK(sdkPath)
+{
+	androidSDK.GetAVDNames();
+}
 
 String AndroidSDKBuilder::GetTargetExt() const
 {
@@ -113,7 +118,7 @@ bool AndroidSDKBuilder::BuildPackage(const String& package, Vector<String>& link
 		compileCmd << JavacPath();
 		compileCmd << (HasFlag("DEBUG") ? " -g" : " -g:none");
 		compileCmd << " -d "<< GetAndroidProjectClassesDir();
-		compileCmd << " -classpath " << AndroidJarPath() << JavacDelimiter() << GetAndroidProjectBuildDir();
+		compileCmd << " -classpath " << androidSDK.AndroidJarPath() << JavacDelimiter() << GetAndroidProjectBuildDir();
 		compileCmd << " -sourcepath " << GetAndroidProjectSourcesDir() << " ";
 		for(int i = 0; i < javaSourceFiles.GetCount(); i++) {
 			compileCmd << javaSourceFiles[i];
@@ -152,7 +157,7 @@ bool AndroidSDKBuilder::Link(const Vector<String>& linkfile, const String& linko
 	PutConsole("Creating dex file...");
 	RealizeDirectory(GetAndroidProjectBinDir());
 	String dxCmd;
-	dxCmd << DxPath() << " --dex ";
+	dxCmd << androidSDK.DxPath() << " --dex ";
 	dxCmd << "--output=" << GetAndroidProjectBinDir() << DIR_SEPS << "classes.dex ";
 	dxCmd << GetAndroidProjectClassesDir();
 	// PutConsole(dxCmd);
@@ -166,11 +171,11 @@ bool AndroidSDKBuilder::Link(const Vector<String>& linkfile, const String& linko
 	String signedApkPath = GetAndroidSandboxDir() + DIR_SEPS + GetFileTitle(target) + ".signed.apk";
 	DeleteFile(unsignedApkPath);
 	String apkCmd;
-	apkCmd << AaptPath() << " package -v -f";
+	apkCmd << androidSDK.AaptPath() << " package -v -f";
 	if(DirectoryExists(GetAndroidProjectResourcesDir()))
 		apkCmd << " -S " << GetAndroidProjectResourcesDir();
 	apkCmd << " -M " << GetAndroidProjectDir() << DIR_SEPS << "AndroidManifest.xml";
-	apkCmd << " -I " << AndroidJarPath();
+	apkCmd << " -I " << androidSDK.AndroidJarPath();
 	apkCmd << " -F " << unsignedApkPath;
 	apkCmd << " " << GetAndroidProjectBinDir();
 	// PutConsole(apkCmd);
@@ -216,7 +221,7 @@ bool AndroidSDKBuilder::Link(const Vector<String>& linkfile, const String& linko
 	PutConsole("Aliging apk file...");
 	DeleteFile(target);
 	String zipalignCmd;
-	zipalignCmd << ZipalignPath() << " -v -f 4 ";
+	zipalignCmd << androidSDK.ZipalignPath() << " -v -f 4 ";
 	zipalignCmd << (HasFlag("DEBUG") ? signedApkPath : unsignedApkPath) << " ";
 	zipalignCmd << target;
 	//PutConsole(zipalignCmd);
@@ -252,12 +257,14 @@ bool AndroidSDKBuilder::GenerateRFile()
 	// TODO: gen in gen folder
 	if(DirectoryExists(GetAndroidProjectResourcesDir())) {
 		StringStream ss;
-		String aaptCommand = AaptPath() + " package -v -f -m " +
-			"-S " + GetAndroidProjectDir() + DIR_SEPS + "res " +
-			"-J " + GetAndroidProjectDir() + DIR_SEPS + "java " +
-			"-M " + GetAndroidProjectDir() + DIR_SEPS + "AndroidManifest.xml " +
-			"-I " + PlatformDir() + DIR_SEPS + "android.jar";
-	
+		String aaptCommand;
+		aaptCommand << androidSDK.AaptPath() << " package -v -f -m";
+		aaptCommand << " -S " << GetAndroidProjectDir() << DIR_SEPS << "res";
+		aaptCommand << " -J " << GetAndroidProjectDir() << DIR_SEPS << "java";
+		aaptCommand << " -M " << GetAndroidProjectDir() << DIR_SEPS << "AndroidManifest.xml";
+		aaptCommand << " -I " << androidSDK.AndroidJarPath();
+		// TODO: remove android.jar
+		
 		if(Execute(aaptCommand, ss) != 0) {
 			PutConsole(ss.GetResult());
 			return false;
@@ -266,6 +273,8 @@ bool AndroidSDKBuilder::GenerateRFile()
 	
 	return true;
 }
+
+// -------------------------------------------------------------------
 
 String AndroidSDKBuilder::GetAndroidSandboxDir() const
 {
@@ -306,32 +315,7 @@ String AndroidSDKBuilder::GetAndroidProjectBinDir() const
 	return GetAndroidProjectBuildDir() + DIR_SEPS + "bin";
 }
 
-String AndroidSDKBuilder::BuildToolsDir() const
-{
-	return sdkPath + DIR_SEPS + "build-tools/19.1.0";
-}
-
-String AndroidSDKBuilder::PlatformDir() const
-{
-	// TODO: platform detection
-	return sdkPath + DIR_SEPS + "platforms/android-22";
-}
-
-String AndroidSDKBuilder::AaptPath() const
-{
-	// TODO: build tools detection
-	return BuildToolsDir() + DIR_SEPS + "aapt";
-}
-
-String AndroidSDKBuilder::DxPath() const
-{
-	return BuildToolsDir() + DIR_SEPS + "dx";
-}
-
-String AndroidSDKBuilder::ZipalignPath() const
-{
-	return BuildToolsDir() + DIR_SEPS + "zipalign";
-}
+// -------------------------------------------------------------------
 
 String AndroidSDKBuilder::JavacPath() const
 {
@@ -348,10 +332,7 @@ String AndroidSDKBuilder::KeytoolPath() const
 	return jdkPath + DIR_SEPS + "bin" + DIR_SEPS + "keytool";
 }
 
-String AndroidSDKBuilder::AndroidJarPath() const
-{
-	return PlatformDir() + DIR_SEPS + "android.jar";
-}
+// -------------------------------------------------------------------
 
 String AndroidSDKBuilder::JavacDelimiter() const
 {

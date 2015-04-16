@@ -2,6 +2,7 @@
 #define BUILDERS_H
 
 #include <ide/Core/Core.h>
+#include <ide/Android/Android.h>
 //#include <coff/binobj/binobj.h>
 #include <plugin/bz2/bz2.h>
 
@@ -186,6 +187,8 @@ private:
 
 class AndroidSDKBuilder : public CppBuilder {
 public:
+	AndroidSDKBuilder();
+	
 	String GetTargetExt() const;
 	
 	virtual bool   BuildPackage(const String& packageName, Vector<String>& linkfile, Vector<String>&, String& linkoptions,
@@ -208,17 +211,13 @@ protected:
 	String GetAndroidProjectClassesDir() const;
 	String GetAndroidProjectBinDir() const;
 	
-	String BuildToolsDir() const;
-	String PlatformDir() const;
-	String AaptPath() const;
-	String DxPath() const;
-	String ZipalignPath() const;
-	String AndroidJarPath() const;
-	
 	String JavacPath() const;
 	String JarsignerPath() const;
 	String KeytoolPath() const;
 	String JavacDelimiter() const;
+	
+protected:
+	AndroidSDK androidSDK;
 	
 };
 

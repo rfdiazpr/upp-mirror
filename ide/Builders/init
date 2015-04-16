@@ -1,6 +1,6 @@
 #ifndef _ide_Builders_icpp_init_stub
 #define _ide_Builders_icpp_init_stub
-#include "ide/Core/init"
+#include "ide\Core/init"
 #define BLITZ_INDEX__ Fab5aa4644e1c1b5af8ed5faf2d4db317
 #include "GccBuilder.icpp"
 #undef BLITZ_INDEX__

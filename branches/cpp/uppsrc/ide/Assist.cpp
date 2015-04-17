@@ -493,8 +493,9 @@ void AssistEditor::PopUpAssist(bool auto_insert)
 	type.SetCursor(0);
 	if(!assist.GetCount())
 		return;
-	int cy = min(300, lcy * max(type.GetCount(), assist.GetCount()));
-	cy += 4;
+//	int cy = min(300, lcy * max(type.GetCount(), assist.GetCount()));
+//	cy += 4;	
+	int cy = VertLayoutZoom(304);;
 	cy += HeaderCtrl::GetStdHeight();
 	assist.SetLineCy(lcy);
 	Point p = GetCaretPoint() + GetScreenView().TopLeft();

@@ -27,9 +27,8 @@ Vector<String> AndroidSDK::GetAVDNames() const
 	Vector<String> names;
 	
 	String out;
-	if(Sys(EmulatorPath() + " -list-avds", out) == 0) {
-		
-	}
+	if(Sys(EmulatorPath() + " -list-avds", out) == 0)
+		names = Split(out, '\n');
 	
 	return names;
 }

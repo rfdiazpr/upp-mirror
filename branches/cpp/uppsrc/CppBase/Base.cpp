@@ -10,9 +10,8 @@ void CppItem::Serialize(Stream& s)
 	s % kind % access
 	  % item % name % natural % at % tparam % param % pname
 	  % tname % ctname % type % ptype % virt % filetype % file % line % impl;
-	if(s.IsLoading()) {
+	if(s.IsLoading())
 		serial = -1;
-	}
 }
 
 struct CmpItem {

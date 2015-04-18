@@ -3,7 +3,7 @@
 #include <plugin/lz4/lz4.h>
 
 #define LTIMING(x)    RTIMING(x)
-#define LLOG(x)       // DLOG(x)
+#define LLOG(x)       DLOG(x)
 #define LTIMESTOP(x)  RTIMESTOP(x)
 
 #define LDUMP(x)      // DDUMP(x)
@@ -83,7 +83,7 @@ void SerializeCodeBase(Stream& s)
 void SaveCodeBase()
 {
 	LTIMING("SaveCodeBase");
-	LLOG("Save code base");
+	LLOG("Save code base " << CodeBase().GetCount());
 	RealizeDirectory(ConfigFile("cfg/codebase"));
 	StringStream ss;
 	Store(callback(SerializeCodeBase), ss, 2);
@@ -121,6 +121,8 @@ void LoadCodeBase()
 	TryLoadCodeBase(AppendFileName(CodeBaseCacheDir(), GetVarsName() + ".*." + GetCurrentBuildMethod() + ".codebase")) ||
 	TryLoadCodeBase(AppendFileName(CodeBaseCacheDir(), GetVarsName() + ".*.codebase")) ||
 	TryLoadCodeBase(AppendFileName(CodeBaseCacheDir(), "*.codebase"));
+	
+	LLOG("LoadCodeBase: " << CodeBase().GetCount());
 }
 
 void FinishCodeBase()
@@ -263,7 +265,11 @@ void UpdateCodeBase2(Progress& pi)
 	
 	CppBase& base = CodeBase();
 
+	DDUMP(keep_file.GetCount());
+	DDUMP(parse_file.GetCount());
+	DDUMP(base.GetCount());
 	base.Sweep(keep_file);
+	DDUMP(base.GetCount());
 
 	for(int i = 0; i < source_file.GetCount(); i++)
 		if(keep_file.Find(i) < 0 && parse_file.Find(i) < 0 && !source_file.IsUnlinked(i))
@@ -420,8 +426,11 @@ void NewCodeBase()
 	if(start) return;
 	start++;
 	LoadCodeBase();
+	LOG("NewCodeBase loaded " << CodeBase().GetCount());
 	SyncCodeBase();
+	LOG("NewCodeBase synced " << CodeBase().GetCount());
 	SaveCodeBase();
+	LOG("NewCodeBase saved " << CodeBase().GetCount());
 	start--;
 }
 
@@ -429,7 +438,7 @@ void CheckCodeBase()
 {
 	RTIMESTOP("CheckCodeBase");
 	Progress pi;
-	pi.Title("Parsing source files");
+	pi.Title("Checking source files");
 	BaseInfoSync(pi);
 	for(int i = 0; i < sSrcFile.GetCount(); i++)
 		if(source_file.Find(sSrcFile.GetKey(i)) < 0) {

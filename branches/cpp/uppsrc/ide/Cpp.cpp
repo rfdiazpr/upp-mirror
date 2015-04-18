@@ -117,14 +117,13 @@ void AssistEditor::Context(Parser& parser, int pos)
 	String s = Get(0, pos);
 	StringStream ss(s);
 
-	PPSync(GetIncludePath());
 	Cpp cpp;
 	cpp.Preprocess(theide->editfile, ss, GetMasterFile(theide->editfile));
 
 	parser.dobody = true;
 	StringStream pin(cpp.output);
-	// needs CodeBase to identify type names
-	parser.Do(pin, CodeBase(), Null, Null, callback(AssistScanError));
+	DDUMP(CodeBase().GetCount());
+	parser.Do(pin, CodeBase(), Null, Null, callback(AssistScanError)); // needs CodeBase to identify type names
 
 //	QualifyTypes(CodeBase(), parser.current_scope, parser.current);
 	inbody = parser.IsInBody();

@@ -1,0 +1,19 @@
+struct tm *  _localtime32(                           [SA_Pre(     Null=SA_No)] [SA_Pre(Deref=1,       Valid=SA_Yes,  Access=SA_Read)] const __time32_t * _Time);
+
+   extern char * tzname[2];
+
+
+   void  tzset(void);
+
+
+typedef
+		               
+                 
+EXCEPTION_DISPOSITION
+ __stdcall
+EXCEPTION_ROUTINE (
+                                            struct _EXCEPTION_RECORD *ExceptionRecord,
+                                               PVOID EstablisherFrame,
+                                            struct _CONTEXT *ContextRecord,
+                                               PVOID DispatcherContext
+    );

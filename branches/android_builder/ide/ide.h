@@ -14,6 +14,7 @@
 #include <ide/Debuggers/Debuggers.h>
 #include <TextDiffCtrl/TextDiffCtrl.h>   
 #include <ide/Designers/Designers.h>
+#include <ide/Android/Android.h>
 
 #define LAYOUTFILE <ide/ide.lay>
 #include <CtrlCore/lay.h>

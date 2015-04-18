@@ -94,11 +94,36 @@ void Ide::BuildAndExecute()
 		int time = msecs();
 		One<Host> h = CreateHostRunDir();
 		h->ChDir(Nvl(rundir, GetFileFolder(target)));
+		String targetExt = GetFileExt(target);
 		String cmdline;
-		if(!runexternal)
+		if(!runexternal && targetExt != ".apk")
 			cmdline << '\"' << h->GetHostPath(target) << "\" ";
 		cmdline << ToSystemCharset(runarg);
 		int exitcode;
+		
+		if(targetExt == ".apk") {
+			AndroidSDK androidSDK("/home/klugier/AndroidStudio/sdk");
+			
+			String installApkOnDeviceCmd;
+			installApkOnDeviceCmd << androidSDK.AdbPath();
+			installApkOnDeviceCmd << " -d";
+			installApkOnDeviceCmd << " install " << target;
+			h->Launch(installApkOnDeviceCmd);
+			
+			Apk apk(target, androidSDK);
+			String packageName = apk.FindPackageName();
+			String lauchableActivityName = apk.FindLauchableActivity();
+			if(!packageName.IsEmpty() && !lauchableActivityName.IsEmpty()) {
+				String lauchApkOnDeviceCommand;
+				lauchApkOnDeviceCommand << androidSDK.AdbPath();
+				lauchApkOnDeviceCommand << " shell am start -n";
+				lauchApkOnDeviceCommand << " " << packageName << "/" << lauchableActivityName;
+				h->Launch(lauchApkOnDeviceCommand);
+			}
+			
+			return;
+		}
+		
 		switch(runmode) {
 		case RUN_WINDOW:
 			HideBottom();

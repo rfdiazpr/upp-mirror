@@ -7,7 +7,7 @@ static String jdkPath = "/usr/lib/jvm/java-7-oracle";
 AndroidSDKBuilder::AndroidSDKBuilder() :
 	androidSDK(sdkPath)
 {
-	androidSDK.GetAVDNames();
+	
 }
 
 String AndroidSDKBuilder::GetTargetExt() const
@@ -263,7 +263,6 @@ bool AndroidSDKBuilder::GenerateRFile()
 		aaptCommand << " -J " << GetAndroidProjectDir() << DIR_SEPS << "java";
 		aaptCommand << " -M " << GetAndroidProjectDir() << DIR_SEPS << "AndroidManifest.xml";
 		aaptCommand << " -I " << androidSDK.AndroidJarPath();
-		// TODO: remove android.jar
 		
 		if(Execute(aaptCommand, ss) != 0) {
 			PutConsole(ss.GetResult());

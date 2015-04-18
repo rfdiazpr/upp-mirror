@@ -15,17 +15,17 @@ public:
 	
 	Vector<String> GetAVDNames() const;
 	
+public:
 	String BuildToolsDir() const;
 	String PlatformDir() const;
 	String PlatformToolsDir() const;
 	String ToolsDir() const;
 	
-	// TODO: check if on windows below files contains .exe in their names :(
 	String AaptPath() const       { return BuildToolsDir() + DIR_SEPS + "aapt" + ExecutableExt(); }
 	String DxPath() const         { return BuildToolsDir() + DIR_SEPS + "dx" + ExecutableExt(); }
 	String ZipalignPath() const   { return BuildToolsDir() + DIR_SEPS + "zipalign" + ExecutableExt(); }
 	String AndroidJarPath() const { return PlatformDir() + DIR_SEPS + "android.jar"; }
-	String AdbPath() const        { return PlatformToolsDir() + DIR_SEPS + "" + ExecutableExt(); }
+	String AdbPath() const        { return PlatformToolsDir() + DIR_SEPS + "adb" + ExecutableExt(); }
 	String AndroidPath() const    { return ToolsDir() + DIR_SEPS + "android" + ExecutableExt(); }
 	String EmulatorPath() const   { return ToolsDir() + DIR_SEPS + "emulator" + ExecutableExt(); }
 	
@@ -37,8 +37,34 @@ public:
 protected:
 	String ExecutableExt() const;
 	
-protected:
+private:
 	String path;
+};
+
+class Apk {
+public:
+	Apk(const String& path, AndroidSDK& androidSDK);
+	virtual ~Apk();
+	
+	String FindPackageName() const;
+	String FindLauchableActivity() const;
+	
+private:
+	String FindValueInAndroidManifest(const String& badge, const String& tag) const;
+	String FindBadgeTagValue(const String& badge, const String& tag) const;
+	
+private:
+	String path;
+	AndroidSDK *sdk;
+};
+
+class AndroidManifest {
+public:
+	AndroidManifest();
+	virtual ~AndroidManifest();
+	
+private:
+	
 };
 
 END_UPP_NAMESPACE

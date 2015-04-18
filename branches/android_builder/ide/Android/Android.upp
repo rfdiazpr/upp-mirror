@@ -3,5 +3,7 @@ description "TheIDE - Android SDK uspport module\377B";
 file
 	Android.h,
 	Android readonly separator,
-	AndroidSDK.cpp;
+	AndroidSDK.cpp,
+	Apk.cpp,
+	AndroidManifest.cpp;
 

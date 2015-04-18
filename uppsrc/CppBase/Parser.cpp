@@ -583,7 +583,7 @@ void Parser::Declarator(Decl& d, const char *p)
 		d.isptr = true;
 		return;
 	}
-	if(Key('&')) {
+	if(Key('&') || Key(t_and)) { // t_and is r-value here
 		Declarator(d, p);
 		return;
 	}
@@ -868,7 +868,7 @@ bool Parser::VCAttribute()
 }
 
 bool Parser::TryDecl()
-{
+{ // attempt to interpret code as local variable declaration
 	for(;;) {
 		if(lex[0] == tk_static || lex[0] == tk_const || lex[0] == tk_auto ||
 	       lex[0] == tk_register || lex[0] == tk_volatile)
@@ -883,7 +883,7 @@ bool Parser::TryDecl()
 	   t == tk_long || t == tk_signed || t == tk_unsigned || t == tk_short ||
 	   t == tk_char || t == tk___int8 || t == tk___int16 || t == tk___int32 || t == tk___int64) {
 	    q++;
-		while(lex[q] == '*' || lex[q] == '&')
+		while(lex[q] == '*' || lex[q] == '&' || lex[q] == t_and) // t_and is r-value here
 			q++;
 		if(!lex.IsId(q))
 			return false;
@@ -909,7 +909,7 @@ bool Parser::TryDecl()
 			return false;
 		type << Tparam(q);
 	}
-	while(lex[q] == '*' || lex[q] == '&')
+	while(lex[q] == '*' || lex[q] == '&' || lex[q] == t_and) // t_and is r-value here
 		q++;
 	if(!lex.IsId(q))
 		return false;

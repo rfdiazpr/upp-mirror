@@ -4,6 +4,7 @@ uses
 
 file
 	CppParser.cpp,
+	todo.txt,
 	test4.in,
 	test1.in,
 	test1.out,

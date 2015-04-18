@@ -158,7 +158,7 @@ bool Cpp::Preprocess(const String& sourcefile, Stream& in, const String& current
 	macro.Reserve(1000);
 	segment_id.Clear();
 	segment_id.Reserve(100);
-	Vector<String> ignorelist = Split("__declspec;__cdecl;"
+	Vector<String> ignorelist = Split("__declspec;__cdecl;__attribute__;"
                                       "__out;__in;__inout;__deref_in;__deref_inout;__deref_out;"
                                       "__AuToQuOtE;__xin;__xout;"
                                       "$drv_group;$allowed_on_parameter;__clrcall",
@@ -193,6 +193,7 @@ void Cpp::DoFlatInclude(const String& header_path)
 {
 	if(header_path.GetCount()) {
 		const PPFile& pp = GetFlatPPFile(header_path);
+		LLOG("DoFlatInclude " << header_path << ", " << pp.item.GetCount() << " items");
 		for(int i = 0; i < pp.item.GetCount() && !done; i++) {
 			const PPItem& m = pp.item[i];
 			if(m.type == PP_DEFINES)

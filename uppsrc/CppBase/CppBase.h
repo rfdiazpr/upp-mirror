@@ -347,6 +347,7 @@ struct CppItem {
 	byte           kind;
 	int16          at;
 	bool           virt;
+
 	bool           decla;
 	bool           lvalue;
 	bool           isptr;

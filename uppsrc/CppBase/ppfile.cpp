@@ -3,7 +3,7 @@
 NAMESPACE_UPP
 
 #define LTIMING(x)  RTIMING(x)
-#define LLOG(x)     LOG(x)
+#define LLOG(x)     // LOG(x)
 
 bool IsCPPFile(const String& path)
 {

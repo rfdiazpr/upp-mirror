@@ -9,7 +9,10 @@ void CppItem::Serialize(Stream& s)
 {
 	s % kind % access
 	  % item % name % natural % at % tparam % param % pname
-	  % tname % ctname % type % ptype % virt % line % impl;
+	  % tname % ctname % type % ptype % virt % filetype % file % line % impl;
+	if(s.IsLoading()) {
+		serial = -1;
+	}
 }
 
 struct CmpItem {
@@ -76,12 +79,15 @@ void CppBase::Dump(Stream& s)
 void CppBase::Sweep(const Index<int>& keep_file)
 {
 	int ni = 0;
+	DUMPC(keep_file);
 	while(ni < GetCount()) {
 		Array<CppItem>& n = (*this)[ni];
 		Vector<int> nr;
-		for(int i = 0; i < n.GetCount(); i++)
+		for(int i = 0; i < n.GetCount(); i++) {
+			DDUMP(n[i].file);
 			if(keep_file.Find(n[i].file) < 0)
 				nr.Add(i);
+		}
 		if(nr.GetCount() == n.GetCount())
 			Remove(ni);
 		else {

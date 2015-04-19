@@ -1,19 +1,23 @@
-struct tm *  _localtime32(                           [SA_Pre(     Null=SA_No)] [SA_Pre(Deref=1,       Valid=SA_Yes,  Access=SA_Read)] const __time32_t * _Time);
-
-   extern char * tzname[2];
-
-
-   void  tzset(void);
-
-
-typedef
-		               
-                 
-EXCEPTION_DISPOSITION
- __stdcall
-EXCEPTION_ROUTINE (
-                                            struct _EXCEPTION_RECORD *ExceptionRecord,
-                                               PVOID EstablisherFrame,
-                                            struct _CONTEXT *ContextRecord,
-                                               PVOID DispatcherContext
-    );
+enum
+{
+	INVALID_SOCKET = -1,
+	TCP_NODELAY    = 1,
+	SD_RECEIVE     = 0,
+	SD_SEND        = 1,
+	SD_BOTH        = 2,
+};
+--------------------------
+typedef HMODULE DLLHANDLE;
+--------------------------
+void RichEdit::Pick(RichText  t)
+{
+	Clear();
+	text = pick(t);
+	if(text.GetPartCount() == 0)
+		text.Cat(RichPara());
+	ReadStyles();
+	EndSizeTracking();
+	SetupLanguage(text.GetAllLanguages());
+	Move(0);
+	Update();
+}

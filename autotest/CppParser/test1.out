@@ -1,18 +1,18 @@
 <globals> {
 	FUNCTION Test(), line 1
-	FUNCTION foo(), line 15
 	VARIABLE global, line 13
+	FUNCTION foo(), line 15
 }
 Foo {
-	CONSTRUCTOR Foo(), line 4
 	STRUCT class, line 3
+	CONSTRUCTOR Foo(), line 4
 }
 Point {
-	INSTANCEVARIABLE bar, line 10
-	INSTANCEVARIABLE next, line 9
 	STRUCT struct, line 7
 	INSTANCEVARIABLE x, line 8
 	INSTANCEVARIABLE y, line 8
+	INSTANCEVARIABLE next, line 9
+	INSTANCEVARIABLE bar, line 10
 }
 <locals> {
 x , line: 17

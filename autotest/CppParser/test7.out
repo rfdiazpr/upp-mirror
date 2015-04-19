@@ -1,0 +1,5 @@
+<globals> {
+	FUNCTION __insecure__strlwr_l([SA_Pre(Null,NullTerminated)][SA_Pre(Deref,Valid)][SA_Post(NullTerminated)][SA_Post(Deref,Valid)]char*,[SA_Pre(Null)][SA_Pre(Deref,Valid)][SA_Pre(Deref,Access)]_locale_t), line 1
+}
+<locals> {
+}

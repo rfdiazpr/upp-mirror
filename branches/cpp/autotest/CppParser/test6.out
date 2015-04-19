@@ -1,0 +1,5 @@
+<globals> {
+	FUNCTION test([attribute]const int), line 1
+}
+<locals> {
+}

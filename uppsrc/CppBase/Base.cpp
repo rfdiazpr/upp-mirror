@@ -78,12 +78,10 @@ void CppBase::Dump(Stream& s)
 void CppBase::Sweep(const Index<int>& keep_file)
 {
 	int ni = 0;
-	DUMPC(keep_file);
 	while(ni < GetCount()) {
 		Array<CppItem>& n = (*this)[ni];
 		Vector<int> nr;
 		for(int i = 0; i < n.GetCount(); i++) {
-			DDUMP(n[i].file);
 			if(keep_file.Find(n[i].file) < 0)
 				nr.Add(i);
 		}

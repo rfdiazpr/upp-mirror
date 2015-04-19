@@ -1,4 +1,2 @@
-- FIX invalid used macros issue
-- Optimize Cpp::Do by caching whole headers as combined PPFile
-- Optimize GatherFiles (how?)
-- Optimize Save by checking only dependent files
+shobjidl.h - why is "internal preprocess" not working
+anonymous structures

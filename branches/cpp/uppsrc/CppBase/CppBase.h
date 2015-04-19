@@ -509,6 +509,8 @@ class Parser {
 	void   SetScopeCurrent();
 	void   ScopeBody();
 	void   Do();
+	String AnonymousName();
+	String StructDeclaration(const String& tp, const String& tn);
 
 	CppItem& Item(const String& scope, const String& item, const String& name, bool impl);
 	CppItem& Item(const String& scope, const String& item, const String& name);

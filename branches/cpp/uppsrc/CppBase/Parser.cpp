@@ -1169,6 +1169,118 @@ String Subst(const String& s, const Vector<String>& tpar)
 	return r;
 }
 
+String Parser::AnonymousName()
+{
+	dword x[4];
+	x[0] = Random();
+	x[1] = Random();
+	x[2] = Random();
+	x[3] = Random();
+	return "A@" + Base64Encode(String((const char *)&x, sizeof(x)));
+}
+
+String Parser::StructDeclaration(const String& tp, const String& tn)
+{
+	int t = lex.GetCode(); // t is now struct/class/union
+	context.typenames.FindAdd(lex);
+	Context cc;
+	cc <<= context;
+	CParser p(tp);
+	Vector<String> tpar;
+	if(p.Char('<')) {
+		while(!p.IsEof() && !p.Char('>')) {
+			if((p.Id("class") || p.Id("typename") || p.Id("struct")) && p.IsId()) {
+				tpar.Add(p.ReadId());
+				context.tparam.Add(lex.Id(tpar.Top()));
+			}
+			else
+				context.tparam.Add(0);
+			TpSkip(p);
+			p.Char(',');
+		}
+	}
+	if(Key(t_dblcolon))
+		context.scope = Null;
+	String name;
+	if(lex.IsId())
+		do {
+			context.typenames.FindAdd(lex);
+			name = lex.GetId(); // name of structure
+			if(lex == '<')
+				name << TemplateParams();
+			ScopeCat(context.scope, name);
+		}
+		while(Key(t_dblcolon));
+	else {
+		name = AnonymousName();
+		ScopeCat(context.scope, name);
+	}
+	context.access = t == tk_class ? PRIVATE : PUBLIC;
+	if(tn.GetCount()) {
+		if(context.ctname.GetCount())
+			context.ctname << ';';
+		context.ctname << tn;
+	}
+	String nn;
+	if(!tp.IsEmpty())
+		nn = "template " + tp + " ";
+	String key = (t == tk_class ? "class" : t == tk_union ? "union" : "struct");
+	nn << key << ' ' << name;
+	CppItem& im = Item(context.scope, key, name, lex != ';');
+	im.kind = tp.IsEmpty() ? STRUCT : STRUCTTEMPLATE;
+	im.type = name;
+	im.access = cc.access;
+	im.tname = tn;
+	im.ctname = context.ctname;
+	im.tparam = CleanTp(tp);
+	im.ptype.Clear();
+	im.pname.Clear();
+	im.param.Clear();
+	if(lex == ';') { // TODO: perhaps could be united with following code
+		context = pick(cc);
+		im.natural = Gpurify(nn);
+		SetScopeCurrent();
+		return name;
+	}
+	if(Key(':')) {
+		nn << " : ";
+		bool c = false;
+		do {
+			String access = t == tk_class ? "private" : "public";
+			if(Key(tk_public)) access = "public";
+			else
+			if(Key(tk_protected)) access = "protected";
+			else
+			if(Key(tk_private)) access = "private";
+			if(Key(tk_virtual)) access << " virtual";
+			String h;
+			bool dummy;
+			String n = Name(h, dummy, dummy);
+			ScAdd(im.pname, h);
+			if(c)
+				im.ptype << ';';
+			im.ptype << Subst(n, tpar);
+			ScAdd(im.param, access + ' ' + n);
+			if(c)
+				nn << ", ";
+			nn << access + ' ' + n;
+			c = true;
+		}
+		while(Key(','));
+	}
+	if(Key('{')) {
+		ScopeBody();
+		im.natural = Gpurify(nn);
+		im.decla = true;
+	}
+	else
+		if(IsNull(im.natural))
+			im.natural = Gpurify(nn);
+	context = pick(cc);
+	SetScopeCurrent();
+	return name;
+}
+
 bool Parser::Scope(const String& tp, const String& tn) {
 	if(Key(tk_namespace)) {
 		Check(lex.IsId(), "Expected name of namespace");
@@ -1183,110 +1295,13 @@ bool Parser::Scope(const String& tp, const String& tn) {
 		SetScopeCurrent();
 		return true;
 	}
-	if((lex == tk_class || lex == tk_struct || lex == tk_union) && lex[1] != '{') {
-		int t = lex.GetCode(); // t is now struct/class/union
-		context.typenames.FindAdd(lex);
-		Context cc;
-		cc <<= context;
-		CParser p(tp);
-		Vector<String> tpar;
-		if(p.Char('<')) {
-			while(!p.IsEof() && !p.Char('>')) {
-				if((p.Id("class") || p.Id("typename") || p.Id("struct")) && p.IsId()) {
-					tpar.Add(p.ReadId());
-					context.tparam.Add(lex.Id(tpar.Top()));
-				}
-				else
-					context.tparam.Add(0);
-				TpSkip(p);
-				p.Char(',');
-			}
-		}
-		if(Key(t_dblcolon))
-			context.scope = Null;
-		String name;
-		do {
-			Check(lex.IsId(), "Missing identifier");
-			context.typenames.FindAdd(lex);
-			name = lex.GetId(); // name of structure
-			if(lex == '<')
-				name << TemplateParams();
-			ScopeCat(context.scope, name);
-		}
-		while(Key(t_dblcolon));
-		context.access = t == tk_class ? PRIVATE : PUBLIC;
-		if(tn.GetCount()) {
-			if(context.ctname.GetCount())
-				context.ctname << ';';
-			context.ctname << tn;
-		}
-		String nn;
-		if(!tp.IsEmpty())
-			nn = "template " + tp + " ";
-		String key = (t == tk_class ? "class" : t == tk_union ? "union" : "struct");
-		nn << key << ' ' << name;
-		CppItem& im = Item(context.scope, key, name, lex != ';');
-		im.kind = tp.IsEmpty() ? STRUCT : STRUCTTEMPLATE;
-		im.type = name;
-		im.access = cc.access;
-		im.tname = tn;
-		im.ctname = context.ctname;
-		im.tparam = CleanTp(tp);
-		im.ptype.Clear();
-		im.pname.Clear();
-		im.param.Clear();
-		if(Key(';')) {
-			context = pick(cc);
-			im.natural = Gpurify(nn);
-			SetScopeCurrent();
+	if((lex == tk_class || lex == tk_struct || lex == tk_union)/* && lex[1] != '{'*/) {
+		if(StructDeclaration(tp, tn).GetCount()) {
+			CheckKey(';');
 			return true;
 		}
-		if(Key(':')) {
-			nn << " : ";
-			bool c = false;
-			do {
-				String access = t == tk_class ? "private" : "public";
-				if(Key(tk_public)) access = "public";
-				else
-				if(Key(tk_protected)) access = "protected";
-				else
-				if(Key(tk_private)) access = "private";
-				if(Key(tk_virtual)) access << " virtual";
-				String h;
-				bool dummy;
-				String n = Name(h, dummy, dummy);
-				ScAdd(im.pname, h);
-				if(c)
-					im.ptype << ';';
-				im.ptype << Subst(n, tpar);
-				ScAdd(im.param, access + ' ' + n);
-				if(c)
-					nn << ", ";
-				nn << access + ' ' + n;
-				c = true;
-			}
-			while(Key(','));
-		}
-		if(Key('{')) {
-			ScopeBody();
-			im.natural = Gpurify(nn);
-			im.decla = true;
-		}
-		else
-			if(IsNull(im.natural))
-				im.natural = Gpurify(nn);
-		context = pick(cc);
-		CheckKey(';');
-		SetScopeCurrent();
-		return true;
 	}
 	return false;
-}
-
-String DeTemp(const char *s)
-{
-	String r;
-	return r;
 }
 
 CppItem& Parser::Fn(const Decl& d, const String& templ, bool body,

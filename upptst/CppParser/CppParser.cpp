@@ -30,7 +30,10 @@ void Test(const char *path)
 		const Array<CppItem>& ma = base[i];
 		for(int j = 0; j < ma.GetCount(); j++) {
 			const CppItem& m = ma[j];
-			out << '\t' << CppItemKindAsString(m.kind) << ", name: " << m.name << ", qitem: " << m.qitem << ", line " << m.line << "\n";
+			out << '\t' << CppItemKindAsString(m.kind) << ", name: " << m.name << ", qitem: " << m.qitem << ", qtype: " << m.qtype << ", line " << m.line;
+			if(m.isptr)
+				out << ", pointer";
+			out << "\n";
 		}
 		out << "}\n";
 	}
@@ -54,14 +57,8 @@ void Test(const char *path)
 	LOG("-------------------------------------------------------------------------------");
 }
 
-CONSOLE_APP_MAIN {
+CONSOLE_APP_MAIN
+{
 	StdLogSetup(LOG_COUT|LOG_FILE);
-	Test(GetDataFile("test4.in"));
-	/*
-	FindFile ff(GetDataFile("test1.in"));
-	while(ff) {
-		Test(ff.GetPath());
-		ff.Next();
-	}
-	*/
+	Test(GetDataFile("test.in"));
 }

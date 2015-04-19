@@ -117,14 +117,14 @@ struct Cpp {
 	typedef Cpp CLASSNAME;
 };
 
-enum {
+enum tk_Keywords {
 	Tmarker_before_first = 255,
 #define CPPID(x)   tk_##x,
 #include "keyword.i"
 #undef  CPPID
 };
 
-enum {
+enum t_Terms {
 	t_eof,
 	t_string = -200,
 	t_integer,
@@ -479,15 +479,14 @@ class Parser {
 
 	void   Cv();
 	String TType();
-	String SimpleType(Decla& d);
+	String ReadType(Decla& d, const String& tname, const String& tparam);
 	void   Qualifier();
 	void   ParamList(Decl& d);
 	void   Declarator(Decl& d, const char *p);
 	void   EatInitializers();
-	Decl   Type();
 	void   Vars(Array<Decl>& r, const char *p, bool type_def, bool more);
-	Array<Decl> Declaration0(bool l0 = false, bool more = false);
-	Array<Decl> Declaration(bool l0 = false, bool more = false);
+	Array<Decl> Declaration0(bool l0, bool more, const String& tname, const String& tparam);
+	Array<Decl> Declaration(bool l0/* = false*/, bool more/* = false*/, const String& tname, const String& tparam);
 	bool   IsParamList(int q);
 	void   Elipsis(Decl& d);
 	Decl&  Finish(Decl& d, const char *p);

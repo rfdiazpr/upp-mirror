@@ -6,15 +6,18 @@ void AssistEditor::Annotate(const String& filename)
 	CppBase& base = CodeBase();
 	ClearAnnotations();
 	for(int j = 0; j < base.GetCount(); j++) {
-		const Array<CppItem>& n = base[j];
-		for(int k = 0; k < n.GetCount(); k++) {
-			const CppItem& m = n[k];
-			if(m.file == fi) {
-				String coderef = MakeCodeRef(base.GetKey(j), m.qitem);
-				SetAnnotation(m.line - 1,
-				              GetRefLinks(coderef).GetCount() ? IdeImg::tpp_doc()
-				                                              : IdeImg::tpp_pen(),
-				              coderef);
+		String nest = base.GetKey(j);
+		if(*nest != '@') { // Annotation of anonymous structures not suported
+			const Array<CppItem>& n = base[j];
+			for(int k = 0; k < n.GetCount(); k++) {
+				const CppItem& m = n[k];
+				if(m.file == fi) {
+					String coderef = MakeCodeRef(nest, m.qitem);
+					SetAnnotation(m.line - 1,
+					              GetRefLinks(coderef).GetCount() ? IdeImg::tpp_doc()
+					                                              : IdeImg::tpp_pen(),
+					              coderef);
+				}
 			}
 		}
 	}

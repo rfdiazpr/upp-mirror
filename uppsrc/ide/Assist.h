@@ -198,6 +198,7 @@ struct AssistEditor : CodeEditor, Navigator {
 	void           DCopy();
 	void           Virtuals();
 	void           Thisbacks();
+	void           AssistItemAdd(const String& scope, const CppItem& m, int typei);
 	void           GatherItems(const String& type, bool only_public, Index<String>& in_types,
 	                           bool types);
 

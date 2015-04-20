@@ -172,8 +172,13 @@ Vector<ItemTextPart> ParseItemNatural(const String& name,
 				pari = 0;
 				par = 0;
 			}
-			while(s[n] && !iscid(s[n]))
+			while(s[n] && !iscid(s[n])) {  // Anonymous structure name
+				if(s[n] == '@') {
+					p.len = n;
+					return part;
+				}
 				n++;
+			}
 		}
 		p.len = n;
 		s += n;

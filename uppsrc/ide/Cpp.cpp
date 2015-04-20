@@ -23,13 +23,17 @@ const Array<CppItem>& GetTypeItems(const String& type)
 Vector<String> GetTypeBases(const String& type)
 {
 	const Array<CppItem>& n = GetTypeItems(type);
-	for(int i = 0; i < n.GetCount(); i = FindNext(n, i)) {
+	String bases;
+	for(int i = 0; i < n.GetCount(); i++) {
 		const CppItem& im = n[i];
 		if(im.IsType())
-			return Split(im.qptype, ';');
+			bases << im.qptype << ';';
 	}
-	Vector<String> empty;
-	return empty;
+	Index<String> r;
+	Vector<String> h = Split(bases, ';');
+	for(int i = 0; i < h.GetCount(); i++)
+		r.FindAdd(h[i]);
+	return r.PickKeys();
 }
 
 String ParseTemplatedType(const String& type, Vector<String>& tparam)
@@ -100,6 +104,8 @@ String ResolveTParam(const String& type, const Vector<String>& tparam)
 
 void ResolveTParam(Vector<String>& type, const Vector<String>& tparam)
 {
+	DDUMP(type);
+	DDUMP(tparam);
 	for(int i = 0; i < type.GetCount(); i++)
 		type[i] = ResolveTParam(type[i], tparam);
 }
@@ -123,7 +129,7 @@ void AssistEditor::Context(Parser& parser, int pos)
 	parser.dobody = true;
 	StringStream pin(cpp.output);
 	DDUMP(CodeBase().GetCount());
-	parser.Do(pin, CodeBase(), Null, Null, callback(AssistScanError)); // needs CodeBase to identify type names
+	parser.Do(pin, CodeBase(), Null, Null, GetFileTitle(theide->editfile), callback(AssistScanError)); // needs CodeBase to identify type names
 
 //	QualifyTypes(CodeBase(), parser.current_scope, parser.current);
 	inbody = parser.IsInBody();
@@ -177,7 +183,7 @@ void AssistEditor::ExpressionType(const String& ttype, const Vector<String>& xp,
 		LLOG("id as: " << id);
 	}
 	Index< Tuple2<String, bool> > mtype;
-	for(int i = 0; i < n.GetCount(); i = ::FindNext(n, i)) {
+	for(int i = 0; i < n.GetCount(); i++) {
 		const CppItem& m = n[i];
 		if(m.name == id) {
 			LLOG("Member " << m.qtype << "'" << m.name << "'");
@@ -262,11 +268,19 @@ int CharFilterT(int c)
 	return c >= '0' && c <= '9' ? "TUVWXYZMNO"[c - '0'] : c;
 }
 
+void AssistEditor::AssistItemAdd(const String& scope, const CppItem& m, int typei)
+{
+	CppItemInfo& f = assist_item.Add(m.name);
+	f.typei = typei;
+	f.scope = scope;
+	(CppItem&)f = m;
+}
+
 void AssistEditor::GatherItems(const String& type, bool only_public, Index<String>& in_types, bool types)
 {
-	LLOG("GatherItems " << type);
+	DLOG("GatherItems " << type);
 	if(in_types.Find(type) >= 0) {
-		LLOG("-> recursion, exiting");
+		DLOG("-> recursion, exiting");
 		return;
 	}
 	in_types.Add(type);
@@ -279,32 +293,39 @@ void AssistEditor::GatherItems(const String& type, bool only_public, Index<Strin
 				ntp << "::";
 			int typei = assist_type.FindAdd("<types>");
 			for(int i = 0; i < CodeBase().GetCount(); i++) {
-				String n = CodeBase().GetKey(i);
-				if(n.GetLength() > ntp.GetLength() && memcmp(~ntp, ~n, ntp.GetLength()) == 0) {
+				String nest = CodeBase().GetKey(i);
+				if(nest.GetLength() > ntp.GetLength() && memcmp(~ntp, ~nest, ntp.GetLength()) == 0) {
 					Array<CppItem>& n = CodeBase()[i];
-					for(int i = 0; i < n.GetCount(); i = ::FindNext(n, i)) {
+					for(int i = 0; i < n.GetCount(); i++) {
 						const CppItem& m = n[i];
-						if(m.IsType()) {
-							CppItemInfo& f = assist_item.Add(m.name);
-							f.typei = typei;
-							(CppItem&)f = m;
-							break;
-						}
+						if(m.IsType())
+							AssistItemAdd(nest, m, typei);
 					}
 				}
 			}
 		}
+		DDUMP(CodeBase().GetCount());
+		DDUMP(q);
+		DDUMP(CodeBase().FindNext(q));
+		DDUMP(CodeBase().GetKey(q));
 		const Array<CppItem>& n = CodeBase()[q];
+		DDUMPC(n);
 		String base;
 		int typei = assist_type.FindAdd(ntp);
 		bool op = only_public;
-		for(int i = 0; i < n.GetCount(); i = ::FindNext(n, i))
+		for(int i = 0; i < n.GetCount(); i++)
 			if(n[i].kind == FRIENDCLASS)
 				op = false;
-		for(int i = 0; i < n.GetCount(); i = ::FindNext(n, i)) {
+		for(int i = 0; i < n.GetCount(); i++) {
 			const CppItem& im = n[i];
-			if(im.kind == STRUCT || im.kind == STRUCTTEMPLATE)
-				base = im.qptype;
+			if(im.kind == STRUCT || im.kind == STRUCTTEMPLATE) {
+				DDUMP(i);
+				DDUMP(im.type);
+				DDUMP(im.ptype);
+				DDUMP(im.qptype);
+				DDUMP(&im);
+				base << im.qptype << ';';
+			}
 			if((im.IsCode() || !thisback && (im.IsData() || im.IsMacro() && type == ""))
 			   && (!op || im.access == PUBLIC)) {
 				int q = assist_item.Find(im.name);
@@ -313,15 +334,19 @@ void AssistEditor::GatherItems(const String& type, bool only_public, Index<Strin
 						assist_item[q].over = true;
 					q = assist_item.FindNext(q);
 				}
-				CppItemInfo& f = assist_item.Add(im.name);
-				f.typei = typei;
-				f.scope = ntp;
-				(CppItem&)f = im;
+				AssistItemAdd(ntp, im, typei);
 			}
 		}
 		if(!thisback) {
 			Vector<String> b = Split(base, ';');
+			Index<String> h;
+			for(int i = 0; i < b.GetCount(); i++)
+				h.FindAdd(b[i]);
+			b = h.PickKeys();
+			DDUMP(b);
+			DDUMP(tparam);
 			ResolveTParam(b, tparam);
+			DDUMP(b);
 			for(int i = 0; i < b.GetCount(); i++)
 				if(b[i].GetCount())
 					GatherItems(b[i], only_public, in_types, types);

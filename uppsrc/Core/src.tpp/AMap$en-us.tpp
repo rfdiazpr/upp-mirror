@@ -513,7 +513,7 @@ is not in AMap.&]
 [s4;%- &]
 [s5;:AMap`:`:FindPtr`(const K`&`)const:%- [@(0.0.255) const]_[*@4 T]_`*[* FindPtr]([@(0.0.255) c
 onst]_[*@4 K][@(0.0.255) `&]_[*@3 k])_[@(0.0.255) const]&]
-[s2; Retrieves a constant pointer to value of first element with 
+[s2; Retrieves a constant pointer to value of the first element with 
 the specified key in AMap. If multi`-key ordering is not broken 
 and more than one element with the same value exists in AMap, 
 the lowest position is retrieved. If the element does not exist 
@@ -522,6 +522,17 @@ in AMap, NULL pointer is returned. Unlinked elements are ignored.&]
 [s7; [*/ Return value]-|Pointer to value or NULL pointer if element 
 is not in AMap.&]
 [s3;%- &]
+[s4;%- &]
+[s5;:AMap`:`:FindLastPtr`(const K`&`):%- [*@4 T]_`*[* FindLastPtr]([@(0.0.255) const]_[*@4 K][@(0.0.255) `&
+]_[*@3 k])&]
+[s5;:AMap`:`:FindLastPtr`(const K`&`)const:%- [@(0.0.255) const]_[*@4 T]_`*[* FindLastPtr](
+[@(0.0.255) const]_[*@4 K][@(0.0.255) `&]_[*@3 k])_[@(0.0.255) const]&]
+[s2; Retrieves a constant pointer to value of the last element with 
+the specified key in AMap. If multi`-key ordering is not broken 
+and more than one element with the same value exists in AMap, 
+the greatest position is retrieved. If the element does not exist 
+in AMap, NULL pointer is returned. Unlinked elements are ignored..&]
+[s3; &]
 [s4;%- &]
 [s5;:AMap`:`:UnlinkKey`(const K`&`,unsigned`):%- [@(0.0.255) int]_[* UnlinkKey]([@(0.0.255) c
 onst]_[*@4 K][@(0.0.255) `&]_[*@3 k], [@(0.0.255) unsigned]_[*@3 h])&]

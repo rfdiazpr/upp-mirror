@@ -39,7 +39,7 @@ SrcFile PreProcess(Stream& in) // This is not really C preprocess, only removes 
 				res.text << '\2';
 		}
 		else
-		if(*rm == '\x1a') // line started with macro
+		if(*rm == '\x1f') // line started with macro
 			res.text << '\2';
 		while(*rm == ' ' || *rm == '\t') rm++;
 		if(*rm == '\0')

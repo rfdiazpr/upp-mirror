@@ -339,7 +339,7 @@ struct CppItem {
 	String         tparam;
 	String         param;
 	String         pname;
-	String         ptype;
+	String         ptype; // fn: types of parameters, struct: base classes
 	String         qptype;
 	String         tname;
 	String         ctname;
@@ -377,8 +377,8 @@ struct CppItem {
 String CppItemKindAsString(int kind);
 
 int FindItem(const Array<CppItem>& x, const String& qitem);
-int GetCount(const Array<CppItem>& x, int i);
-int FindNext(const Array<CppItem>& x, int i);
+//int GetCount(const Array<CppItem>& x, int i);
+//int FindNext(const Array<CppItem>& x, int i);
 int FindName(const Array<CppItem>& x, const String& name, int i = 0);
 
 struct CppBase : ArrayMap<String, Array<CppItem> > {
@@ -464,6 +464,7 @@ class Parser {
 	Lex         lex;
 	int         filei;
 	byte        filetype;
+	String      title;
 	bool        inbody;
 
 	Callback2<int, const String&> err;
@@ -571,7 +572,7 @@ public:
 	const SrcFile &getPreprocessedFile() { return file; }
 
 	void  Do(Stream& in, CppBase& _base, int file, int filetype,
-	         Callback2<int, const String&> _err,
+	         const String& title, Callback2<int, const String&> _err,
 	         const Vector<String>& typenames = Vector<String>());
 
 	Parser() : dobody(false) { 	lex.WhenError = THISBACK(ThrowError); }
@@ -608,7 +609,7 @@ String QualifyKey(const CppBase& base, const String& scope, const String& type);
 
 void   Qualify(CppBase& base);
 
-void Parse(Stream& s, CppBase& base, int file, int filetype, Callback2<int, const String&> err);
+void Parse(Stream& s, CppBase& base, int file, int filetype, const String& title, Callback2<int, const String&> err);
 
 END_UPP_NAMESPACE
 

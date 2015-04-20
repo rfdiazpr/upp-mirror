@@ -66,57 +66,59 @@ String Cpp::Expand(const char *s)
 			LTIMING("Expand ID2");
 			ids.FindAdd(id);
 			if(notmacro.Find(id) < 0) {
-				const PPMacro *pp = macro.FindPtr(id);
+				const PPMacro *pp = macro.FindLastPtr(id);
 				int segmenti = pp ? segment_id.Find(pp->segment_id) : -1;
 				const CppMacro *m = FindMacro(id, segment_id, segmenti);
 				if(!m && pp)
 					m = &pp->macro;
 				if(m && m->IsUndef())
 					m = NULL;
-				if(m && !id.StartsWith("__$allowed_on_")) {
+				if(m) {
 					LTIMING("Expand macro");
 					Vector<String> param;
-					const char *s0 = s;
-					while(*s && (byte)*s <= ' ')
-						s++;
-					if(*s == '(') {
-						s++;
-						const char *b = s;
-						int level = 0;
-						for(;;)
-							if(*s == ',' && level == 0) {
-								ParamAdd(param, b, s);
-								s++;
-								b = s;
-							}
-							else
-							if(*s == ')') {
-								s++;
-								if(level == 0) {
-									ParamAdd(param, b, s - 1);
-									break;
+					if(m->param.GetCount()) {
+						const char *s0 = s;
+						while(*s && (byte)*s <= ' ')
+							s++;
+						if(*s == '(') {
+							s++;
+							const char *b = s;
+							int level = 0;
+							for(;;)
+								if(*s == ',' && level == 0) {
+									ParamAdd(param, b, s);
+									s++;
+									b = s;
 								}
-								level--;
-							}
-							else
-							if(*s == '(') {
-								s++;
-								level++;
-							}
-							else
-							if(*s == '\0')
-								break;
-							else
-							if(*s == '\"' || *s == '\'')
-								s = SkipString(s);
-							else
-								s++;
+								else
+								if(*s == ')') {
+									s++;
+									if(level == 0) {
+										ParamAdd(param, b, s - 1);
+										break;
+									}
+									level--;
+								}
+								else
+								if(*s == '(') {
+									s++;
+									level++;
+								}
+								else
+								if(*s == '\0')
+									break;
+								else
+								if(*s == '\"' || *s == '\'')
+									s = SkipString(s);
+								else
+									s++;
+						}
+//						else
+//							s = s0; // otherwise we eat spaces after parameterless macro
 					}
-					else
-						s = s0; // otherwise we eat spaces after parameterless macro
 					int ti = notmacro.GetCount();
 					notmacro.Add(id);
-					id = '\x1a' + Expand(m->Expand(param));
+					id = '\x1f' + Expand(m->Expand(param)); // \x1f is info for Pre that there was a macro expansion
 					notmacro.Trim(ti);
 				}
 				else

@@ -342,7 +342,7 @@ Vector<String> ParseSrc(Stream& in, int file, Callback2<int, const String&> erro
 
 	for(int i = 0; i < pp.GetCount(); i++) {
 		StringStream pin(pp[i]);
-		Parse(pin, CodeBase(), file, filetype, error);
+		Parse(pin, CodeBase(), file, filetype, GetFileName(path), error);
 	}
 	return cm;
 }

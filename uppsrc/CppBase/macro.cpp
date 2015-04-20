@@ -14,7 +14,7 @@ String CppMacro::Define(const char *s)
 	try {
 		if(!p.IsId())
 			return Null;
-		p.NoSkipSpaces(); // '#define TEST(x)' is difference form '#define TEST (x)' - later is parameterless
+		p.NoSkipSpaces().NoSkipComments(); // '#define TEST(x)' is difference form '#define TEST (x)' - later is parameterless
 		id = p.ReadId();
 		param.Clear();
 		if(p.Char('(')) {
@@ -30,7 +30,10 @@ String CppMacro::Define(const char *s)
 				param << '.';
 			p.Char(')');
 		}
-		body = p.GetPtr();
+		const char *b = p.GetPtr();
+		while(!p.IsEof() && !p.IsChar2('/', '/'))
+			p.SkipTerm();
+		body = String(b, p.GetPtr());
 	}
 	catch(CParser::Error) {
 		return Null;

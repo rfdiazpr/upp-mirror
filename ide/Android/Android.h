@@ -43,7 +43,7 @@ private:
 
 class Apk {
 public:
-	Apk(const String& path, AndroidSDK& androidSDK);
+	Apk(const String& path, const AndroidSDK& androidSDK);
 	virtual ~Apk();
 	
 	String FindPackageName() const;
@@ -55,7 +55,7 @@ private:
 	
 private:
 	String path;
-	AndroidSDK *sdk;
+	AndroidSDK sdk;
 };
 
 class AndroidManifest {

@@ -233,6 +233,16 @@ bool AndroidSDKBuilder::Link(const Vector<String>& linkfile, const String& linko
 	return true;
 }
 
+void AndroidSDKBuilder::CleanPackage(const String& package)
+{
+	CppBuilder::CleanPackage(package);
+	
+	String sandboxDir = GetAndroidSandboxDir();
+	Cout() << "Sandbox: " << sandboxDir << "\n";
+	if(DirectoryExists(sandboxDir))
+		DeleteFolderDeep(sandboxDir);
+}
+
 bool AndroidSDKBuilder::MovePackageFileToAndroidProject(const String& packagePath, const String& androidProjectPath)
 {
 	if(!RealizeDirectory(GetFileDirectory(androidProjectPath)))
@@ -277,11 +287,13 @@ bool AndroidSDKBuilder::GenerateRFile()
 
 String AndroidSDKBuilder::GetAndroidSandboxDir() const
 {
+	if(target.IsEmpty())
+		return String();
+		
 	int targetExtLen = GetTargetExt().GetCount();
 	String mainPackageName = GetFileName(target);
 	mainPackageName.Remove(mainPackageName.GetCount() - targetExtLen, targetExtLen);
-	
-	return GetFileFolder(target) + DIR_SEPS + mainPackageName;
+	return GetFileFolder(target) + DIR_SEPS + "Sandbox" + DIR_SEPS + mainPackageName;
 }
 
 String AndroidSDKBuilder::GetAndroidProjectDir() const

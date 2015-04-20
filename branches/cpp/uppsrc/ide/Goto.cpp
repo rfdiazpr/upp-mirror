@@ -247,7 +247,10 @@ bool Ide::SwapSIf(const char *cref)
 	if(cref && MakeCodeRef(p.current_scope, p.current_key) != cref)
 		return false;
 	q = FindItem(n, qitem);
-	int count = q >= 0 ? GetCount(n, q) : 0;
+	int count = 0;
+	for(int i = 0; i < n.GetCount(); i++)
+		if(n[i].qitem == qitem)
+			count++;
 	if(!cref && count < 2) {
 		int typei = -1;
 		for(int i = 0; i < n.GetCount(); i++) {

@@ -933,7 +933,7 @@ void AssistEditor::DCopy()
 	Parser parser;
 	parser.dobody = true;
 	StringStream pin(pp.output);
-	parser.Do(ss, cpp, Null, Null, CNULL, Split(cls, ':'));
+	parser.Do(ss, cpp, Null, Null, Null, CNULL, Split(cls, ':'));
 
 //	QualifyTypes(CodeBase(), parser.current_scope, parser.current);
 //	inbody = parser.IsInBody();

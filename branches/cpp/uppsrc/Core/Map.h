@@ -48,6 +48,9 @@ public:
 	T       *FindPtr(const K& k)       { int i = Find(k); return i >= 0 ? &value[i] : NULL; }
 	const T *FindPtr(const K& k) const { int i = Find(k); return i >= 0 ? &value[i] : NULL; }
 
+	T       *FindLastPtr(const K& k)       { int i = FindLast(k); return i >= 0 ? &value[i] : NULL; }
+	const T *FindLastPtr(const K& k) const { int i = FindLast(k); return i >= 0 ? &value[i] : NULL; }
+
 	void     Unlink(int i)                            { key.Unlink(i); }
 	int      UnlinkKey(const K& k, unsigned h)        { return key.UnlinkKey(k, h); }
 	int      UnlinkKey(const K& k)                    { return key.UnlinkKey(k); }

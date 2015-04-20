@@ -517,7 +517,7 @@ String Parser::TType()
 	return lex.Id();
 }
 
-String Parser::StructDeclaration(const String& tp, const String& tn)
+String Parser::StructDeclaration(const String& tn, const String& tp)
 {
 	int t = lex.GetCode(); // t is now struct/class/union
 	context.typenames.FindAdd(lex);
@@ -594,6 +594,7 @@ String Parser::StructDeclaration(const String& tp, const String& tn)
 			String h;
 			bool dummy;
 			String n = Name(h, dummy, dummy);
+			if(name == "String" || name == "Moveable") DLOG("%%% " << name), DLOG(tpar);
 			ScAdd(im.pname, h);
 			if(c)
 				im.ptype << ';';
@@ -1220,6 +1221,7 @@ CppItem& Parser::Item(const String& scope, const String& item, const String& nam
 		current = CppItem();
 	current_key = item;
 	current_name = name;
+	DDUMP(base->GetAdd(current_scope).GetCount());
 	CppItem& im = dobody ? current : base->GetAdd(current_scope).Add();
 	im.item = item;
 	im.name = name;
@@ -1271,7 +1273,8 @@ String Parser::AnonymousName()
 	x[1] = Random();
 	x[2] = Random();
 	x[3] = Random();
-	return "A@" + Base64Encode(String((const char *)&x, sizeof(x)));
+	
+	return "@" + Base64Encode(String((const char *)&x, sizeof(x))) + "/" + title;
 }
 
 bool Parser::Scope(const String& tp, const String& tn) {
@@ -1568,7 +1571,7 @@ void Parser::Do()
 	}
 }
 
-void Parser::Do(Stream& in, CppBase& _base, int filei_, int filetype_,
+void Parser::Do(Stream& in, CppBase& _base, int filei_, int filetype_, const String& title_,
                 Callback2<int, const String&> _err, const Vector<String>& typenames)
 {
 	LLOG("= C++ Parser ==================================== " << fn);
@@ -1578,6 +1581,7 @@ void Parser::Do(Stream& in, CppBase& _base, int filei_, int filetype_,
 	err = _err;
 	filei = filei_;
 	filetype = filetype_;
+	title = title_;
 	lpos = 0;
 	line = 0;
 	if(whenFnEnd)
@@ -1618,11 +1622,11 @@ void Parser::Do(Stream& in, CppBase& _base, int filei_, int filetype_,
 		}
 }
 
-void Parse(Stream& s, CppBase& base, int file, int filetype, Callback2<int, const String&> _err)
+void Parse(Stream& s, CppBase& base, int file, int filetype, const String& title, Callback2<int, const String&> _err)
 {
 	LTIMING("Parse");
 	Parser p;
-	p.Do(s, base, file, filetype, _err);
+	p.Do(s, base, file, filetype, title, _err);
 }
 
 END_UPP_NAMESPACE

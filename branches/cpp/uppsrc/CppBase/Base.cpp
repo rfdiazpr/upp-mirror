@@ -23,9 +23,9 @@ struct CmpItem {
 
 int FindItem(const Array<CppItem>& x, const String& qitem)
 {
-	int q = FindLowerBound(x, qitem, CmpItem());
-	if(q < x.GetCount() && x[q].qitem == qitem)
-		return q;
+	for(int i = 0; i < x.GetCount(); i++)
+		if(x[i].qitem == qitem)
+			return i;
 	return -1;
 }
 

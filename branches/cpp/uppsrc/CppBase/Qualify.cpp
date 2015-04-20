@@ -8,7 +8,7 @@ NAMESPACE_UPP
 bool DoQualify(Scopefo& nf, const String& type, String& qt);
 
 bool Qualify0(Scopefo& nf, const String& type, String& qt)
-{
+{ // Qualify single type based on scoping information
 	const Vector<String>& nd = nf.GetScopes();
 	if(nd.GetCount()) {
 		LTIMING("First test");
@@ -199,7 +199,7 @@ void QualifyTypes(CppBase& base, const String& scope, CppItem& m)
 }
 
 void QualifyPass1(CppBase& base)
-{
+{ // Qualify types
 	LTIMING("QualifyPass1");
 	for(int ni = 0; ni < base.GetCount(); ni++) {
 		Array<CppItem>& n = base[ni];
@@ -210,13 +210,13 @@ void QualifyPass1(CppBase& base)
 				m.serial = base.serial;
 				if(m.qualify_type) {
 					m.qualify_type = false;
-					m.qtype = QualifyIds(nf, m.type, true);
+					m.qtype = QualifyIds(nf, m.type, true); // type of item, now qualified (probaly already was)
 				}
 				if(m.qualify_param) {
 					m.qualify_param = false;
-					m.qptype = QualifyIds(nf, m.ptype, true);
+					m.qptype = QualifyIds(nf, m.ptype, true); // base classes
 				}
-				m.qitem = m.item;
+				m.qitem = m.item; // name of item is already qualified
 			}
 			//LLOG(base.GetKey(ni) << "." << m.item << " " << GetCppFile(m.file) << '(' << m.line << ") "
 			//     << AsCString(m.natural)
@@ -227,7 +227,7 @@ void QualifyPass1(CppBase& base)
 }
 
 void QualifyPass2(CppBase& base)
-{
+{ // Qualify function parameters
 	LTIMING("QualifyPass2");
 	for(int ni = 0; ni < base.GetCount(); ni++) {
 		Array<CppItem>& n = base[ni];
@@ -275,7 +275,7 @@ void   Qualify(CppBase& base)
 	}
 	String c5 = md5.FinishString();
 	if(c5 != base.serial_md5) {
-		base.serial++;
+		base.serial++; // TODO: Is this necessary?
 		base.serial_md5 = c5;
 	}
 	QualifyPass1(base);

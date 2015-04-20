@@ -2,6 +2,19 @@
 
 #define LTIMING(x) // RTIMING(x)
 
+String FormatNest(const String& nest)
+{
+	if(nest.StartsWith("@")) {
+		String h = "[anonymous] (";
+		int q = nest.ReverseFind('/');
+		if(q >= 0)
+			h << nest.Mid(q + 1);
+		h << ")";
+		return h;
+	}
+	return nest;
+}
+
 int CharFilterNavigator(int c)
 {
 	return c == ':' ? '.' : IsAlNum(c) || c == '_' || c == '.' ? ToUpper(c) : 0;
@@ -328,8 +341,9 @@ int Navigator::NavigatorDisplay::DoPaint(Draw& w, const Rect& r, const Value& q,
 		                                    : SColorFace);
 		if(m.kind == KIND_FILE)
 			return PaintFileName(w, r, m.type, ink);
-		w.DrawText(x, y, m.type, StdFont().Bold(), ink);
-		return GetTextSize(m.type, StdFont().Bold()).cx;
+		String h = FormatNest(m.type);
+		w.DrawText(x, y, h, StdFont().Bold(), ink);
+		return GetTextSize(h, StdFont().Bold()).cx;
 	}
 	
 	w.DrawRect(r, paper);
@@ -477,13 +491,13 @@ void Navigator::Search()
 		bool local = sorting && IsNull(s);
 		for(int i = 0; i < b.GetCount(); i++) {
 			String nest = b.GetKey(i);
-			bool foundnest = wholeclass ? ToUpper(nest) == search_nest
-			                            : ToUpper(nest).Find(search_nest) >= 0;
+			bool foundnest = (wholeclass ? ToUpper(nest) == search_nest
+			                             : ToUpper(nest).Find(search_nest) >= 0) && *nest != '@';
 			if(local || foundnest || both) {
 				const Array<CppItem>& ci = b[i];
 				for(int j = 0; j < ci.GetCount(); j++) {
 					const CppItem& m = ci[j];
-					if(local ? m.file == fileii : m.uname.Find(search_name) >= 0 || both && foundnest) {
+					if(local ? m.file == fileii : *m.uname != '@' && m.uname.Find(search_name) >= 0 || both && foundnest) {
 						String key = nest + '\1' + m.qitem;
 						int q = imap.Find(key);
 						if(q < 0) {
@@ -553,6 +567,8 @@ int Navigator::ScopeDisplay::DoPaint(Draw& w, const Rect& r, const Value& q, Col
 	String h = q;
 	if(*h == '\xff')
 		return PaintFileName(w, r, h, ink);
+	else
+		h = FormatNest(h);
 	w.DrawText(r.left, r.top, h, StdFont().Bold(), ink);
 	return GetTextSize(h, StdFont().Bold()).cx;
 }
@@ -584,7 +600,7 @@ void Navigator::Scope()
 		if(all) {
 			NavItem& m = nest_item.Add();
 			m.kind = kind;
-			m.type = grp;
+			m.type = FormatNest(grp);
 			litem.Add(&m);
 		}
 		else

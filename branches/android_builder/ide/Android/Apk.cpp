@@ -2,10 +2,10 @@
 
 NAMESPACE_UPP
 
-Apk::Apk(const String& path, AndroidSDK& androidSDK)
+Apk::Apk(const String& path, const AndroidSDK& androidSDK)
 {
 	this->path = path;
-	this->sdk = &androidSDK;
+	this->sdk = androidSDK;
 }
 
 Apk::~Apk()
@@ -26,7 +26,7 @@ String Apk::FindLauchableActivity() const
 String Apk::FindValueInAndroidManifest(const String& badge, const String& tag) const
 {
 	String out;
-	if(Sys(sdk->AaptPath() + " dump badging " + path + " AndroidManifest.xml", out) == 0) {
+	if(Sys(sdk.AaptPath() + " dump badging " + path + " AndroidManifest.xml", out) == 0) {
 		Vector<String> lines = Split(out, '\n');
 		for(int i = 0; i < lines.GetCount(); i++) {	
 			if(lines[i].Find(badge) >= 0)

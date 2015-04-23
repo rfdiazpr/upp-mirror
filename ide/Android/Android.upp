@@ -4,6 +4,7 @@ file
 	Android.h,
 	Android readonly separator,
 	AndroidSDK.cpp,
+	AndroidNDK.cpp,
 	Apk.cpp,
 	AndroidManifest.cpp;
 

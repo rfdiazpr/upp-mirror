@@ -41,6 +41,25 @@ private:
 	String path;
 };
 
+class AndroidNDK {
+public:
+	AndroidNDK();
+	AndroidNDK(const String& path);
+	
+public:
+	// TODO: MS Windows exe.
+	String NdkBuildPath() const { return path + DIR_SEPS + "ndk-build"; }
+	
+public:
+	String GetPath() const { return this->path; }
+	
+	void SetPath(const String& path) { this->path = path; }
+	
+private:
+	String path;
+	
+};
+
 class Apk {
 public:
 	Apk(const String& path, const AndroidSDK& androidSDK);

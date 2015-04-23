@@ -58,11 +58,11 @@ String Cpp::Expand(const char *s)
 		else
 		if(iscib(*s)) {
 			LTIMING("Expand ID");
-			const char *b = s;
+			const char *bid = s;
 			s++;
 			while(iscid(*s))
 				s++;
-			String id(b, s);
+			String id(bid, s);
 			LTIMING("Expand ID2");
 			ids.FindAdd(id);
 			if(notmacro.Find(id) < 0) {
@@ -105,16 +105,16 @@ String Cpp::Expand(const char *s)
 									level++;
 								}
 								else
-								if(*s == '\0')
-									break;
+								if(*s == '\0') { // macro use spread into more lines
+									prefix_macro = bid;
+									return r;
+								}
 								else
 								if(*s == '\"' || *s == '\'')
 									s = SkipString(s);
 								else
 									s++;
 						}
-//						else
-//							s = s0; // otherwise we eat spaces after parameterless macro
 					}
 					int ti = notmacro.GetCount();
 					notmacro.Add(id);
@@ -263,6 +263,7 @@ void Cpp::Do(const String& sourcefile, Stream& in, const String& currentfile,
 	if(!get_macros) {
 		LTIMING("Expand");
 		incomment = false;
+		prefix_macro.Clear();
 		StringBuffer result;
 		result.Clear();
 		result.Reserve(16384);
@@ -271,7 +272,8 @@ void Cpp::Do(const String& sourcefile, Stream& in, const String& currentfile,
 		int segment_serial = 0;
 		segment_id.Add(--segment_serial);
 		while(!in.IsEof()) {
-			String l = in.GetLine();
+			String l = prefix_macro + in.GetLine();
+			prefix_macro.Clear();
 			lineno++;
 			int el = 0;
 			while(*l.Last() == '\\' && !in.IsEof()) {

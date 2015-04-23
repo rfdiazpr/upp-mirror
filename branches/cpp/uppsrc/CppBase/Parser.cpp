@@ -1268,6 +1268,18 @@ void Parser::ScopeBody()
 
 String Parser::AnonymousName()
 {
+	int lvl = 0;
+	for(int i = 0; lex[i] != t_eof; i++) {
+		if(lex[i] == '{') lvl++;
+		else
+		if(lex[i] == '}')
+			if(--lvl == 0) {
+				if(lex.IsId(i + 1))
+					return "." + lex.Id(i + 1);
+				break;
+			}
+	}
+
 	dword x[4];
 	x[0] = Random();
 	x[1] = Random();

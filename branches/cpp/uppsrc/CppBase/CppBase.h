@@ -91,6 +91,7 @@ struct Cpp {
 	VectorMap<String, PPMacro>  macro; // macros defined
 	int                         std_macros; // standard macros (keywords and trick - fixed)
 	Index<String>               notmacro; // accelerator / expanding helper
+	String                      prefix_macro; // for handling multiline macros
 
 	String                      output; // preprocessed file
 //	Index<String>               usedmacro;

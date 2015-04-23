@@ -515,8 +515,10 @@ void Navigator::Search()
 						else {
 							NavItem& mm = imap[q];
 							String n = mm.natural;
-							if(m.natural.GetCount() > mm.natural.GetCount())
-								mm.natural = m.natural;
+//							if(m.natural.GetCount() > mm.natural.GetCount()) {
+//								mm.natural = m.natural;
+//								mm.at = m.at;
+//							}
 							if(!m.impl &&
 							  (!mm.decl
 							    || CombineCompare(mm.decl_file, m.file)(mm.decl_line, m.line) < 0)) {

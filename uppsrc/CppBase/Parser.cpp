@@ -622,7 +622,7 @@ String Parser::StructDeclaration(const String& tn, const String& tp)
 
 String Parser::ReadType(Decla& d, const String& tname, const String& tparam)
 { // returns the name of constructor
-	if(findarg((int)lex, tk_struct, tk_class, tk_union) >= 0) {
+	if(findarg((int)lex, tk_struct, tk_class, tk_union) >= 0 && !d.isfriend) {
 		d.type = StructDeclaration(tname, tparam);
 		return String();
 	}
@@ -1387,6 +1387,36 @@ CppItem& Parser::Fn(const Decl& d, const String& templ, bool body,
 	return im;
 }
 
+void Parser::Enum()
+{
+	String name;
+	if(lex.IsId())
+		name = lex.GetId();
+	if(Key('{')) {
+		for(;;) {
+			Line();
+			String val;
+			Check(lex.IsId(), "Expected identifier");
+			String id = lex.GetId();
+			CppItem& im = Item(context.scope, id, id);
+			im.natural = "enum ";
+			if(!IsNull(name))
+				im.natural << name << ' ';
+			im.natural << id;
+			if(Key('='))
+				im.natural << " = " << Constant();
+			im.kind = ENUM;
+			im.access = context.access;
+			Key(',');
+			if(Key('}')) break;
+		}
+	}
+	if(lex.IsId()) // typedef name ignored here
+		++lex;
+	Key(';');
+	SetScopeCurrent();
+}
+
 void Parser::Do()
 {
 	LLOG("Do, scope: " << current_scope);
@@ -1452,30 +1482,13 @@ void Parser::Do()
 	else
 	if(lex == tk_enum && (lex[1] == '{' || lex[2] == '{')) {
 		++lex;
-		String name;
-		if(lex.IsId())
-			name = lex.GetId();
-		if(Key('{')) {
-			for(;;) {
-				Line();
-				String val;
-				Check(lex.IsId(), "Expected identifier");
-				String id = lex.GetId();
-				CppItem& im = Item(context.scope, id, id);
-				im.natural = "enum ";
-				if(!IsNull(name))
-					im.natural << name << ' ';
-				im.natural << id;
-				if(Key('='))
-					im.natural << " = " << Constant();
-				im.kind = ENUM;
-				im.access = context.access;
-				Key(',');
-				if(Key('}')) break;
-			}
-		}
-		Key(';');
-		SetScopeCurrent();
+		Enum();
+	}
+	else
+	if(lex == tk_typedef && lex[1] == tk_enum && (lex[2] == '{' || lex[3] == '{')) {
+		++lex;
+		++lex;
+		Enum();
 	}
 	else
 	if(Key('#')) {

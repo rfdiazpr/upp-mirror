@@ -511,6 +511,7 @@ class Parser {
 	void   Do();
 	String AnonymousName();
 	String StructDeclaration(const String& tp, const String& tn);
+	void   Enum();
 
 	CppItem& Item(const String& scope, const String& item, const String& name, bool impl);
 	CppItem& Item(const String& scope, const String& item, const String& name);

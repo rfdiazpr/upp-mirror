@@ -104,8 +104,6 @@ String ResolveTParam(const String& type, const Vector<String>& tparam)
 
 void ResolveTParam(Vector<String>& type, const Vector<String>& tparam)
 {
-	DDUMP(type);
-	DDUMP(tparam);
 	for(int i = 0; i < type.GetCount(); i++)
 		type[i] = ResolveTParam(type[i], tparam);
 }
@@ -271,12 +269,13 @@ int CharFilterT(int c)
 void AssistEditor::AssistItemAdd(const String& scope, const CppItem& m, int typei)
 {
 	CppItemInfo& f = assist_item.Add(m.name);
+	DDUMP(m.qitem);
 	f.typei = typei;
 	f.scope = scope;
 	(CppItem&)f = m;
 }
 
-void AssistEditor::GatherItems(const String& type, bool only_public, Index<String>& in_types, bool types)
+void AssistEditor::GatherItems0(const String& type, bool only_public, Index<String>& in_types, bool types)
 {
 	DLOG("GatherItems " << type);
 	if(in_types.Find(type) >= 0) {
@@ -309,7 +308,6 @@ void AssistEditor::GatherItems(const String& type, bool only_public, Index<Strin
 		DDUMP(CodeBase().FindNext(q));
 		DDUMP(CodeBase().GetKey(q));
 		const Array<CppItem>& n = CodeBase()[q];
-		DDUMPC(n);
 		String base;
 		int typei = assist_type.FindAdd(ntp);
 		bool op = only_public;
@@ -320,10 +318,7 @@ void AssistEditor::GatherItems(const String& type, bool only_public, Index<Strin
 			const CppItem& im = n[i];
 			if(im.kind == STRUCT || im.kind == STRUCTTEMPLATE) {
 				DDUMP(i);
-				DDUMP(im.type);
-				DDUMP(im.ptype);
-				DDUMP(im.qptype);
-				DDUMP(&im);
+				DDUMP(im);
 				base << im.qptype << ';';
 			}
 			if((im.IsCode() || !thisback && (im.IsData() || im.IsMacro() && type == ""))
@@ -338,6 +333,7 @@ void AssistEditor::GatherItems(const String& type, bool only_public, Index<Strin
 			}
 		}
 		if(!thisback) {
+			DDUMP(base);
 			Vector<String> b = Split(base, ';');
 			Index<String> h;
 			for(int i = 0; i < b.GetCount(); i++)
@@ -349,8 +345,32 @@ void AssistEditor::GatherItems(const String& type, bool only_public, Index<Strin
 			DDUMP(b);
 			for(int i = 0; i < b.GetCount(); i++)
 				if(b[i].GetCount())
-					GatherItems(b[i], only_public, in_types, types);
+					GatherItems0(b[i], only_public, in_types, types);
 		}
 	}
 	in_types.Drop();
+}
+
+bool OrderAssistItems(const CppItemInfo& a, const CppItemInfo& b)
+{
+	if(a.impl != b.impl)
+		return b.impl;
+	return a.qitem < b.qitem;
+}
+
+void AssistEditor::GatherItems(const String& type, bool only_public, Index<String>& in_types, bool types)
+{
+	int i0 = assist_item.GetCount();
+	GatherItems0(type, only_public, in_types, types);
+	StableSort(assist_item.Begin() + i0, assist_item.End(), OrderAssistItems);
+	Vector<int> remove;
+	int i = i0;
+	while(i < assist_item.GetCount()) {
+		int ii = i;
+		i++;
+		while(i < assist_item.GetCount() && assist_item[i].qitem == assist_item[ii].qitem)
+			remove.Add(i++);
+			i++;
+	}
+	assist_item.Remove(remove);
 }

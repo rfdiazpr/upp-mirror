@@ -185,28 +185,33 @@ private:
 	bool script_error;
 };
 
-class AndroidSDKBuilder : public CppBuilder {
+class AndroidBuilder : public CppBuilder {
 public:
-	AndroidSDKBuilder();
+	AndroidBuilder();
 	
 	String GetTargetExt() const;
 	
-	virtual bool   BuildPackage(const String& packageName, Vector<String>& linkfile, Vector<String>&, String& linkoptions,
+	virtual bool BuildPackage(const String& packageName, Vector<String>& linkfile, Vector<String>&, String& linkoptions,
 		const Vector<String>& all_uses, const Vector<String>& all_libraries, int optimize);
-	virtual bool   Link(const Vector<String>& linkfile, const String& linkoptions, bool createmap);
-	virtual void   CleanPackage(const String& package);
+	virtual bool Link(const Vector<String>& linkfile, const String& linkoptions, bool createmap);
+	virtual void CleanPackage(const String& package);
 	
 protected:
 	bool MovePackageFileToAndroidProject(const String& packagePath, const String& androidProjectPath); 
 	bool RealizePackageSourcesDirectory(const String& packageName);
 
 protected:
+	void GeneratePackageMakeFile();
+	void GenerateApplicationMakeFile();
+	
 	bool PreprocesAndroidManifest();
 	bool GenerateRFile();
 	
+protected:
 	String GetAndroidSandboxDir() const;
 	String GetAndroidProjectDir() const;
-	String GetAndroidProjectSourcesDir() const;
+	String GetAndroidProjectJavaSourcesDir() const;
+	String GetAndroidProjectJniSourcesDir() const;
 	String GetAndroidProjectResourcesDir() const;
 	String GetAndroidProjectBuildDir() const;
 	String GetAndroidProjectClassesDir() const;
@@ -219,6 +224,7 @@ protected:
 	
 protected:
 	AndroidSDK androidSDK;
+	AndroidNDK androidNDK;
 	
 };
 

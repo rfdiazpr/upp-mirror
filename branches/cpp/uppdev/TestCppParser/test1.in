@@ -1,11 +1,12 @@
-enum Alpha {
-	FOO, BAR
-};
-
-typedef enum {
-	FOO, BAR
-} Beta;
-
-typedef enum Gamma {
-	FOO, BAR
-} Gamma;
+typedef struct {
+	int x;
+	struct Foo {
+		int a;
+	} y;
+	struct {
+		int bar;
+	};
+	struct {
+		int foo;
+	} quack;
+} name;

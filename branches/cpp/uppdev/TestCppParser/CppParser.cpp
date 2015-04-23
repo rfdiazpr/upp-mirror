@@ -31,7 +31,7 @@ void Test(const char *path)
 		for(int j = 0; j < ma.GetCount(); j++) {
 			const CppItem& m = ma[j];
 			out << '\t' << CppItemKindAsString(m.kind) << ", name: " << m.name << ", qitem: " << m.qitem
-			            << ", qptype: " << m.qptype << ", line " << m.line << "\n";
+			            << ", qtype " << m.qtype << ", qptype: " << m.qptype << ", line " << m.line << "\n";
 		}
 		out << "}\n";
 	}

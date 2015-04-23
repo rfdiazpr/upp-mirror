@@ -9,6 +9,9 @@ bool DoQualify(Scopefo& nf, const String& type, String& qt);
 
 bool Qualify0(Scopefo& nf, const String& type, String& qt)
 { // Qualify single type based on scoping information
+	if(type == "TextCtrl") {
+		DDUMP(nf.GetBases());
+	}
 	const Vector<String>& nd = nf.GetScopes();
 	if(nd.GetCount()) {
 		LTIMING("First test");

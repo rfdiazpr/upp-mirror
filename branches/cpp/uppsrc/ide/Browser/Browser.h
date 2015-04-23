@@ -77,7 +77,7 @@ struct CppItemInfo : CppItem {
 	bool   overed;
 	int    inherited;
 	int    typei;
-
+	
 	CppItemInfo() { over = overed = virt = false; inherited = line = 0; }
 };
 

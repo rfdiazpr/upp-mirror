@@ -116,7 +116,7 @@ void Ide::BuildAndExecute()
 			if(!packageName.IsEmpty() && !lauchableActivityName.IsEmpty()) {
 				String lauchApkOnDeviceCmd;
 				lauchApkOnDeviceCmd << androidSDK.AdbPath();
-				lauchApkOnDeviceCmd << " shell am start -n";
+				lauchApkOnDeviceCmd << " logcat shell am start -n";
 				lauchApkOnDeviceCmd << " " << packageName << "/" << lauchableActivityName;
 				h->Launch(lauchApkOnDeviceCmd);
 			}

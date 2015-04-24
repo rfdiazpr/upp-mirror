@@ -203,6 +203,7 @@ protected:
 protected:
 	void GeneratePackageMakeFile();
 	void GenerateApplicationMakeFile();
+	bool AddSharedLibsToApk(const String& apkPath);
 	
 	bool PreprocesAndroidManifest();
 	bool GenerateRFile();
@@ -212,6 +213,7 @@ protected:
 	String GetAndroidProjectDir() const;
 	String GetAndroidProjectJavaSourcesDir() const;
 	String GetAndroidProjectJniSourcesDir() const;
+	String GetAndroidProjectLibsDir() const;
 	String GetAndroidProjectResourcesDir() const;
 	String GetAndroidProjectBuildDir() const;
 	String GetAndroidProjectClassesDir() const;

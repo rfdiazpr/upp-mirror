@@ -194,7 +194,16 @@ bool AndroidBuilder::Link(const Vector<String>& linkfile, const String& linkopti
 	
 	// Now, we are going to start compiling c/c++ sources
 	if(DirectoryExists(GetAndroidProjectJniSourcesDir())) {
+		PutConsole("Compiling native sources...");
 		GenerateApplicationMakeFile();
+		
+		String ndkBuildCmd;
+		ndkBuildCmd << androidNDK.NdkBuildPath();
+		ndkBuildCmd << " -C " << GetAndroidProjectDir();
+		if(Execute(ndkBuildCmd, ss) != 0 ){
+			PutConsole(ss.GetResult());
+			return false;
+		}
 	}
 	
 	PutConsole("Creating dex file...");
@@ -225,6 +234,12 @@ bool AndroidBuilder::Link(const Vector<String>& linkfile, const String& linkopti
 	if(Execute(apkCmd, ss) != 0) {
 		PutConsole(ss.GetResult());
 		return false;
+	}
+	
+	if(DirectoryExists(GetAndroidProjectLibsDir())) {
+		PutConsole("Adding native libraries to apk...");
+		if(!AddSharedLibsToApk(unsignedApkPath))
+			return false;
 	}
 	
 	// In release mode we definitly shouldn't signing apk!!!
@@ -304,6 +319,49 @@ void AndroidBuilder::GeneratePackageMakeFile()
 	
 }
 
+bool AndroidBuilder::AddSharedLibsToApk(const String& apkPath)
+{
+	// TODO: A little bit workearound (I know one thing that shared libs should be in "lib" directory not in "libs")
+	// So, we need to create temporary lib directory with .so files :(
+	const String androidProjectDir = GetAndroidProjectDir();
+	const String libsDir = GetAndroidProjectLibsDir();
+	
+	Vector <String> sharedLibsToAdd;
+	for(FindFile ff(AppendFileName (libsDir, "*")); ff; ff.Next ()) {
+		if (!ff.IsHidden () && !ff.IsSymLink () && ff.IsDirectory()) {
+			for(FindFile ffa(AppendFileName (ff.GetPath(), "*")); ffa; ffa.Next ()) {
+				if(!ffa.IsHidden() && !ffa.IsSymLink() && !ffa.IsDirectory()) {
+					// TODO: in libs directory we can find another java libs (.jar)
+					String fileExt = ToLower(GetFileExt(ffa.GetPath()));
+					if(fileExt == ".so") {
+						const String libPath = String("lib") + DIR_SEPS + ff.GetName() + DIR_SEPS + ffa.GetName();
+						const String destPath = androidProjectDir + DIR_SEPS + libPath;
+						if(!RealizePath(destPath) || !FileCopy(ffa.GetPath(), destPath))
+							return false;
+						sharedLibsToAdd.Add(libPath);
+					}
+				}
+			}
+		}
+	}
+	
+	ChDir(androidProjectDir);	
+	String aaptAddCmd;
+	aaptAddCmd << androidSDK.AaptPath() << " add " << apkPath;
+	for(int i = 0; i < sharedLibsToAdd.GetCount(); i++)
+		aaptAddCmd << " " << sharedLibsToAdd[i];
+	// PutConsole(aaptAddCmd);
+	StringStream ss;
+	if(Execute(aaptAddCmd, ss) != 0) {
+		PutConsole(ss.GetResult());
+		return false;
+	}
+	if(!DeleteFolderDeep(androidProjectDir + DIR_SEPS + "lib"))
+		return false;
+	
+	return true;
+}
+
 void AndroidBuilder::GenerateApplicationMakeFile()
 {
 	// TODO: developer should decide which platfor she/he wants to build.
@@ -370,6 +428,11 @@ String AndroidBuilder::GetAndroidProjectJavaSourcesDir() const
 String AndroidBuilder::GetAndroidProjectJniSourcesDir() const
 {
 	return GetAndroidProjectDir() + DIR_SEPS + "jni";
+}
+
+String AndroidBuilder::GetAndroidProjectLibsDir() const
+{
+	return GetAndroidProjectDir() + DIR_SEPS + "libs";
 }
 
 String AndroidBuilder::GetAndroidProjectResourcesDir() const

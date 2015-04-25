@@ -1293,6 +1293,7 @@ bool Parser::Scope(const String& tp, const String& tn) {
 	if(Key(tk_namespace)) {
 		Check(lex.IsId(), "Expected name of namespace");
 		String name = lex.GetId();
+		ScopeCat(context.scope, name);
 		if(Key('{')) {
 			Context cc;
 			cc <<= context;

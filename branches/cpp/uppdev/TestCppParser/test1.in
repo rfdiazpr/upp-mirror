@@ -1,12 +1,9 @@
-typedef struct {
-	int x;
-	struct Foo {
-		int a;
-	} y;
-	struct {
-		int bar;
-	};
-	struct {
-		int foo;
-	} quack;
-} name;
+
+[source_annotation_attribute(  Parameter )]   struct OnParameterOnly { const char* ignored; };  typedef struct OnParameterOnly OnParameterOnly;;
+
+
+typedef enum _POWER_REQUEST_TYPE {
+    PowerRequestDisplayRequired,
+    PowerRequestSystemRequired,
+    PowerRequestAwayModeRequired
+} POWER_REQUEST_TYPE, *PPOWER_REQUEST_TYPE;

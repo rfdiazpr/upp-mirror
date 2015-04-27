@@ -127,7 +127,8 @@ void AssistEditor::Context(Parser& parser, int pos)
 	parser.dobody = true;
 	StringStream pin(cpp.output);
 	DDUMP(CodeBase().GetCount());
-	parser.Do(pin, CodeBase(), Null, Null, GetFileTitle(theide->editfile), callback(AssistScanError)); // needs CodeBase to identify type names
+	parser.Do(pin, CodeBase(), Null, Null, GetFileTitle(theide->editfile), callback(AssistScanError),
+	          Vector<String>(), cpp.namespace_stack, cpp.namespace_using); // needs CodeBase to identify type names
 
 //	QualifyTypes(CodeBase(), parser.current_scope, parser.current);
 	inbody = parser.IsInBody();

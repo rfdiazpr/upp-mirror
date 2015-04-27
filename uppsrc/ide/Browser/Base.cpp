@@ -294,6 +294,7 @@ Vector<String> ParseSrc(Stream& in, int file, Callback2<int, const String&> erro
 	String ext = ToLower(GetFileExt(path));
 	int filetype = FILE_OTHER;
 	SourceFileInfo& sfi = source_file[file];
+	Cpp cpp;
 	bool b = false;
 	if(ext == ".lay")
 		pp.Add(PreprocessLayFile(path));
@@ -304,7 +305,6 @@ Vector<String> ParseSrc(Stream& in, int file, Callback2<int, const String&> erro
 	if(ext == ".sch")
 		pp.Append(PreprocessSchFile(path));
 	else {
-		Cpp cpp;
 		cpp.Preprocess(path, in, GetMasterFile(GetSourceFilePath(file)));
 		LLOG(path << ": " << cpp.ids.GetCount());
 		LDUMP(cpp.ids);
@@ -342,7 +342,9 @@ Vector<String> ParseSrc(Stream& in, int file, Callback2<int, const String&> erro
 
 	for(int i = 0; i < pp.GetCount(); i++) {
 		StringStream pin(pp[i]);
-		Parse(pin, CodeBase(), file, filetype, GetFileName(path), error);
+		Parser p;
+		p.Do(pin, CodeBase(), file, filetype, GetFileName(path), error, Vector<String>(),
+		     cpp.namespace_stack, cpp.namespace_using);
 	}
 	return cm;
 }

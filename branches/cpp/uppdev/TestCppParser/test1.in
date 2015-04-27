@@ -1,9 +1,16 @@
+using namespace std;
 
-[source_annotation_attribute(  Parameter )]   struct OnParameterOnly { const char* ignored; };  typedef struct OnParameterOnly OnParameterOnly;;
+struct Xxx {
+	int x;
+};
 
+namespace Test {
+	using namespace Upp;
+	struct Alpha {
+		int x;
+	} goo;
+};
 
-typedef enum _POWER_REQUEST_TYPE {
-    PowerRequestDisplayRequired,
-    PowerRequestSystemRequired,
-    PowerRequestAwayModeRequired
-} POWER_REQUEST_TYPE, *PPOWER_REQUEST_TYPE;
+struct Beta {
+	int a, v, c;
+};

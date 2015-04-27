@@ -280,10 +280,11 @@ inline void ScopeCat(String& scope, const String& s)
 void Parser::Context::operator<<=(const Context& t)
 {
 	scope = t.scope;
-	typenames <<= t.typenames;
-	tparam <<= t.tparam;
+	typenames = clone(t.typenames);
+	tparam = clone(t.tparam);
 	access = t.access;
 	ctname = t.ctname;
+	namespace_using = t.namespace_using;
 }
 
 Parser::Decla::Decla()
@@ -521,6 +522,7 @@ String Parser::StructDeclaration(const String& tn, const String& tp)
 {
 	int t = lex.GetCode(); // t is now struct/class/union
 	context.typenames.FindAdd(lex);
+	DDUMP(context.namespace_using);
 	Context cc;
 	cc <<= context;
 	CParser p(tp);
@@ -564,7 +566,8 @@ String Parser::StructDeclaration(const String& tn, const String& tp)
 		nn = "template " + tp + " ";
 	String key = (t == tk_class ? "class" : t == tk_union ? "union" : "struct");
 	nn << key << ' ' << name;
-	CppItem& im = Item(context.scope, key, name, lex != ';');
+	DLOG("Struct "  << name << " using " << context.namespace_using);
+	CppItem& im = Item(context.scope, context.namespace_using, key, name, lex != ';');
 	im.kind = tp.IsEmpty() ? STRUCT : STRUCTTEMPLATE;
 	im.type = name;
 	im.access = cc.access;
@@ -1214,14 +1217,14 @@ void Parser::SetScopeCurrent()
 	current_scope = context.scope;
 }
 
-CppItem& Parser::Item(const String& scope, const String& item, const String& name, bool impl)
+CppItem& Parser::Item(const String& scope, const String& using_namespace, const String& item,
+                      const String& name, bool impl)
 {
 	current_scope = scope;
 	if(dobody)
 		current = CppItem();
 	current_key = item;
 	current_name = name;
-	DDUMP(base->GetAdd(current_scope).GetCount());
 	CppItem& im = dobody ? current : base->GetAdd(current_scope).Add();
 	im.item = item;
 	im.name = name;
@@ -1229,14 +1232,16 @@ CppItem& Parser::Item(const String& scope, const String& item, const String& nam
 	im.line = line + 1;
 	im.impl = impl;
 	im.filetype = filetype;
+	im.using_namespaces = using_namespace;
 	LLOG("New item " << GetCppFile(filei) << ' ' << line + 1 << "    " << scope << "::" << item);
 	return im;
 }
 
-CppItem& Parser::Item(const String& scope, const String& item, const String& name)
+CppItem& Parser::Item(const String& scope, const String& using_namespace, const String& item,
+                      const String& name)
 {
 	String h = Purify(item);
-	CppItem& im = Item(scope, h, name, false);
+	CppItem& im = Item(scope, using_namespace, h, name, false);
 	im.natural = h;
 	return im;
 }
@@ -1290,6 +1295,7 @@ String Parser::AnonymousName()
 }
 
 bool Parser::Scope(const String& tp, const String& tn) {
+	DLOG("Scope " << context.namespace_using);	
 	if(Key(tk_namespace)) {
 		Check(lex.IsId(), "Expected name of namespace");
 		String name = lex.GetId();
@@ -1370,7 +1376,7 @@ CppItem& Parser::Fn(const Decl& d, const String& templ, bool body,
 	while(*s == ':') s++;
 	if(*s)
 		ScopeCat(scope, s);
-	CppItem& im = Item(scope, item, nm, body);
+	CppItem& im = Item(scope, context.namespace_using, item, nm, body);
 	im.natural.Clear();
 	if(!IsNull(templ)) {
 		im.natural = TrimRight(Gpurify(templ)) + ' ';
@@ -1411,7 +1417,7 @@ void Parser::Enum()
 			String val;
 			Check(lex.IsId(), "Expected identifier");
 			String id = lex.GetId();
-			CppItem& im = Item(context.scope, id, id);
+			CppItem& im = Item(context.scope, context.namespace_using, id, id);
 			im.natural = "enum ";
 			if(!IsNull(name))
 				im.natural << name << ' ';
@@ -1435,8 +1441,24 @@ void Parser::Do()
 	LLOG("Do, scope: " << current_scope);
 	Line();
 	if(Key(tk_using)) {
+		if(Key(tk_namespace))
+			while(lex.IsId()) {
+				Vector<String> h = Split(context.namespace_using, ';');
+				String u;
+				do {
+					u << lex.GetId();
+					if(Key(t_dblcolon))
+						u << "::";
+				}
+				while(lex.IsId());
+				if(FindIndex(h, u) < 0)
+					h.Add(u);
+				context.namespace_using = Join(h, ";");
+				Key(',');
+			}
 		while(!Key(';') && lex != t_eof)
 			++lex;
+		DDUMP(context.namespace_using);
 	}
 	else
 	if(Key(tk_extern) && lex == t_string) { // extern "C++" kind
@@ -1511,7 +1533,7 @@ void Parser::Do()
 			const char *s = n;
 			while(*s && iscid(*s))
 				name.Cat(*s++);
-			CppItem& im = Item(context.scope, n, name);
+			CppItem& im = Item(context.scope, context.namespace_using, n, name);
 			im.kind = MACRO;
 			s = strchr(n, '(');
 			if(s) {
@@ -1567,9 +1589,10 @@ void Parser::Do()
 					String scope = context.scope;
 					if(d.type_def)
 						ScopeCat(scope, d.name);
-					CppItem& im = Item(scope, d.isfriend ? "friend class"
-					                          : d.type_def ? "typedef"
-					                          : d.name, d.name);
+					CppItem& im = Item(scope, context.namespace_using,
+					                   d.isfriend ? "friend class"
+					                   : d.type_def ? "typedef"
+					                   : d.name, d.name);
 					im.natural = Purify(h);
 					im.type = d.type;
 					im.access = context.access;
@@ -1597,8 +1620,11 @@ void Parser::Do()
 	}
 }
 
-void Parser::Do(Stream& in, CppBase& _base, int filei_, int filetype_, const String& title_,
-                Callback2<int, const String&> _err, const Vector<String>& typenames)
+void  Parser::Do(Stream& in, CppBase& _base, int filei_, int filetype_,
+                 const String& title_, Callback2<int, const String&> _err,
+                 const Vector<String>& typenames,
+                 const Vector<String>& namespace_stack,
+                 const Index<String>& namespace_using)
 {
 	LLOG("= C++ Parser ==================================== " << fn);
 	base = &_base;
@@ -1613,6 +1639,8 @@ void Parser::Do(Stream& in, CppBase& _base, int filei_, int filetype_, const Str
 	if(whenFnEnd)
 		lex.StartStatCollection();
 
+	context.namespace_using = Join(namespace_using.GetKeys(), ";");
+
 	while(lex != t_eof)
 		try {
 			try {
@@ -1620,7 +1648,7 @@ void Parser::Do(Stream& in, CppBase& _base, int filei_, int filetype_, const Str
 				context.access = PUBLIC;
 				context.typenames.Clear();
 				context.tparam.Clear();
-				context.scope.Clear();
+				context.scope = Join(namespace_stack, "::");
 				inbody = false;
 				for(int i = 0; i < typenames.GetCount(); i++)
 					context.typenames.Add(lex.Id(typenames[i]));
@@ -1648,11 +1676,13 @@ void Parser::Do(Stream& in, CppBase& _base, int filei_, int filetype_, const Str
 		}
 }
 
+/*
 void Parse(Stream& s, CppBase& base, int file, int filetype, const String& title, Callback2<int, const String&> _err)
 {
 	LTIMING("Parse");
 	Parser p;
 	p.Do(s, base, file, filetype, title, _err);
 }
+*/
 
 END_UPP_NAMESPACE

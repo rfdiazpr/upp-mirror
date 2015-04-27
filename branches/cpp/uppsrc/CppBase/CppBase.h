@@ -95,8 +95,8 @@ struct Cpp {
 
 	String                      output; // preprocessed file
 //	Index<String>               usedmacro;
-	Index<String>               namespace_using;
-	Vector<String>              namespace_stack;
+	Index<String>               namespace_using; // 'using namespace' up to start of file
+	Vector<String>              namespace_stack; // namspace up to start of file
 	
 	Index<String>               ids; // all ids in the file
 	
@@ -344,6 +344,7 @@ struct CppItem {
 	String         qptype;
 	String         tname;
 	String         ctname;
+	String         using_namespaces;
 	byte           access;
 	byte           kind;
 	int16          at;
@@ -400,11 +401,12 @@ struct CppBase : ArrayMap<String, Array<CppItem> > {
 
 class Parser {
 	struct Context {
-		String      scope;
-		String      ctname;
-		Vector<int> tparam;
-		Index<int>  typenames;
-		int         access;
+		String         scope;
+		String         ctname;
+		Vector<int>    tparam;
+		Index<int>     typenames;
+		int            access;
+		String         namespace_using;
 
 		void operator<<=(const Context& t);
 
@@ -514,8 +516,10 @@ class Parser {
 	String StructDeclaration(const String& tp, const String& tn);
 	void   Enum();
 
-	CppItem& Item(const String& scope, const String& item, const String& name, bool impl);
-	CppItem& Item(const String& scope, const String& item, const String& name);
+	CppItem& Item(const String& scope, const String& using_namespace, const String& item,
+	              const String& name, bool impl);
+	CppItem& Item(const String& scope, const String& using_namespace, const String& item,
+	              const String& name);
 
 	CppItem& Fn(const Decl& d, const String& templ, bool body,
 	            const String& tname, const String& tparam);
@@ -575,7 +579,9 @@ public:
 
 	void  Do(Stream& in, CppBase& _base, int file, int filetype,
 	         const String& title, Callback2<int, const String&> _err,
-	         const Vector<String>& typenames = Vector<String>());
+	         const Vector<String>& typenames,
+	         const Vector<String>& namespace_stack,
+	         const Index<String>& namespace_using);
 
 	Parser() : dobody(false) { 	lex.WhenError = THISBACK(ThrowError); }
 };
@@ -611,7 +617,7 @@ String QualifyKey(const CppBase& base, const String& scope, const String& type);
 
 void   Qualify(CppBase& base);
 
-void Parse(Stream& s, CppBase& base, int file, int filetype, const String& title, Callback2<int, const String&> err);
+// void Parse(Stream& s, CppBase& base, int file, int filetype, const String& title, Callback2<int, const String&> err);
 
 END_UPP_NAMESPACE
 

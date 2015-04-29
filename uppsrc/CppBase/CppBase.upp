@@ -8,6 +8,7 @@ uses
 file
 	CppBase.h options(BUILDER_OPTION) PCH,
 	keyword.i,
+	ppconfig.cpp,
 	macro.cpp,
 	ppfile.cpp,
 	cpp.cpp,

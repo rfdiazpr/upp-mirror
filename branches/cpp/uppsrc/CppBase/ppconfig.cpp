@@ -30,7 +30,7 @@ String GetStdConfig()
 		va.Add(m);
 	}
 	json.Add("namespace", va);
-	json.Add("end_namespace", endns);
+	json.Add("end_namespace", StringArray(endns));
 	json.Add("ignore", StringArray(ignore));
 	return AsJSON(json);
 }
@@ -43,23 +43,26 @@ void LoadPPConfig(const String& json)
 {
 	Value m = ParseJSON(json);
 
-	s_namespace_macro.Clear();
-	ValueArray va = m["namespace"];
-	for(int i = 0; i < va.GetCount(); i++) {
-		ValueMap m = va[i];
-		if(m.GetCount())
-			s_namespace_macro.Add(m.GetKey(0), m.GetValue(0));
+	try {
+		s_namespace_macro.Clear();
+		ValueArray va = m["namespace"];
+		for(int i = 0; i < va.GetCount(); i++) {
+			ValueMap m = va[i];
+			if(m.GetCount())
+				s_namespace_macro.Add(m.GetKey(0), m.GetValue(0));
+		}
+	
+		s_namespace_end_macro.Clear();
+		va = m["end_namespace"];
+		for(int i = 0; i < va.GetCount(); i++)
+			s_namespace_end_macro.Add(va[i]);
+	
+		s_ignorelist.Clear();
+		va = m["ignore"];
+		for(int i = 0; i < va.GetCount(); i++)
+			s_ignorelist.Add(va[i]);
 	}
-
-	s_namespace_end_macro.Clear();
-	va = m["end_namespace"];
-	for(int i = 0; i < va.GetCount(); i++)
-		s_namespace_end_macro.Add(va[i]);
-
-	s_ignorelist.Clear();
-	va = m["ignore"];
-	for(int i = 0; i < va.GetCount(); i++)
-		s_ignorelist.Add(va[i]);
+	catch(ValueTypeError) {}
 
 	DDUMP(s_namespace_macro);
 	DDUMP(s_namespace_end_macro);

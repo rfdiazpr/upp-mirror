@@ -207,20 +207,8 @@ void PPFile::Parse(Stream& in)
 					else {
 						was_using = was_namespace = false;
 						if(p.IsId()) {
-							static VectorMap<String, String> namespace_macro; // TODO: Make this ugly trick dynamic
-							ONCELOCK {
-								namespace_macro.Add("_STD_BEGIN", "std");
-								namespace_macro.Add("_C_STD_BEGIN", "std");
-								namespace_macro.Add("_STDEXT_BEGIN", "stdext");
-								namespace_macro.Add("NAMESPACE_UPP", "Upp");
-							}
-							static Index<String> namespace_end_macro;
-							ONCELOCK {
-								namespace_end_macro.Add("_STD_END");
-								namespace_end_macro.Add("_STDEXT_END");
-								namespace_end_macro.Add("_C_STD_END");
-								namespace_end_macro.Add("END_UPP_NAMESPACE");
-							}
+							static const VectorMap<String, String>& namespace_macro = GetNamespaceMacros();
+							static const Index<String>& namespace_end_macro = GetNamespaceEndMacros();
 
 							String id = p.ReadId();
 							int q = namespace_macro.Find(id);

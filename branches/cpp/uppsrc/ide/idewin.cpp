@@ -1057,6 +1057,12 @@ void AppMain___()
 			Ini::user_log = true;
 		}
 		
+		String ppcfg = ConfigFile("pp_config.json");
+		if(!FileExists(ppcfg))
+			SaveFile(ppcfg, GetStdConfig());
+		
+		LoadPPConfig(LoadFile(ppcfg));
+		
 		ide.LoadLastMain();
 		if(clset || ide.OpenMainPackage()) {
 			ide.SaveLastMain();

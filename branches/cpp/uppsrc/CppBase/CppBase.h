@@ -9,6 +9,14 @@ bool           IsCPPFile(const String& file);
 
 void RemoveComments(String& l, bool& incomment);
 
+void LoadPPConfig(const String& json);
+
+String GetStdConfig();
+
+const VectorMap<String, String>& GetNamespaceMacros();
+const Index<String>&             GetNamespaceEndMacros();
+const Vector<String>&            GetIgnoreList();
+
 struct CppMacro : Moveable<CppMacro> {
 	String        param;
 	String        body;
@@ -399,7 +407,7 @@ struct CppBase : ArrayMap<String, Array<CppItem> > {
 	CppBase() { serial = 0; }
 };
 
-class Parser {
+struct Parser {
 	struct Context {
 		String         scope;
 		String         ctname;

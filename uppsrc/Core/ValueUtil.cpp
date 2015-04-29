@@ -164,9 +164,10 @@ ValueArray::ValueArray(const Value& src)
 			return;
 		}
 		else {
-			if(!dynamic_cast<const ValueArray::Data *>(src.GetVoidPtr()))
+			if(src.GetType() != VALUEARRAY_V)
 				throw ValueTypeError(String().Cat() << "Invalid value conversion: "
-			                         << " -> ValueArray", *this, src);
+			                         << src.GetTypeName() << " -> ValueArray",
+			                         src, VALUEARRAY_V);
 			data = (ValueArray::Data *)src.GetVoidPtr();
 		}
 	}
@@ -527,8 +528,10 @@ ValueMap::ValueMap(const Value& src)
 			return;
 		}
 		else {
-			throw ValueTypeError(String().Cat() << "Invalid value conversion: "
-		                         << " -> ValueMap", *this, src);
+			if(src.GetType() != VALUEMAP_V)
+				throw ValueTypeError(String().Cat() << "Invalid value conversion: "
+			                         << src.GetTypeName() << " -> ValueMap",
+			                         src, VALUEMAP_V);
 			data = (ValueMap::Data *)src.GetVoidPtr();
 		}
 	}

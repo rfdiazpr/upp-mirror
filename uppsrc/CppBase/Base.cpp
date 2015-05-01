@@ -10,8 +10,6 @@ void CppItem::Serialize(Stream& s)
 	s % kind % access
 	  % item % name % natural % at % tparam % param % pname
 	  % tname % ctname % type % ptype % virt % filetype % file % line % impl;
-	if(s.IsLoading())
-		serial = -1;
 }
 
 struct CmpItem {
@@ -57,12 +55,6 @@ int FindName(const Array<CppItem>& x, const String& name, int i)
 bool CppBase::IsType(int i) const
 {
 	return GetKey(i).GetCount();
-}
-
-void CppBase::Serialize(Stream& s)
-{
-	ArrayMap<String, Array<CppItem> > :: Serialize(s);
-	s % serial % serial_md5;
 }
 
 void CppBase::Dump(Stream& s)

@@ -185,6 +185,32 @@ private:
 	bool script_error;
 };
 
+// TODO: This class can be hiddent. I don't want it move to ide/Android, beacuse
+// it is only used by AndroidBuilder.
+class AndroidMakeFile {
+public:
+	AndroidMakeFile();
+	
+public:
+	bool IsEmpty() const;
+	void Clear();
+	
+	bool HasFooter();
+	
+	void AddHeader();
+	void AddFooter();
+	void AddPackageMakeFile(String packageMakeFile);
+	
+	String ToString() const;
+	
+private:
+	String GenerateHeader();
+	String GenerateFooter();
+	
+private:
+	String makeFile;
+};
+
 class AndroidBuilder : public CppBuilder {
 public:
 	AndroidBuilder();
@@ -203,6 +229,7 @@ protected:
 protected:
 	void GeneratePackageMakeFile();
 	void GenerateApplicationMakeFile();
+	void GenerateMakeFile();
 	bool AddSharedLibsToApk(const String& apkPath);
 	
 	bool PreprocesAndroidManifest();
@@ -228,6 +255,7 @@ protected:
 	AndroidSDK androidSDK;
 	AndroidNDK androidNDK;
 	
+	AndroidMakeFile makeFile;
 };
 
 void DeletePCHFile(const String& pch_file);

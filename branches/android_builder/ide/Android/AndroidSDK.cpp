@@ -19,7 +19,10 @@ AndroidSDK::~AndroidSDK()
 
 bool AndroidSDK::CheckIntegrity() const
 {
-	return DirectoryExists(path);
+	if(!DirectoryExists(path) || !FileExists(AndroidPath()))
+		return false;
+	
+	return true;
 }
 
 Vector<String> AndroidSDK::GetAVDNames() const

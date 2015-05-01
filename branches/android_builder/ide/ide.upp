@@ -81,8 +81,8 @@ file
 	Valgrind.cpp,
 	Export.cpp,
 	Resources readonly separator,
-	ide.lay,
 	ide.iml,
+	ide.lay,
 	app.tpp,
 	ide.rc
 		depends() xide.ico

@@ -9,6 +9,7 @@ file
 	Builders.h options(BUILDER_OPTION) PCH,
 	CppBuilder.cpp,
 	MakeFile.cpp,
+	AndroidMakefile.cpp,
 	GccBuilder.icpp,
 	coff.h,
 	MscBuilder.icpp,

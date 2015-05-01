@@ -602,6 +602,14 @@ LAYOUT(SetupAstyleLayout, 544, 288)
 	ITEM(Button, Defaults, SetLabel(t_("Upp defaults")).LeftPosZ(208, 72).TopPosZ(260, 23))
 END_LAYOUT
 
+LAYOUT(SetupMobilePlatformsLayout, 544, 288)
+	ITEM(LabelBox, dv___0, SetLabel(t_("Android")).LeftPosZ(4, 536).TopPosZ(4, 68))
+	ITEM(StaticText, dv___1, SetText(t_("Android SDK path:")).LeftPosZ(12, 120).TopPosZ(20, 19))
+	ITEM(EditField, AndroidSDKPath, HSizePosZ(140, 12).TopPosZ(20, 19))
+	ITEM(StaticText, dv___3, SetText(t_("Android NDK path:")).LeftPosZ(12, 120).TopPosZ(44, 19))
+	ITEM(EditField, AndroidNDKPath, HSizePosZ(140, 12).TopPosZ(44, 19))
+END_LAYOUT
+
 LAYOUT(GotoLayout, 796, 524)
 	ITEM(Label, dv___0, SetLabel(t_("Go to")).LeftPosZ(188, 40).TopPosZ(12, 19))
 	ITEM(EditString, target, HSizePosZ(228, 296).TopPosZ(12, 19))

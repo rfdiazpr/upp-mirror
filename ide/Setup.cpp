@@ -325,6 +325,7 @@ void Ide::SetupFormat() {
 	WithSetupEditorLayout<ParentCtrl> edt;
 	WithSetupIdeLayout<ParentCtrl> ide;
 	WithSetupAssistLayout<ParentCtrl> assist;
+	WithSetupMobilePlatformsLayout<ParentCtrl> mobile;
 	AStyleSetupDialog ast(this);
 #ifdef PLATFORM_WIN32
 	ide.console_txt.Hide();
@@ -364,6 +365,7 @@ void Ide::SetupFormat() {
 	dlg.Add(assist, "Assist");
 	dlg.Add(ide, "IDE");
 	dlg.Add(ast, "Code formatting");
+	dlg.Add(mobile, "Mobile platforms");
 	dlg.WhenClose = dlg.Acceptor(IDEXIT);
 	FontSelectManager ed, vf, con, f1, f2, tf;
 	ed.Set(fnt.face, fnt.height, fnt.bold, fnt.italic, fnt.naa);

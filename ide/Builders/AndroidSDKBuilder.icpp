@@ -92,7 +92,7 @@ bool AndroidBuilder::BuildPackage(const String& package, Vector<String>& linkfil
 				   fileExt == ".hpp" || fileExt == ".hxx" || fileExt == ".h") {
 					String filePathInAndroidProject;
 					filePathInAndroidProject << GetAndroidProjectJniSourcesDir() << DIR_SEPS;
-					// filePathInAndroidProject <<	packageFileDirectory << DIR_SEPS;
+					filePathInAndroidProject <<	packageFileDirectory << DIR_SEPS;
 					filePathInAndroidProject <<	fileName;
 					
 					if(!MovePackageFileToAndroidProject(filePath, filePathInAndroidProject)) {
@@ -100,7 +100,7 @@ bool AndroidBuilder::BuildPackage(const String& package, Vector<String>& linkfil
 						continue;
 					}
 					nativeSourceFiles.Add(filePathInAndroidProject);
-					nativeSourceFilesInPackage.Add(fileName); // <- TODO: use packagFile instead - for modular architecture.
+					nativeSourceFilesInPackage.Add(packageFile);
 				}
 				else
 				if(fileExt == ".xml") {
@@ -148,23 +148,21 @@ bool AndroidBuilder::BuildPackage(const String& package, Vector<String>& linkfil
 	if(!isResourcesPackage && !error && !nativeSourceFiles.IsEmpty()) {
 		// GeneratePackageMakeFile(nativeSourceFiles)
 		// TODO: generate for multiple package!!!
-		String makeFile;
+		if(makeFile.HasFooter())
+			makeFile.Clear();
+		if(makeFile.IsEmpty())
+			makeFile.AddHeader();
 		
-		makeFile << "LOCAL_PATH := $(call my-dir)\n\n";
-		makeFile << "include $(CLEAR_VARS)\n\n";
-		
-		makeFile << "LOCAL_MODULE := " << package << "\n";
-		makeFile << "LOCAL_SRC_FILES := ";
+		String packageMakeFile;
+		packageMakeFile << "include $(CLEAR_VARS)\n";
+		packageMakeFile << "LOCAL_MODULE := " << package << "\n";
+		packageMakeFile << "LOCAL_SRC_FILES := ";
 		for(int i = 0; i < nativeSourceFilesInPackage.GetCount(); i++) {
-			makeFile << nativeSourceFilesInPackage[i];
+			packageMakeFile << nativeSourceFilesInPackage[i];
 			if(i + 1 < nativeSourceFilesInPackage.GetCount())
-				makeFile << " ";
+				packageMakeFile << " ";
 		}
-		
-		makeFile << "\n\ninclude $(BUILD_SHARED_LIBRARY)\n";
-		
-		String makeFilePath = GetAndroidProjectJniSourcesDir() + DIR_SEPS + "Android.mk";
-		SaveFile(makeFilePath, makeFile);
+		makeFile.AddPackageMakeFile(packageMakeFile);
 	}
 
 	return !error;
@@ -196,6 +194,7 @@ bool AndroidBuilder::Link(const Vector<String>& linkfile, const String& linkopti
 	if(DirectoryExists(GetAndroidProjectJniSourcesDir())) {
 		PutConsole("Compiling native sources...");
 		GenerateApplicationMakeFile();
+		GenerateMakeFile();
 		
 		String ndkBuildCmd;
 		ndkBuildCmd << androidNDK.NdkBuildPath();
@@ -325,6 +324,7 @@ bool AndroidBuilder::AddSharedLibsToApk(const String& apkPath)
 	// So, we need to create temporary lib directory with .so files :(
 	const String androidProjectDir = GetAndroidProjectDir();
 	const String libsDir = GetAndroidProjectLibsDir();
+	const String libDir = androidProjectDir + DIR_SEPS + "lib";
 	
 	Vector <String> sharedLibsToAdd;
 	for(FindFile ff(AppendFileName (libsDir, "*")); ff; ff.Next ()) {
@@ -356,7 +356,7 @@ bool AndroidBuilder::AddSharedLibsToApk(const String& apkPath)
 		PutConsole(ss.GetResult());
 		return false;
 	}
-	if(!DeleteFolderDeep(androidProjectDir + DIR_SEPS + "lib"))
+	if(!DeleteFolderDeep(libDir))
 		return false;
 	
 	return true;
@@ -365,13 +365,22 @@ bool AndroidBuilder::AddSharedLibsToApk(const String& apkPath)
 void AndroidBuilder::GenerateApplicationMakeFile()
 {
 	// TODO: developer should decide which platfor she/he wants to build.
-	String makeFile;
+	String applicationMakeFile;
 	
-	makeFile << "APP_ABI := ";
-	makeFile << "all";
+	applicationMakeFile << "APP_ABI := ";
+	applicationMakeFile << "all";
 	
 	String makeFilePath = GetAndroidProjectJniSourcesDir() + DIR_SEPS + "Application.mk";
-	SaveFile(makeFilePath, makeFile);
+	SaveFile(makeFilePath, applicationMakeFile);
+}
+
+void AndroidBuilder::GenerateMakeFile()
+{
+	if(!makeFile.HasFooter())
+		makeFile.AddFooter();
+	
+	String makeFilePath = GetAndroidProjectJniSourcesDir() + DIR_SEPS + "Android.mk";
+	SaveFile(makeFilePath, makeFile.ToString());
 }
 
 bool AndroidBuilder::PreprocesAndroidManifest()

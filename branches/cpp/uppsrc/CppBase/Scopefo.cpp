@@ -5,43 +5,43 @@ NAMESPACE_UPP
 #define LLOG(x)
 #define LTIMING(x)  // RTIMING(x)
 
-Scopefo::Scopefo(const CppBase& base, int scopei)
+ScopeInfo::ScopeInfo(const CppBase& base, int scopei)
 	: scopei(scopei), base(base)
 {
-	LTIMING("Scopefo(const CppBase& base, int scopei)");
+	LTIMING("ScopeInfo(const CppBase& base, int scopei)");
 	Init();
 }
 
-Scopefo::Scopefo(int scopei, const CppBase& base)
+ScopeInfo::ScopeInfo(int scopei, const CppBase& base)
 	: scopei(scopei), base(base)
 {
-	LTIMING("Scopefo(int scopei, const CppBase& base)");
+	LTIMING("ScopeInfo(int scopei, const CppBase& base)");
 	Init();
 }
 
-Scopefo::Scopefo(const CppBase& base, const String& scope)
+ScopeInfo::ScopeInfo(const CppBase& base, const String& scope)
 	: scopei(base.Find(scope)), base(base)
 {
-	LTIMING("Scopefo(const CppBase& base, const String& scope)");
+	LTIMING("ScopeInfo(const CppBase& base, const String& scope)");
 	Init();
 }
 
-Scopefo::Scopefo(const Scopefo& f)
+ScopeInfo::ScopeInfo(const ScopeInfo& f)
 	: base(f.base)
 {
-	LTIMING("Scopefo copy contructor");
+	LTIMING("ScopeInfo copy contructor");
 	scopes <<= f.scopes;
 	bvalid = nvalid = false;
 	scopei = f.scopei;
 }
 
-void Scopefo::Init()
+void ScopeInfo::Init()
 {
 	bvalid = nvalid = false;
 }
 
-void Scopefo::Bases(int i, Vector<int>& g)
-{
+void ScopeInfo::Bases(int i, Vector<int>& g)
+{ // recursively retrieve all base classes
 	if(base.IsType(i)) {
 		const Array<CppItem>& n = base[i];
 		for(int i = 0; i < n.GetCount(); i++) {
@@ -74,7 +74,7 @@ void Scopefo::Bases(int i, Vector<int>& g)
 	}
 }
 
-const Vector<String>& Scopefo::GetBases()
+const Vector<String>& ScopeInfo::GetBases()
 {
 	LTIMING("GetBases");
 	if(!bvalid) {
@@ -102,10 +102,11 @@ const Vector<String>& Scopefo::GetBases()
 	return baselist;
 }
 
-const Vector<String>& Scopefo::GetScopes()
+const Vector<String>& ScopeInfo::GetScopes(const String& usings_)
 {
 	LTIMING("GetScopes");
-	if(!nvalid) {
+	if(!nvalid || usings != usings_) {
+		usings = usings_;
 		nvalid = true;
 		scopes.Clear();
 		if(scopei < 0)
@@ -121,6 +122,7 @@ const Vector<String>& Scopefo::GetScopes()
 			nn.Trim(max(0, q - 1));
 		}
 		scopes.Add("");
+		scopes.Append(Split(usings, ';'));
 	}
 	return scopes;
 }

@@ -367,8 +367,7 @@ struct CppItem {
 	int            file;
 	int            line;
 
-	bool           qualify_type, qualify_param;
-	int            serial;
+	bool           qualify;
 
 	bool           IsType() const      { return IsCppType(kind); }
 	bool           IsCode() const      { return IsCppCode(kind); }
@@ -381,7 +380,7 @@ struct CppItem {
 	void           Dump(Stream& s) const;
 	String         ToString() const;
 
-	CppItem()      { at = decla = virt = false; qualify_type = qualify_param = true; serial = -1; isptr = false; }
+	CppItem()      { at = decla = virt = false; qualify = true; isptr = false; }
 };
 
 String CppItemKindAsString(int kind);
@@ -392,7 +391,6 @@ int FindItem(const Array<CppItem>& x, const String& qitem);
 int FindName(const Array<CppItem>& x, const String& name, int i = 0);
 
 struct CppBase : ArrayMap<String, Array<CppItem> > {
-	int            serial;
 	String         serial_md5;
 
 	bool           IsType(int i) const;
@@ -403,8 +401,6 @@ struct CppBase : ArrayMap<String, Array<CppItem> > {
 	void           Serialize(Stream& s);
 
 	void           Dump(Stream& s);
-	
-	CppBase() { serial = 0; }
 };
 
 struct Parser {
@@ -596,11 +592,14 @@ public:
 
 String NoTemplatePars(const String& type);
 
-class Scopefo {
-	bool           bvalid, nvalid;
-	Vector<String> baselist;
-	Vector<String> scopes;
-	int            scopei;
+class ScopeInfo { // information about scope
+	bool           bvalid; // baselist is valid
+	bool           nvalid; // scopes is valid
+	Vector<String> baselist; // list of all base classes of scope
+	Vector<String> scopes; // list of scopes (Upp::String::Init::, Upp::String::, Upp::)
+	int            scopei; // index of this scope in base
+	String         usings; // using namespaces contained in scopes
+	
 	void           Bases(int i, Vector<int>& g);
 	void           Init();
 
@@ -609,19 +608,19 @@ public:
 	VectorMap<String, String> cache;
 
 	const Vector<String>& GetBases();
-	const Vector<String>& GetScopes();
-	int                   GetScope() const               { return scopei; }
+	const Vector<String>& GetScopes(const String& usings);
+	int                   GetScope() const              { return scopei; }
 	void                  NoBases()                     { baselist.Clear(); bvalid = true; }
 
-	Scopefo(const CppBase& base, int scopei = -1);
-	Scopefo(int scopei, const CppBase& base);
-	Scopefo(const CppBase& base, const String& scope);
-	Scopefo(const Scopefo& f);
+	ScopeInfo(const CppBase& base, int scopei = -1);
+	ScopeInfo(int scopei, const CppBase& base);
+	ScopeInfo(const CppBase& base, const String& scope);
+	ScopeInfo(const ScopeInfo& f);
 };
 
-String Qualify(const CppBase& base, const String& scope, const String& type);
+String Qualify(const CppBase& base, const String& scope, const String& type, const String& usings);
 void   QualifyTypes(CppBase& base, const String& scope, CppItem& m);
-String QualifyKey(const CppBase& base, const String& scope, const String& type);
+String QualifyKey(const CppBase& base, const String& scope, const String& type, const String& usings);
 
 void   Qualify(CppBase& base);
 

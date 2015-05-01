@@ -1070,7 +1070,7 @@ bool Parser::TryDecl()
 		q++;
 	if(!lex.IsId(q))
 		return false;
-	type = Qualify(*base, current_scope, type);
+	type = Qualify(*base, current_scope, type, current.using_namespaces);
 	if(base->Find(NoTemplatePars(type)) >= 0) {
 		Locals(type);
 		return true;

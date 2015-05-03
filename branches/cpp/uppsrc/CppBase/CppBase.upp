@@ -16,7 +16,7 @@ file
 	cpplex.cpp,
 	Parser.cpp,
 	Base.cpp,
-	Scopefo.cpp,
+	ScopeInfo.cpp,
 	Qualify.cpp,
 	CppItem.cpp,
 	Info readonly separator,

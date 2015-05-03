@@ -106,7 +106,7 @@ String Cpp::Expand(const char *s)
 								}
 								else
 								if(*s == '\0') { // macro use spread into more lines
-									prefix_macro = bid;
+									prefix_macro = ' ' + bid;
 									return r;
 								}
 								else
@@ -190,6 +190,7 @@ bool Cpp::Preprocess(const String& sourcefile, Stream& in, const String& current
 
 void Cpp::DoFlatInclude(const String& header_path)
 {
+	DLOG("Flat include " << header_path);
 	if(header_path.GetCount()) {
 		const PPFile& pp = GetFlatPPFile(header_path);
 		LLOG("DoFlatInclude " << header_path << ", " << pp.item.GetCount() << " items");
@@ -198,11 +199,15 @@ void Cpp::DoFlatInclude(const String& header_path)
 			if(m.type == PP_DEFINES)
 				segment_id.FindAdd(m.segment_id);
 			else
-			if(m.type == PP_NAMESPACE)
-				namespace_stack.Add(m.text);
+			if(m.type == PP_NAMESPACE) {
+			//	namespace_stack.Add(m.text); we are ignoring namespace in included files
+			//	DLOG("flat pp namespace " << m.text << " " << namespace_stack);
+			}
 			else
-			if(m.type == PP_NAMESPACE_END && namespace_stack.GetCount())
-				namespace_stack.Drop();
+			if(m.type == PP_NAMESPACE_END && namespace_stack.GetCount()) {
+			//	namespace_stack.Drop();
+			//	DLOG("flat pp end namespace " << namespace_stack);
+			}
 			else
 			if(m.type == PP_USING)
 				namespace_using.FindAdd(m.text);
@@ -218,6 +223,7 @@ void Cpp::Do(const String& sourcefile, Stream& in, const String& currentfile,
 	visited.Add(currentfile);
 	String current_folder = GetFileFolder(currentfile);
 	bool notthefile = sourcefile != currentfile;
+	DDUMP(currentfile);
 	if(notthefile || get_macros) {
 		const PPFile& pp = GetPPFile(currentfile);
 		for(int i = 0; i < pp.item.GetCount() && !done; i++) {
@@ -232,23 +238,27 @@ void Cpp::Do(const String& sourcefile, Stream& in, const String& currentfile,
 				String s = GetIncludePath(m.text, current_folder);
 				if(s.GetCount()) {
 					if(notthefile && IncludesFile(s, sourcefile)) {
-						LLOG("Include IN " << s);
+						DLOG("Include IN " << s);
 						Do(sourcefile, in, s, visited, get_macros);
 						RHITCOUNT("Include IN");
 					}
 					else {
-						LLOG("Include FLAT " << s);
+						DLOG("Include FLAT " << s);
 						RHITCOUNT("Include FLAT");
 						DoFlatInclude(s);
 					}
 				}
 			}
 			else
-			if(m.type == PP_NAMESPACE)
+			if(m.type == PP_NAMESPACE) {
 				namespace_stack.Add(m.text);
+				DLOG("pp namespace " << m.text << " " << namespace_stack);
+			}
 			else
-			if(m.type == PP_NAMESPACE_END && namespace_stack.GetCount())
+			if(m.type == PP_NAMESPACE_END && namespace_stack.GetCount()) {
 				namespace_stack.Drop();
+				DLOG("pp end namespace " << namespace_stack);
+			}
 			else
 			if(m.type == PP_USING)
 				namespace_using.FindAdd(m.text);

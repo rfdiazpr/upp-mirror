@@ -17,8 +17,9 @@ String GetStdConfig()
 	static const char endns[] = "_STD_END;_STDEXT_END;_C_STD_END;END_UPP_NAMESPACE";
 	static const char ignore[] = "__declspec;__cdecl;__attribute__;__stdcall;__forceinline;"
                                  "__out;__in;__inout;__deref_in;__deref_inout;__deref_out;"
+                                 "__pragma;__pascal;_far;_pascal;_cdecl;"
                                  "__AuToQuOtE;__xin;__xout;"
-                                 "$drv_group;$allowed_on_parameter;__clrcall";
+                                 "__clrcall";
 	ValueMap json;
 	ValueArray va;
 	Vector<String> h = Split(ns, ';');

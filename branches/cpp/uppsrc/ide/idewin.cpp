@@ -1058,7 +1058,9 @@ void AppMain___()
 		}
 		
 		String ppcfg = ConfigFile("pp_config.json");
+	#ifndef _DEBUG
 		if(!FileExists(ppcfg))
+	#endif
 			SaveFile(ppcfg, GetStdConfig());
 		
 		LoadPPConfig(LoadFile(ppcfg));

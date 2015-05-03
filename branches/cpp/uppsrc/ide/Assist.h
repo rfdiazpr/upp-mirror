@@ -181,11 +181,13 @@ struct AssistEditor : CodeEditor, Navigator {
 	void           Abbr();
 
 	void           Context(Parser& parser, int pos);
-	void           ExpressionType(const String& type, const Vector<String>& xp, int ii,
+	void           ExpressionType(const String& type, const String& usings,
+	                              const Vector<String>& xp, int ii,
 	                              Index<String>& typeset, bool variable,
 	                              bool can_shortcut_operator, Index<String>& visited_bases,
 	                              int lvl);
-	void           ExpressionType(const String& type, const Vector<String>& xp, int ii,
+	void           ExpressionType(const String& type, const String& usings,
+	                              const Vector<String>& xp, int ii,
 	                              Index<String>& typeset, bool variable, int lvl);
 //	void           ExpressionType(const String& type, const Vector<String>& xp, int ii,
 //	                              Index<String>& typeset);

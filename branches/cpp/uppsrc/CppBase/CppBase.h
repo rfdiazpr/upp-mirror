@@ -78,6 +78,7 @@ String          GetAllMacros(const String& id, Index<int>& segment_id);
 void   PPSync(const String& include_path);
 String GetIncludePath();
 
+void   CleanPP();
 void   SerializePPFiles(Stream& s);
 void   SweepPPFiles(const Index<String>& keep);
 
@@ -252,6 +253,7 @@ public:
 	void        EndBody()                   { body--; }
 	void        ClearBody()                 { body = 0; }
 	bool        IsBody() const              { return body; }
+	bool        IsGrounded()                { Code(); return term[0].grounding; }
 	void        SkipToGrounding();
 
 	const char *Pos(int pos = 0);
@@ -398,8 +400,6 @@ struct CppBase : ArrayMap<String, Array<CppItem> > {
 	void           RemoveFiles(const Index<int>& remove_file);
 	void           RemoveFile(int filei);
 
-	void           Serialize(Stream& s);
-
 	void           Dump(Stream& s);
 };
 
@@ -473,6 +473,7 @@ struct Parser {
 	byte        filetype;
 	String      title;
 	bool        inbody;
+	int         struct_level;
 
 	Callback2<int, const String&> err;
 
@@ -513,6 +514,7 @@ struct Parser {
 	void   Check(bool b, const char *err);
 	void   CheckKey(int c);
 
+	bool   UsingNamespace();
 	void   SetScopeCurrent();
 	void   ScopeBody();
 	void   Do();

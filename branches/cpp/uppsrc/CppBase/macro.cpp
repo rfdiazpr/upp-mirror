@@ -29,6 +29,8 @@ String CppMacro::Define(const char *s)
 			if(p.Char3('.', '.', '.'))
 				param << '.';
 			p.Char(')');
+			if(param.GetCount() == 0) // #define foo() bar - need to 'eat' parenthesis, cheap way
+				param = ".";
 		}
 		const char *b = p.GetPtr();
 		while(!p.IsEof() && !p.IsChar2('/', '/'))

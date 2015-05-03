@@ -135,17 +135,19 @@ void AssistEditor::Context(Parser& parser, int pos)
 #ifdef _DEBUG
 	PutVerbose("body: " + AsString(inbody));
 	PutVerbose("scope: " + AsString(parser.current_scope));
+	PutVerbose("using: " + AsString(parser.context.namespace_using));
 	for(int i = 0; i < parser.local.GetCount(); i++)
 		PutVerbose(parser.local.GetKey(i) + ": " + parser.local[i].type);
 #endif
 }
 
-String Qualify(const String& scope, const String& type)
+String Qualify(const String& scope, const String& type, const String& usings)
 {
-	return Qualify(CodeBase(), scope, type);
+	return Qualify(CodeBase(), scope, type, usings);
 }
 
-void AssistEditor::ExpressionType(const String& ttype, const Vector<String>& xp, int ii,
+void AssistEditor::ExpressionType(const String& ttype, const String& usings,
+                                  const Vector<String>& xp, int ii,
                                   Index<String>& typeset, bool variable,
                                   bool can_shortcut_operator, Index<String>& visited_bases,
                                   int lvl)
@@ -167,12 +169,12 @@ void AssistEditor::ExpressionType(const String& ttype, const Vector<String>& xp,
 	String id = xp[ii];
 	int q = id.ReverseFind(':');
 	if(q > 0 && id[q - 1] == ':') {
-		type = ResolveTParam(Qualify(ttype, id.Mid(0, q - 1)), tparam);
+		type = ResolveTParam(Qualify(ttype, id.Mid(0, q - 1), usings), tparam);
 		id = id.Mid(q + 1);
 	}
 	LLOG("ExpressionType " << type << " ii: " << ii << " id:" << id << " variable:" << variable);
 	if(*id == '.' || (!variable && !iscid(*id))) {
-		ExpressionType(ttype, xp, ii + 1, typeset, false, lvl + 1);
+		ExpressionType(ttype, usings, xp, ii + 1, typeset, false, lvl + 1);
 		return;
 	}
 	bool shortcut_oper = false;
@@ -190,7 +192,7 @@ void AssistEditor::ExpressionType(const String& ttype, const Vector<String>& xp,
 		}
 	}
 	for(int i = 0; i < mtype.GetCount(); i++)
-		ExpressionType(ResolveTParam(mtype[i].a, tparam), xp, ii + 1, typeset, mtype[i].b, lvl + 1);
+		ExpressionType(ResolveTParam(mtype[i].a, tparam), usings, xp, ii + 1, typeset, mtype[i].b, lvl + 1);
 	
 	if(typeset.GetCount() != c0 || IsNull(type))
 		return;
@@ -201,19 +203,19 @@ void AssistEditor::ExpressionType(const String& ttype, const Vector<String>& xp,
 	for(int i = 0; i < base.GetCount(); i++)
 		if(visited_bases.Find(base[i]) < 0) {
 			visited_bases.Add(base[i]);
-			ExpressionType(base[i], xp, ii, typeset, variable, false, visited_bases, lvl + 1);
+			ExpressionType(base[i], usings, xp, ii, typeset, variable, false, visited_bases, lvl + 1);
 			if(typeset.GetCount() != c0)
 				return;
 		}
 	if(shortcut_oper)
-		ExpressionType(ttype, xp, ii + 1, typeset, false, lvl + 1);
+		ExpressionType(ttype, usings, xp, ii + 1, typeset, false, lvl + 1);
 }
 
-void AssistEditor::ExpressionType(const String& type, const Vector<String>& xp, int ii,
+void AssistEditor::ExpressionType(const String& type, const String& usings, const Vector<String>& xp, int ii,
                                   Index<String>& typeset, bool variable, int lvl)
 {
 	Index<String> visited_bases;
-	ExpressionType(type, xp, ii, typeset, variable, true, visited_bases, lvl + 1);
+	ExpressionType(type, usings, xp, ii, typeset, variable, true, visited_bases, lvl + 1);
 }
 /*
 void AssistEditor::ExpressionType(const String& type, const Vector<String>& xp, int ii,
@@ -230,29 +232,29 @@ Index<String> AssistEditor::ExpressionType(const Parser& parser, const Vector<St
 		return typeset;
 	if(xp[0] == "this") {
 		LLOG("this: " << type);
-		ExpressionType(parser.current_scope, xp, 1, typeset, false, 0);
+		ExpressionType(parser.current_scope, parser.context.namespace_using, xp, 1, typeset, false, 0);
 		return typeset;
 	}
 	int q = parser.local.FindLast(xp[0]);
 	if(q >= 0) {
-		String type = Qualify(parser.current_scope, parser.local[q].type);
+		String type = Qualify(parser.current_scope, parser.local[q].type, parser.context.namespace_using);
 		LLOG("Found type local: " << type << " in scope: " << parser.current_scope);
-		ExpressionType(type, xp, 1, typeset, !parser.local[q].isptr, 0);
+		ExpressionType(type, parser.context.namespace_using, xp, 1, typeset, !parser.local[q].isptr, 0);
 		return typeset;
 	}
-	ExpressionType(parser.current_scope, xp, 0, typeset, false, 0);
+	ExpressionType(parser.current_scope, parser.context.namespace_using, xp, 0, typeset, false, 0);
 	if(typeset.GetCount())
 		return typeset;
 	if(xp.GetCount() >= 2 && xp[1] == "()") {
-		String qtype = Qualify(parser.current_scope, xp[0]);
+		String qtype = Qualify(parser.current_scope, xp[0], parser.context.namespace_using);
 		Vector<String> tparam;
 		if(CodeBase().Find(ParseTemplatedType(qtype, tparam)) >= 0) {
 			LLOG("Is constructor " << qtype);
-			ExpressionType(qtype, xp, 2, typeset, false, 0);
+			ExpressionType(qtype, parser.context.namespace_using, xp, 2, typeset, false, 0);
 			return typeset;
 		}
 	}
-	ExpressionType("", xp, 0, typeset, false, 0);
+	ExpressionType("", parser.context.namespace_using, xp, 0, typeset, false, 0);
 	return typeset;
 }
 

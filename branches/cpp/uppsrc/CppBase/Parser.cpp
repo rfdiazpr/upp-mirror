@@ -28,7 +28,7 @@ static inline bool sSpaces(String& res, const char *& s)
 {
 	if((byte)*s <= ' ') {
 		char c = *s++;
-		if(c != '\2') {
+		if(c != '\2' && c != '\x1f') {
 			res.Cat(' ');
 			while((byte)*s <= ' ' && *s)
 				s++;
@@ -44,7 +44,13 @@ String FnItem(const char *s, const char *pname, const char *qname, const String&
 	while(*s && (byte)*s <= ' ') s++;
 	while(*s) { // Get the name of function into res
 		while(*s && !iscid(*s) && *s != '~')
-			s++;
+			if(*s == '[') { // Skip MSVC attributes
+				while(*s)
+					if(*s++ == '[')
+						break;
+			}
+			else
+				s++;
 		int lvl = 0;
 		int plvl = 0;
 		for(;;) {
@@ -83,6 +89,7 @@ String FnItem(const char *s, const char *pname, const char *qname, const String&
 			break;
 		res.Clear();
 	}
+	bool wasid = false;
 	while(*s) {
 		const char *w = bew(qname, s);
 		byte c = *s;
@@ -91,6 +98,7 @@ String FnItem(const char *s, const char *pname, const char *qname, const String&
 				res.Cat(' ');
 			res.Cat(name);
 			s = w;
+			wasid = true;
 		}
 		else
 		if(iscid(c)) {
@@ -104,17 +112,24 @@ String FnItem(const char *s, const char *pname, const char *qname, const String&
 			}
 			else
 				while((byte)*s <= ' ' && *s) s++;
+			wasid = true;
 		}
 		else
 		if(c == '=') {
 			s++;
 			int l = 0;
-			while(*s && !(l == 0 && (*s == ',' || *s == ')'))) {
-				if(*s == '(')
+			int tl = 0;
+			while(*s && !(l == 0 && (*s == ',' && tl == 0 || *s == ')'))) {
+				if(*s == '(' || *s == '[')
 					l++;
 				else
-				if(*s == ')')
+				if(*s == ')' || *s == ']')
 					l--;
+				if(*s == '<') // we always consider < > to be template bracket, not operator here
+					tl++;
+				else
+				if(*s == '>')
+					tl--;
 				s++;
 			}
 		}
@@ -124,8 +139,15 @@ String FnItem(const char *s, const char *pname, const char *qname, const String&
 			while((byte)*s <= ' ' && *s)
 				s++;
 		}
+		else
+		if(c == '[') { // Skip MSVC attribute
+			while(*s)
+				if(*s++ == ']')
+					break;
+		}
 		else {
 			res.Cat(c);
+			wasid = false;
 			s++;
 		}
 	}
@@ -135,11 +157,13 @@ String FnItem(const char *s, const char *pname, const char *qname, const String&
 String Purify(const char *s, const char *qname, const String& name) {
 	String res;
 	while(*s && (byte)*s <= ' ') s++;
+	bool wasid = false;
 	while(*s) {
 		const char *w = bew(qname, s);
 		if(w && w > s) {
 			res.Cat(name);
 			s = w;
+			wasid = true;
 		}
 		else
 		if(iscid(*s)) {
@@ -150,10 +174,24 @@ String Purify(const char *s, const char *qname, const String& name) {
 				res.Cat(q);
 			else
 				while((byte)*s <= ' ' && *s) s++;
+			wasid = true;
 		}
 		else
-		if(!sSpaces(res, s))
+		if(*s == '[' && !wasid) { // skip MSVC attribute
+			do {
+				while(*s)
+					if(*s++ == ']')
+						break;
+				while(*s == ' ' || *s == '\2' || *s == '\x1f')
+					s++;
+			}
+			while(*s == '[');
+		}
+		else
+		if(!sSpaces(res, s)) {
 			res.Cat(*s++);
+			wasid = false;
+		}
 	}
 	return TrimRight(res);
 }
@@ -334,7 +372,9 @@ void Parser::ThrowError(const String& e)
 	int i = 0;
 	while(i < 40 && lex[i] != t_eof)
 		i++;
-	LLOG("ERROR: (" << GetLine(lex.Pos()) << ") " << e << ", scope: " << current_scope <<
+	DDUMP(lex.Code());
+	DDUMP((char)lex.Code());
+	DLOG("ERROR: (" << GetLine(lex.Pos()) << ") " << e << ", scope: " << current_scope <<
 	     "  " << AsCString(String(lex.Pos(), lex.Pos(i))));
 #endif
 	throw Error();
@@ -542,19 +582,24 @@ String Parser::StructDeclaration(const String& tn, const String& tp)
 	if(Key(t_dblcolon))
 		context.scope = Null;
 	String name;
+	String new_scope = context.scope;
 	if(lex.IsId())
 		do {
 			context.typenames.FindAdd(lex);
 			name = lex.GetId(); // name of structure
 			if(lex == '<')
 				name << TemplateParams();
-			ScopeCat(context.scope, name);
+			ScopeCat(new_scope, name);
 		}
 		while(Key(t_dblcolon));
 	else {
 		name = AnonymousName();
-		ScopeCat(context.scope, name);
+		ScopeCat(new_scope, name);
 	}
+	if(lex.IsId() || lex == '*') { // struct My { struct My *p; }
+		return name;
+	}
+	context.scope = new_scope;
 	context.access = t == tk_class ? PRIVATE : PUBLIC;
 	if(tn.GetCount()) {
 		if(context.ctname.GetCount())
@@ -566,7 +611,7 @@ String Parser::StructDeclaration(const String& tn, const String& tp)
 		nn = "template " + tp + " ";
 	String key = (t == tk_class ? "class" : t == tk_union ? "union" : "struct");
 	nn << key << ' ' << name;
-	DLOG("Struct "  << name << " using " << context.namespace_using);
+	DLOG("Struct "  << context.scope << " using " << context.namespace_using);
 	CppItem& im = Item(context.scope, context.namespace_using, key, name, lex != ';');
 	im.kind = tp.IsEmpty() ? STRUCT : STRUCTTEMPLATE;
 	im.type = name;
@@ -611,7 +656,9 @@ String Parser::StructDeclaration(const String& tn, const String& tp)
 		while(Key(','));
 	}
 	if(Key('{')) {
+		struct_level++;
 		ScopeBody();
+		struct_level--;
 		im.natural = Gpurify(nn);
 		im.decla = true;
 	}
@@ -698,6 +745,8 @@ void Parser::ParamList(Decl& d) {
 			}
 			else
 				d.param.Add() = pick(Declaration(false, false, Null, Null).Top());
+			DDUMP(d.param.Top().name);
+			DDUMP(d.param.Top().type);
 			if(Key(t_elipsis)) {
 				Elipsis(d);
 				break;
@@ -809,9 +858,17 @@ void Parser::Declarator(Decl& d, const char *p)
 	}
 	if(Key('=') || (inbody && lex == '(')) {
 		int level = 0;
+		int tlevel = 0;
 		for(;;) {
-			if(lex == t_eof || level == 0 && (lex == ',' || lex == ')' || lex == ';'))
+			if(lex == t_eof  || lex == ';'
+			   || level == 0 && ((lex == ',' && tlevel == 0) || lex == ')'))
 				break;
+			if(Key('<')) // we ignore < > as operators, always consider them template bracket
+				tlevel++;
+			else
+			if(Key('>'))
+				tlevel--;
+			else
 			if(Key('(') || Key('{'))
 				level++;
 			else
@@ -961,7 +1018,7 @@ Array<Parser::Decl> Parser::Declaration0(bool l0, bool more, const String& tname
 Array<Parser::Decl> Parser::Declaration(bool l0, bool more, const String& tname, const String& tparam)
 {
 	if(Key(tk_typedef)) {
-		Array<Decl> r = Declaration(false, true, tname, tparam);
+		Array<Decl> r = Declaration0(false, true, tname, tparam);
 		for(int i = 0; i < r.GetCount(); i++) {
 			r[i].type_def = true;
 			r[i].natural = "typedef " + r[i].natural;
@@ -1070,7 +1127,7 @@ bool Parser::TryDecl()
 		q++;
 	if(!lex.IsId(q))
 		return false;
-	type = Qualify(*base, current_scope, type, current.using_namespaces);
+	type = Qualify(*base, current_scope, type, context.namespace_using);
 	if(base->Find(NoTemplatePars(type)) >= 0) {
 		Locals(type);
 		return true;
@@ -1107,12 +1164,15 @@ void Parser::Statement()
 		++lex;
 	}
 	if(Key('{')) {
+		Context cc;
+		cc <<= context;
 		int l = local.GetCount();
 		while(!Key('}')) {
 			if(lex == t_eof)
 				ThrowError("eof");
 			Statement();
 		}
+		context <<= cc;
 		local.Trim(l);
 	}
 	else
@@ -1169,6 +1229,9 @@ void Parser::Statement()
 		Statement();
 		local.Trim(l);
 	}
+	else
+	if(UsingNamespace())
+		;
 	else
 	if(TryDecl())
 		Key(';');
@@ -1295,18 +1358,46 @@ String Parser::AnonymousName()
 }
 
 bool Parser::Scope(const String& tp, const String& tn) {
-	DLOG("Scope " << context.namespace_using);	
 	if(Key(tk_namespace)) {
 		Check(lex.IsId(), "Expected name of namespace");
 		String name = lex.GetId();
+		DLOG("namespace " << name);
+		Context c0;
+		c0 <<= context;
+		int struct_level0 = struct_level;
 		ScopeCat(context.scope, name);
 		if(Key('{')) {
 			Context cc;
 			cc <<= context;
-			ScopeBody();
-			context <<= cc;
+			while(!Key('}')) {
+				if(lex == t_eof)
+					ThrowError("Unexpected end of file");
+				try {
+					Do();
+				}
+				catch(Error) {
+					if(struct_level0)
+						throw;
+					context <<= cc;
+					struct_level = struct_level0;
+					DLOG("---- Recovery to namespace level");
+					++lex;
+					lex.SkipToGrounding();
+					lex.ClearBracesLevel();
+					DLOG("Grounding skipped to " << GetLine(lex.Pos()));
+				}
+				catch(Lex::Grounding) {
+					LLOG("---- Grounding to namespace level");
+					context <<= cc;
+					struct_level = struct_level0;
+					lex.ClearBracesLevel();
+					lex.ClearBody();
+				}
+			}
 		}
+		DLOG("End namespace");
 		Key(';');
+		context <<= c0;
 		SetScopeCurrent();
 		return true;
 	}
@@ -1430,16 +1521,18 @@ void Parser::Enum()
 			if(Key('}')) break;
 		}
 	}
-	if(lex.IsId()) // typedef name ignored here
-		++lex;
+	while(!Key(';')) {
+		if(lex.IsId() || lex == ',' || lex == '*') // typedef name ignored here
+			++lex;
+		else
+			break;
+	}
 	Key(';');
 	SetScopeCurrent();
 }
 
-void Parser::Do()
+bool Parser::UsingNamespace()
 {
-	LLOG("Do, scope: " << current_scope);
-	Line();
 	if(Key(tk_using)) {
 		if(Key(tk_namespace))
 			while(lex.IsId()) {
@@ -1459,7 +1552,20 @@ void Parser::Do()
 		while(!Key(';') && lex != t_eof)
 			++lex;
 		DDUMP(context.namespace_using);
+		return true;
 	}
+	return false;
+}
+
+void Parser::Do()
+{
+	LLOG("Do, scope: " << current_scope);
+	DDUMP(lex.IsGrounded());
+	if(lex.IsGrounded() && struct_level)
+		throw Lex::Grounding();
+	Line();
+	if(UsingNamespace())
+		;
 	else
 	if(Key(tk_extern) && lex == t_string) { // extern "C++" kind
 		++lex;
@@ -1533,7 +1639,7 @@ void Parser::Do()
 			const char *s = n;
 			while(*s && iscid(*s))
 				name.Cat(*s++);
-			CppItem& im = Item(context.scope, context.namespace_using, n, name);
+			CppItem& im = Item("", context.namespace_using, n, name);
 			im.kind = MACRO;
 			s = strchr(n, '(');
 			if(s) {
@@ -1576,10 +1682,8 @@ void Parser::Do()
 			for(int i = 0; i < r.GetCount(); i++) {
 				Decl& d = r[i];
 				if(d.function) {
-					if(!d.isfriend) {
-						CppItem &im = Fn(d, Null, body, String(), String());
-						functionItem = &im;
-					}
+					if(!d.isfriend)
+						functionItem = &Fn(d, Null, body, String(), String());
 				}
 				else {
 					String h = d.natural;
@@ -1650,6 +1754,7 @@ void  Parser::Do(Stream& in, CppBase& _base, int filei_, int filetype_,
 				context.tparam.Clear();
 				context.scope = Join(namespace_stack, "::");
 				inbody = false;
+				struct_level = 0;
 				for(int i = 0; i < typenames.GetCount(); i++)
 					context.typenames.Add(lex.Id(typenames[i]));
 				Do();

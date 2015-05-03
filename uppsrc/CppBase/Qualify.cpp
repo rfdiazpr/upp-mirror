@@ -49,6 +49,9 @@ bool Qualify0(ScopeInfo& nf, const String& type, const String& usings, String& q
 				qt = qs;
 				return true;
 			}
+			qt = type;
+			if(nf.base.Find(qt) >= 0) // e.g. std::string
+				return true;
 			qt = type.Mid(q + 1);
 			return true;
 		}
@@ -210,7 +213,7 @@ void QualifyPass1(CppBase& base)
 				m.qualify = false;
 				m.qtype = QualifyIds(nf, m.type, m.using_namespaces, true); // type of item, now qualified (probaly already was)
 				m.qptype = QualifyIds(nf, m.ptype, m.using_namespaces, true); // base classes
-				m.qitem = m.item; // name of item is already qualified
+				m.qitem = m.item; // name of type (struct) item is already qualified
 			}
 		}
 	}
@@ -230,7 +233,7 @@ void QualifyPass2(CppBase& base)
 				m.qualify = false;
 				m.qtype = QualifyIds(nf, m.type, m.using_namespaces, true);
 				m.qptype = QualifyIds(nf, m.ptype, m.using_namespaces, true);
-				m.qitem = m.IsCode() ? QualifyIds(nf, m.using_namespaces, m.item, false)
+				m.qitem = m.IsCode() ? QualifyIds(nf, m.item, m.using_namespaces, false)
 				                     : m.item;
 			}
 		}

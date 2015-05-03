@@ -447,7 +447,7 @@ void AssistEditor::Assist()
 		while(Ch(q - 1) == ':')
 			q--;
 		Vector<String> tparam;
-		String scope = ParseTemplatedType(Qualify(parser.current_scope, CompleteIdBack(q)), tparam);
+		String scope = ParseTemplatedType(Qualify(parser.current_scope, CompleteIdBack(q), parser.context.namespace_using), tparam);
 		GatherItems(scope, false, in_types, true);
 	}
 	else {
@@ -1225,7 +1225,7 @@ void Ide::ContextGoto0(int pos)
 					t.Trim(t.GetCount() - 2);
 				scope.Add(t);
 				istype.Add(false);
-				Scopefo f(CodeBase(), t); // Try base classes too!
+				ScopeInfo f(CodeBase(), t); // Try base classes too!
 				todo.Append(f.GetBases());
 			}
 		}
@@ -1233,7 +1233,7 @@ void Ide::ContextGoto0(int pos)
 
 	if(qual.GetCount()) { // Ctrl::MOUSELEFT, Vector<String>::Iterator
 		Vector<String> todo;
-		todo.Add(RemoveTemplateParams(Qualify(CodeBase(), parser.current_scope, qual + "::" + id)));
+		todo.Add(RemoveTemplateParams(Qualify(CodeBase(), parser.current_scope, qual + "::" + id, parser.context.namespace_using)));
 		while(scope.GetCount() < 100 && todo.GetCount()) {
 			String t = todo[0];
 			if(t.EndsWith("::"))
@@ -1249,7 +1249,7 @@ void Ide::ContextGoto0(int pos)
 				scope.Add(tt);
 				istype.Add(true);
 			}
-			Scopefo f(CodeBase(), t); // Try base classes too!
+			ScopeInfo f(CodeBase(), t); // Try base classes too!
 			todo.Append(f.GetBases());
 		}
 	}
@@ -1263,7 +1263,7 @@ void Ide::ContextGoto0(int pos)
 				t.Trim(t.GetCount() - 2);
 			scope.Add(t);
 			istype.Add(false);
-			Scopefo f(CodeBase(), t); // Try base classes too!
+			ScopeInfo f(CodeBase(), t); // Try base classes too!
 			todo.Append(f.GetBases());
 		}
 		q = parser.local.Find(id);
@@ -1274,7 +1274,7 @@ void Ide::ContextGoto0(int pos)
 			return;
 		}
 		// Can be unqualified type name like 'String'
-		String t = RemoveTemplateParams(Qualify(CodeBase(), parser.current_scope, id));
+		String t = RemoveTemplateParams(Qualify(CodeBase(), parser.current_scope, id, parser.context.namespace_using));
 		if(CodeBase().Find(t) >= 0) {
 			scope.Add(t);
 			istype.Add(true);

@@ -122,7 +122,9 @@ const Vector<String>& ScopeInfo::GetScopes(const String& usings_)
 			nn.Trim(max(0, q - 1));
 		}
 		scopes.Add("");
-		scopes.Append(Split(usings, ';'));
+		Vector<String> h = Split(usings, ';');
+		for(int i = 0; i < h.GetCount(); i++)
+			scopes.Add(h[i] + "::");
 	}
 	return scopes;
 }

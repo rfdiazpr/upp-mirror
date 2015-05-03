@@ -86,10 +86,10 @@ void SaveCodeBase()
 	LLOG("Save code base " << CodeBase().GetCount());
 	RealizeDirectory(ConfigFile("cfg/codebase"));
 	StringStream ss;
-	Store(callback(SerializeCodeBase), ss, 2);
+	Store(callback(SerializeCodeBase), ss, 3);
 	String data = ss.GetResult();
 	String path = CodeBaseCacheFile();
-	SaveFile(path, LZ4Compress(data)); // TODO: LZ4?
+	SaveFile(path, LZ4Compress(data));
 }
 
 bool TryLoadCodeBase(const char *pattern)
@@ -107,7 +107,7 @@ bool TryLoadCodeBase(const char *pattern)
 	if(path.GetCount()) {
 		LTIMING("Load code base");
 		StringStream ss(LZ4Decompress(LoadFile(path)));
-		if(Load(callback(SerializeCodeBase), ss, 2)) {
+		if(Load(callback(SerializeCodeBase), ss, 3)) {
 			LLOG("Loaded " << ff.GetPath());
 			return true;
 		}
@@ -306,9 +306,13 @@ Vector<String> ParseSrc(Stream& in, int file, Callback2<int, const String&> erro
 		pp.Append(PreprocessSchFile(path));
 	else {
 		cpp.Preprocess(path, in, GetMasterFile(GetSourceFilePath(file)));
-		LLOG(path << ": " << cpp.ids.GetCount());
+		LOG(path << ": " << cpp.ids.GetCount());
+		LOG("masterfile " << GetMasterFile(GetSourceFilePath(file)));
+		LOG("namespace " << cpp.namespace_stack);
+		LOG("using " << cpp.namespace_using);
 		LDUMP(cpp.ids);
 		pp.Add(cpp.output);
+		SaveFile("c:/xxx/cpp/" + GetFileTitle(path), cpp.output);
 		filetype = decode(ext, ".h", FILE_H, ".hpp", FILE_HPP,
 		                       ".cpp",FILE_CPP, ".c", FILE_C, FILE_OTHER);
 		if(do_macros) {
@@ -407,6 +411,7 @@ void CodeBaseScanFile(const String& fn, bool check_macros)
 
 void ClearCodeBase()
 {
+	CleanPP();
 	CodeBase().Clear();
 	source_file.Clear();
 }

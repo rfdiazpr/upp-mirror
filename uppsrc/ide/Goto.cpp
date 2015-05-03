@@ -243,7 +243,7 @@ bool Ide::SwapSIf(const char *cref)
 	if(q < 0)
 		return false;
 	const Array<CppItem>& n = CodeBase()[q];
-	String qitem = QualifyKey(CodeBase(), p.current_scope, p.current_key);
+	String qitem = QualifyKey(CodeBase(), p.current_scope, p.current_key, p.context.namespace_using);
 	if(cref && MakeCodeRef(p.current_scope, p.current_key) != cref)
 		return false;
 	q = FindItem(n, qitem);

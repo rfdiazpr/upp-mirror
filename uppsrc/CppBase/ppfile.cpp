@@ -51,6 +51,13 @@ void SerializePPFiles(Stream& s)
 	s % sAllMacros % sPPfile % sPPserial;
 }
 
+void CleanPP()
+{
+	sAllMacros.Clear();
+	sPPfile.Clear();
+	sPPserial = 0;
+}
+
 void SweepPPFiles(const Index<String>& keep)
 {
 	for(int i = 0; i < sPPfile.GetCount(); i++)
@@ -192,10 +199,12 @@ void PPFile::Parse(Stream& in)
 							id << "::" << p.ReadId();
 						if(!was_using)
 							namespace_block.Add(level);
-						PPItem& m = item.Add();
-						next_segment = true;
-						m.type = type;
-						m.text = id;
+						if(!was_using || level == 0) {
+							PPItem& m = item.Add();
+							next_segment = true;
+							m.type = type;
+							m.text = id;
+						}
 						was_namespace = was_using = false;
 					}
 					else

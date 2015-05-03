@@ -45,6 +45,7 @@ void Cpp::ParamAdd(Vector<String>& param, const char *s, const char *e)
 String Cpp::Expand(const char *s)
 {
 	StringBuffer r;
+	const char *l0 = s;
 	while(*s) {
 		if(incomment) {
 			if(s[0] == '*' && s[1] == '/') {
@@ -106,7 +107,10 @@ String Cpp::Expand(const char *s)
 								}
 								else
 								if(*s == '\0') { // macro use spread into more lines
-									prefix_macro = ' ' + bid;
+									if(bid == l0) // begin of line
+										prefix_macro = bid;
+									else
+										prefix_macro = String(' ', 1) + bid; // do not want to emit grounding in body
 									return r;
 								}
 								else
@@ -118,6 +122,8 @@ String Cpp::Expand(const char *s)
 					}
 					int ti = notmacro.GetCount();
 					notmacro.Add(id);
+					for(int i = 0; i < param.GetCount(); i++)
+						param[i] = Expand(param[i]);
 					id = '\x1f' + Expand(m->Expand(param)); // \x1f is info for Pre that there was a macro expansion
 					notmacro.Trim(ti);
 				}
@@ -280,6 +286,7 @@ void Cpp::Do(const String& sourcefile, Stream& in, const String& currentfile,
 		segment_id.Add(--segment_serial);
 		while(!in.IsEof()) {
 			String l = prefix_macro + in.GetLine();
+			DDUMP(l);
 			prefix_macro.Clear();
 			lineno++;
 			int el = 0;

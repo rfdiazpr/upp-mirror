@@ -1,0 +1,49 @@
+
+#undef _STCONS
+
+ #define _STCONS(ty, name, val)	static const ty name = (ty)(val)
+
+	_STCONS(float_denorm_style, has_denorm, denorm_absent);
+
+
+
+#define InterlockedIncrement16 _InterlockedIncrement16
+
+SHORT
+InterlockedIncrement16 (
+	SHORT volatile *Addend
+);
+
+ #define max (a, b) (a < b ? b : a)
+
+max(12, 23)
+
+max (A, B)
+
+#undef max
+
+#define max(a, b) (a < b ? b : a)
+
+max(12, 23)
+
+max (A, B)
+
+
+#define macro something // comment
+
+macro
+something
+//$- comment
+
+#define mm(a, b, c, d) (d) [c] {b} <a>
+
+mm(1, 2, 3, 4)
+
+mm(1, 2,
+3, 4)
+
+mm(1,
+2,
+3,
+4
+)

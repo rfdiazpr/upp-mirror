@@ -9,7 +9,9 @@ file
 	test1.out,
 	test2.in,
 	test2.out,
-	test3.in;
+	test3.in,
+	todo.in,
+	totest.in;
 
 mainconfig
 	"" = "SSE2";

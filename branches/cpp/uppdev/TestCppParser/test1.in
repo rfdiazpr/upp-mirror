@@ -1,3 +1,5 @@
+<<<<<<< .mine
+=======
 using namespace std;
 
 struct Xxx {
@@ -14,3 +16,4 @@ namespace Test {
 struct Beta {
 	int a, v, c;
 };
+>>>>>>> .r8401

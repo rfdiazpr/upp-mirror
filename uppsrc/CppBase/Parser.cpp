@@ -140,14 +140,15 @@ String FnItem(const char *s, const char *pname, const char *qname, const String&
 				s++;
 		}
 		else
-		if(c == '[') { // Skip MSVC attribute
+		if(c == '[' && !wasid) { // Skip MSVC attribute
 			while(*s)
 				if(*s++ == ']')
 					break;
 		}
 		else {
 			res.Cat(c);
-			wasid = false;
+			if(c == ',')
+				wasid = false;
 			s++;
 		}
 	}
@@ -158,6 +159,7 @@ String Purify(const char *s, const char *qname, const String& name) {
 	String res;
 	while(*s && (byte)*s <= ' ') s++;
 	bool wasid = false;
+	bool firstpar = true;
 	while(*s) {
 		const char *w = bew(qname, s);
 		if(w && w > s) {
@@ -189,8 +191,11 @@ String Purify(const char *s, const char *qname, const String& name) {
 		}
 		else
 		if(!sSpaces(res, s)) {
+			if(*s == ',')
+				wasid = false;
+			if(*s == '(' && firstpar)
+				wasid = firstpar = false;
 			res.Cat(*s++);
-			wasid = false;
 		}
 	}
 	return TrimRight(res);

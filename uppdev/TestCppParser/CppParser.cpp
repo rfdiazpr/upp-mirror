@@ -22,12 +22,9 @@ void Test(const char *path)
 	hh.Add("test");
 
 	Parser p;
-<<<<<<< .mine
-	p.Do(in, base, 0, 0, GetFileTitle(path), callback(AddError), Vector<String>(), Vector<String>(), Index<String>());
-=======
+//	p.Do(in, base, 0, 0, GetFileTitle(path), callback(AddError), Vector<String>(), Vector<String>(), Index<String>());
 	p.Do(in, base, 0, 0, GetFileTitle(path), callback(AddError),
 	     Vector<String>(), Vector<String>(), hh);
->>>>>>> .r8401
 
 	if(errs.GetCount())
 		DUMPC(errs);
@@ -39,17 +36,11 @@ void Test(const char *path)
 		for(int j = 0; j < ma.GetCount(); j++) {
 			const CppItem& m = ma[j];
 			out << '\t' << CppItemKindAsString(m.kind) << ", name: " << m.name << ", qitem: " << m.qitem
-<<<<<<< .mine
 			            << ", qtype " << m.qtype << ", qptype: " << m.qptype << ", line " << m.line
 			            << ", using " << m.using_namespaces
 			            << ", item " << m.item
 			            << ", natural " << m.natural
 			            << "\n";
-=======
-			            << ", qtype " << m.qtype << ", qptype: " << m.qptype << ", line " << m.line
-			            << ", using " << m.using_namespaces
-			            << "\n";
->>>>>>> .r8401
 		}
 		out << "}\n";
 	}
@@ -58,12 +49,8 @@ void Test(const char *path)
 	
 	p.dobody = true;
 	in.Seek(0);
-<<<<<<< .mine
-	p.Do(in, base, 0, 0, GetFileTitle(path), callback(AddError), Vector<String>(), Vector<String>(), Index<String>());
-=======
 	p.Do(in, base, 0, 0, GetFileTitle(path), callback(AddError),
 	     Vector<String>(), Vector<String>(), hh);
->>>>>>> .r8401
 	
 	out << "<locals> {\n";
 	for(int i = 0; i < p.local.GetCount(); i++) {

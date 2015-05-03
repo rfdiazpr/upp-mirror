@@ -1,19 +1,12 @@
-<<<<<<< .mine
-=======
-using namespace std;
+#define MACRO(x)     123+x
 
-struct Xxx {
-	int x;
-};
+MACRO(
+x
+)
 
-namespace Test {
-	using namespace Upp;
-	struct Alpha {
-		int x;
-	} goo;
-};
+MACRO(x)
 
-struct Beta {
-	int a, v, c;
-};
->>>>>>> .r8401
+ MACRO(x)
+
+ MACRO(x
+)

@@ -377,10 +377,8 @@ void Parser::ThrowError(const String& e)
 	int i = 0;
 	while(i < 40 && lex[i] != t_eof)
 		i++;
-	DDUMP(lex.Code());
-	DDUMP((char)lex.Code());
 	DLOG("ERROR: (" << GetLine(lex.Pos()) << ") " << e << ", scope: " << current_scope <<
-	     "  " << AsCString(String(lex.Pos(), lex.Pos(i))));
+	     ", code:  " << AsCString(String(lex.Pos(), lex.Pos(i))));
 #endif
 	throw Error();
 }
@@ -567,7 +565,6 @@ String Parser::StructDeclaration(const String& tn, const String& tp)
 {
 	int t = lex.GetCode(); // t is now struct/class/union
 	context.typenames.FindAdd(lex);
-	DDUMP(context.namespace_using);
 	Context cc;
 	cc <<= context;
 	CParser p(tp);
@@ -750,8 +747,6 @@ void Parser::ParamList(Decl& d) {
 			}
 			else
 				d.param.Add() = pick(Declaration(false, false, Null, Null).Top());
-			DDUMP(d.param.Top().name);
-			DDUMP(d.param.Top().type);
 			if(Key(t_elipsis)) {
 				Elipsis(d);
 				break;
@@ -1565,7 +1560,6 @@ bool Parser::UsingNamespace()
 void Parser::Do()
 {
 	LLOG("Do, scope: " << current_scope);
-	DDUMP(lex.IsGrounded());
 	if(lex.IsGrounded() && struct_level)
 		throw Lex::Grounding();
 	Line();

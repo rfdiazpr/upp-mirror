@@ -148,7 +148,6 @@ int CppItemInfoDisplay::DoPaint(Draw& w, const Rect& r, const Value& q,
 	int y = ry - Draw::GetStdFontCy() / 2;
 	int x0 = x;
 	Vector<ItemTextPart> n = ParseItemNatural(m);
-	for(int i = 0; i < n.GetCount(); i++) DDUMP(m.natural.Mid(n[i].pos, n[i].pos));
 	int starti = 0;
 	if(namestart)
 		for(int i = 0; i < n.GetCount(); i++)

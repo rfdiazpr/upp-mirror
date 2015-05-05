@@ -75,6 +75,8 @@ void Test(const char *path)
 
 CONSOLE_APP_MAIN {
 	StdLogSetup(LOG_COUT|LOG_FILE);
+
+	SeedRandom(0);
 	
 	FindFile ff(GetDataFile("*.in"));
 	while(ff) {

@@ -77,11 +77,13 @@ String Cpp::Expand(const char *s)
 				if(m) {
 					LTIMING("Expand macro");
 					Vector<String> param;
+					bool function_like = false;
 					if(m->param.GetCount()) {
 						const char *s0 = s;
 						while(*s && (byte)*s <= ' ')
 							s++;
 						if(*s == '(') {
+							function_like = true;
 							s++;
 							const char *b = s;
 							int level = 0;
@@ -120,12 +122,16 @@ String Cpp::Expand(const char *s)
 									s++;
 						}
 					}
-					int ti = notmacro.GetCount();
-					notmacro.Add(id);
-					for(int i = 0; i < param.GetCount(); i++)
-						param[i] = Expand(param[i]);
-					id = '\x1f' + Expand(m->Expand(param)); // \x1f is info for Pre that there was a macro expansion
-					notmacro.Trim(ti);
+					if(!!m->param.GetCount() == function_like) {
+						int ti = notmacro.GetCount();
+						Vector<String> eparam;
+						eparam.SetCount(param.GetCount());
+						for(int i = 0; i < param.GetCount(); i++)
+							eparam[i] = Expand(param[i]);
+						notmacro.Add(id);
+						id = '\x1f' + Expand(m->Expand(param, eparam)); // \x1f is info for Pre that there was a macro expansion
+						notmacro.Trim(ti);
+					}
 				}
 				else
 					notmacro.Add(id);
@@ -170,8 +176,9 @@ bool Cpp::Preprocess(const String& sourcefile, Stream& in, const String& current
 	const Vector<String>& ignorelist = GetIgnoreList();
 
 	for(int i = 0; i < ignorelist.GetCount(); i++) {
-		PPMacro& pp = macro.GetAdd(ignorelist[i]);
-		pp.macro.param = ".";
+		PPMacro h;
+		PPMacro& pp = macro.GetAdd(h.macro.Define(ignorelist[i]));
+		pp = h;
 		pp.segment_id = -999999999;
 	}
 	segment_id.Add(-999999999);
@@ -286,7 +293,6 @@ void Cpp::Do(const String& sourcefile, Stream& in, const String& currentfile,
 		segment_id.Add(--segment_serial);
 		while(!in.IsEof()) {
 			String l = prefix_macro + in.GetLine();
-			DDUMP(l);
 			prefix_macro.Clear();
 			lineno++;
 			int el = 0;

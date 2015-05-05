@@ -18,6 +18,8 @@ const Index<String>&             GetNamespaceEndMacros();
 const Vector<String>&            GetIgnoreList();
 
 struct CppMacro : Moveable<CppMacro> {
+	enum { PLACEHOLDER = '@' }; _DBG_ // replace with different placeholder
+
 	String        param;
 	String        body;
 	
@@ -25,7 +27,10 @@ struct CppMacro : Moveable<CppMacro> {
 	void   SetUndef()                { body = "\x7f"; }
 	bool   IsUndef() const           { return body[0] == '\x7f' && body[1] == '\0'; }
 
-	String Expand(const Vector<String>& p) const;
+//	String Expand(const Vector<String>& p) const;
+	String Expand(const Vector<String>& p, const Vector<String>& ep) const;
+
+	static String RemovePlaceholders(const String& s);
 	
 	void   Serialize(Stream& s)      { s % param % body; }
 	
@@ -494,6 +499,7 @@ struct Parser {
 	void   Declarator(Decl& d, const char *p);
 	void   EatInitializers();
 	void   Vars(Array<Decl>& r, const char *p, bool type_def, bool more);
+	void   ReadMods(Decla& d);
 	Array<Decl> Declaration0(bool l0, bool more, const String& tname, const String& tparam);
 	Array<Decl> Declaration(bool l0/* = false*/, bool more/* = false*/, const String& tname, const String& tparam);
 	bool   IsParamList(int q);

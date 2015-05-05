@@ -58,7 +58,7 @@ String CppMacro::ToString() const
 	return r;
 }
 
-String CppMacro::Expand(const Vector<String>& p) const
+String CppMacro::Expand(const Vector<String>& p, const Vector<String>& ep) const
 {
 	String r;
 	const char *s = body;
@@ -69,6 +69,7 @@ String CppMacro::Expand(const Vector<String>& p) const
 		pp.Trim(pp.GetCount() - 1);
 	}
 	Index<String> param(pick(Split(pp, ',')));
+	static String VA_ARGS("__VA_ARGS__"); // static - Speed optimization
 	while(*s) {
 		if(IsAlpha(*s) || *s == '_') {
 			const char *b = s;
@@ -76,21 +77,31 @@ String CppMacro::Expand(const Vector<String>& p) const
 			while(IsAlNum(*s) || *s == '_')
 				s++;
 			String id(b, s);
-			static String VA_ARGS("__VA_ARGS__"); // Speed optimization
+			const char *ss = b;
+			bool cat = false;
+			while(ss > ~body && ss[-1] == ' ')
+				ss--;
+			if(ss >= ~body + 2 && ss[-1] == '#' && ss[-2] == '#')
+				cat = true;
+			ss = s;
+			while(*ss && *ss == ' ')
+				ss++;
+			if(ss[0] == '#' && ss[1] == '#')
+				cat = true;
 			if(id == VA_ARGS) {
 				bool next = false;
-				for(int i = param.GetCount(); i < p.GetCount(); i++) {
+				for(int i = param.GetCount(); i < ep.GetCount(); i++) {
 					if(next)
 						r.Cat(", ");
-					r.Cat(p[i]);
+					r.Cat((cat ? p : ep)[i]);
 					next = true;
 				}
 			}
 			else {
 				int q = param.Find(id);
 				if(q >= 0) {
-					if(q < p.GetCount())
-						r.Cat(p[q]);
+					if(q < ep.GetCount())
+						r.Cat((cat ? p : ep)[q]);
 				}
 				else
 					r.Cat(id);
@@ -134,6 +145,15 @@ String CppMacro::Expand(const Vector<String>& p) const
 		r.Cat(*s++);
 	}
 	return r;
+}
+
+String CppMacro::RemovePlaceholders(const String& m) _DBG_
+{
+	StringBuffer result;
+	for(const char *s = m; *s; s++)
+		if(*s != PLACEHOLDER)
+			result.Cat(*s);
+	return result;
 }
 
 END_UPP_NAMESPACE

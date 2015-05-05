@@ -891,13 +891,8 @@ bool Parser::IsParamList(int q)
 	return true;
 }
 
-Array<Parser::Decl> Parser::Declaration0(bool l0, bool more, const String& tname, const String& tparam)
+void Parser::ReadMods(Decla& d)
 {
-	Array<Decl> r;
-	Decla d;
-	const char *p = lex.Pos();
-	if(Key(tk_friend))
-		d.isfriend = true;
 	for(;;) {
 		if(Key(tk_static))
 			d.s_static = true;
@@ -923,6 +918,16 @@ Array<Parser::Decl> Parser::Declaration0(bool l0, bool more, const String& tname
 		if(!(Key(tk_inline) || Key(tk_force_inline) || Key(tk___inline) || VCAttribute()))
 			break;
 	}
+}
+
+Array<Parser::Decl> Parser::Declaration0(bool l0, bool more, const String& tname, const String& tparam)
+{
+	Array<Decl> r;
+	Decla d;
+	const char *p = lex.Pos();
+	if(Key(tk_friend))
+		d.isfriend = true;
+	ReadMods(d);
 	Qualifier();
 	if(l0) {
 		if(lex == tk_SKYLARK && lex[1] == '(' && lex.IsId(2)) {
@@ -986,6 +991,7 @@ Array<Parser::Decl> Parser::Declaration0(bool l0, bool more, const String& tname
 		return r;
 	}
 	String st = ReadType(d, tname, tparam);
+	ReadMods(d);
 	if(!st.IsEmpty()) {
 		Decl& a = r.Add();
 		a.name = st;
@@ -1564,6 +1570,9 @@ void Parser::Do()
 		throw Lex::Grounding();
 	Line();
 	if(UsingNamespace())
+		;
+	else
+	if(Key(';')) // 'empty' declaraion, result of some ignores
 		;
 	else
 	if(Key(tk_extern) && lex == t_string) { // extern "C++" kind

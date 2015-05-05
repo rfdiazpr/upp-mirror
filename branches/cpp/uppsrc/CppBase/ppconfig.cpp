@@ -15,11 +15,11 @@ String GetStdConfig()
 {
 	static const char ns[] = "_STD_BEGIN:std;_C_STD_BEGIN:std;_STDEXT_BEGIN:stdext;NAMESPACE_UPP:Upp";
 	static const char endns[] = "_STD_END;_STDEXT_END;_C_STD_END;END_UPP_NAMESPACE";
-	static const char ignore[] = "__declspec;__cdecl;__attribute__;__stdcall;__forceinline;"
+	static const char ignore[] = "__declspec(...);__cdecl;__attribute__(...);__stdcall;__forceinline;"
                                  "__out;__in;__inout;__deref_in;__deref_inout;__deref_out;"
-                                 "__pragma;__pascal;_far;_pascal;_cdecl;"
+                                 "__pragma(...);__pascal;_far;_pascal;_cdecl;"
                                  "__AuToQuOtE;__xin;__xout;"
-                                 "__clrcall";
+                                 "__clrcall;__alignof(...)";
 	ValueMap json;
 	ValueArray va;
 	Vector<String> h = Split(ns, ';');

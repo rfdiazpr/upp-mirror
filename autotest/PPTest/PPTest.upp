@@ -5,8 +5,10 @@ uses
 file
 	PPTest.cpp,
 	test.in,
-	test.out;
+	test.out,
+	help.in;
 
 mainconfig
-	"" = "SSE2";
+	"" = "",
+	"" = "SAVE";
 

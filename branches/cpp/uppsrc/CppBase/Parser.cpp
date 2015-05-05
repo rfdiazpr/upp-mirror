@@ -991,7 +991,8 @@ Array<Parser::Decl> Parser::Declaration0(bool l0, bool more, const String& tname
 		return r;
 	}
 	String st = ReadType(d, tname, tparam);
-	ReadMods(d);
+	if(!lex.IsGrounded()) // 'static' etc.. can be after type too... (but not allow it on start of line)
+		ReadMods(d); 
 	if(!st.IsEmpty()) {
 		Decl& a = r.Add();
 		a.name = st;

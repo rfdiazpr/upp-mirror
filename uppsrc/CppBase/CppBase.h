@@ -258,7 +258,7 @@ public:
 	void        EndBody()                   { body--; }
 	void        ClearBody()                 { body = 0; }
 	bool        IsBody() const              { return body; }
-	bool        IsGrounded()                { Code(); return term[0].grounding; }
+	bool        IsGrounded()                { Code(); return term.GetCount() && term[0].grounding; }
 	void        SkipToGrounding();
 
 	const char *Pos(int pos = 0);

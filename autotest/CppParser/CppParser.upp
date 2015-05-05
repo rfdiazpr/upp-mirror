@@ -43,7 +43,11 @@ file
 	test18.in,
 	test18.out,
 	test19.in,
-	test19.out;
+	test19.out,
+	test20.in,
+	test20.out,
+	test21.in,
+	test21.out;
 
 mainconfig
 	"" = "",

@@ -12,5 +12,16 @@ CONSOLE_APP_MAIN
 	FileIn in(path);
 	cpp.Preprocess(path, in, path);
 	
-	DDUMP(cpp.output);
+	String s = cpp.output;
+	String opath = GetDataFile("test.out");
+
+	LOG("======================");
+	LOG(cpp.output);
+
+#ifdef flagSAVE
+	SaveFile(opath, s);
+#else
+	ASSERT(LoadFile(opath) == s);
+#endif
+	LOG("===================== OK");
 }

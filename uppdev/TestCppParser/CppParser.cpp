@@ -67,7 +67,7 @@ void Test(const char *path)
 
 CONSOLE_APP_MAIN {
 	StdLogSetup(LOG_COUT|LOG_FILE);
-//	Test("C:/xxx/cpp/xstring");
+//	Test("C:/xxx/cpp/math");
 	Test(GetDataFile("test1.in"));
 	/*
 	FindFile ff(GetDataFile("test1.in"));

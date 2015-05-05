@@ -1,12 +1,1 @@
-#define MACRO(x)     123+x
-
-MACRO(
-x
-)
-
-MACRO(x)
-
- MACRO(x)
-
- MACRO(x
-)
+inline int static foo();

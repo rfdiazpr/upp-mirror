@@ -76,8 +76,6 @@ Vector<ItemTextPart> ParseItemNatural(const String& name,
                                       const String& ctname,
                                       const char *s)
 {
-	DLOG("ParseItemNatural " << natural << ", pname: " << pname
-	                         << ", tname: " << tname << ", ctname: " << ctname);
 	Vector<ItemTextPart> part;
 	int len = name.GetLength();
 	if(len == 0) {

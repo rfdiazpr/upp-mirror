@@ -64,17 +64,20 @@ String Cpp::Expand(const char *s)
 			while(iscid(*s))
 				s++;
 			String id(bid, s);
+			DLOG("Expand " << id);
 			LTIMING("Expand ID2");
 			ids.FindAdd(id);
 			if(notmacro.Find(id) < 0) {
+				DLOG("Expand2 " << id);
 				const PPMacro *pp = macro.FindLastPtr(id);
 				int segmenti = pp ? segment_id.Find(pp->segment_id) : -1;
 				const CppMacro *m = FindMacro(id, segment_id, segmenti);
 				if(!m && pp)
 					m = &pp->macro;
-				if(m && m->IsUndef())
+				if(m && m->IsUndef()) DLOG("UNDEF"),
 					m = NULL;
 				if(m) {
+					DLOG("Expand3 " << id);
 					LTIMING("Expand macro");
 					Vector<String> param;
 					bool function_like = false;

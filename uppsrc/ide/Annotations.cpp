@@ -87,30 +87,43 @@ void AssistEditor::SyncAnnotationPopup()
 	String tl;
 	if(!GetAnnotationRef(tl, coderef))
 		return;
+	DLOG("=========== SyncAnnotationPopup " << coderef << " " << tl);
 	if(tl.GetCount()) {
 		static String   last_path;
 		static RichText topic_text;
 		String path = GetTopicPath(tl);
+		DDUMP(path);
 		if(path != last_path)
 			topic_text = ParseQTF(ReadTopic(LoadFile(path)).text);
 		
 		RichText result;
-		for(int i = 0; i < topic_text.GetPartCount(); i++)
-			if(IsCodeItem(topic_text, i) && topic_text.Get(i).format.label == coderef) {
-				while(i > 0 && IsCodeItem(topic_text, i)) i--;
-				if(!IsCodeItem(topic_text, i)) i++;
-				while(IsCodeItem(topic_text, i))
-					result.Cat(topic_text.Get(i++));
-				while(i < topic_text.GetPartCount() && !IsCodeItem(topic_text, i)
-				      && !IsBeginEnd(topic_text, i))
-					if(topic_text.IsPara(i))
+		bool found = false;
+		for(int pass = 0; pass < 2 && !found; pass++) {
+			DDUMP(coderef);
+			for(int i = 0; i < topic_text.GetPartCount(); i++)
+				if(IsCodeItem(topic_text, i) && topic_text.Get(i).format.label == coderef) {
+					while(i > 0 && IsCodeItem(topic_text, i)) i--;
+					if(!IsCodeItem(topic_text, i)) i++;
+					while(IsCodeItem(topic_text, i))
 						result.Cat(topic_text.Get(i++));
-					else {
-						RichTable table(topic_text.GetTable(i++), 1);
-						result.CatPick(pick(table));
+					while(i < topic_text.GetPartCount() && !IsCodeItem(topic_text, i)
+					      && !IsBeginEnd(topic_text, i)) {
+						if(topic_text.IsPara(i))
+							result.Cat(topic_text.Get(i++));
+						else {
+							RichTable table(topic_text.GetTable(i++), 1);
+							result.CatPick(pick(table));
+						}
 					}
+					pass = 2;
+					DLOG("FOUND");
+					break;
+				}
+			if(pass && coderef.StartsWith("Upp::"))
+				coderef = coderef.Mid(5);
+			else
 				break;
-			}
+		}
 		result.SetStyles(topic_text.GetStyles());
 		annotation_popup.Pick(pick(result), GetRichTextStdScreenZoom());
 	}

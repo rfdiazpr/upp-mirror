@@ -9,7 +9,7 @@ AndroidBuilder::AndroidBuilder() :
 	androidSDK(sdkPath),
 	androidNDK(ndkPath)
 {
-	
+	androidSDK.DeducePathReleatedValues();
 }
 
 String AndroidBuilder::GetTargetExt() const
@@ -327,7 +327,7 @@ bool AndroidBuilder::AddSharedLibsToApk(const String& apkPath)
 	const String libDir = androidProjectDir + DIR_SEPS + "lib";
 	
 	Vector <String> sharedLibsToAdd;
-	for(FindFile ff(AppendFileName (libsDir, "*")); ff; ff.Next ()) {
+	for(FindFile ff(AppendFileName (libsDir, "*")); ff; ff.Next()) {
 		if (!ff.IsHidden () && !ff.IsSymLink () && ff.IsDirectory()) {
 			for(FindFile ffa(AppendFileName (ff.GetPath(), "*")); ffa; ffa.Next ()) {
 				if(!ffa.IsHidden() && !ffa.IsSymLink() && !ffa.IsDirectory()) {
@@ -381,13 +381,6 @@ void AndroidBuilder::GenerateMakeFile()
 	
 	String makeFilePath = GetAndroidProjectJniSourcesDir() + DIR_SEPS + "Android.mk";
 	SaveFile(makeFilePath, makeFile.ToString());
-}
-
-bool AndroidBuilder::PreprocesAndroidManifest()
-{
-	// TODO: use XML module to get important information from manifest file.
-	
-	return true;
 }
 
 bool AndroidBuilder::GenerateRFile()

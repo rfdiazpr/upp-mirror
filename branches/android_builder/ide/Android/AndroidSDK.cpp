@@ -1,5 +1,7 @@
 #include "Android.h"
 
+#include <plugin/pcre/Pcre.h>
+
 NAMESPACE_UPP
 
 AndroidSDK::AndroidSDK()
@@ -17,6 +19,12 @@ AndroidSDK::~AndroidSDK()
 	
 }
 
+void AndroidSDK::DeducePathReleatedValues()
+{
+	platform = FindDefaultPlatform();
+	buildToolsRelease = FindDefaultBuildToolsRelease();
+}
+
 bool AndroidSDK::CheckIntegrity() const
 {
 	if(!DirectoryExists(path) || !FileExists(AndroidPath()))
@@ -25,7 +33,35 @@ bool AndroidSDK::CheckIntegrity() const
 	return true;
 }
 
-Vector<String> AndroidSDK::GetAVDNames() const
+Vector<String> AndroidSDK::FindPlatforms() const
+{
+	Vector<String> platforms;
+	
+	for(FindFile ff(AppendFileName(PlatformsDir(), "*")); ff; ff.Next()) {
+		if(!ff.IsHidden() && ff.IsDirectory())
+			platforms.Add(ff.GetName());
+	}
+	
+	return platforms;
+}
+
+Vector<String> AndroidSDK::FindBuildToolsReleases() const
+{
+	Vector<String> buildTools;
+	
+	for(FindFile ff(AppendFileName(BuildToolsDir(), "*")); ff; ff.Next()) {
+		if(!ff.IsHidden() && ff.IsDirectory()) {
+			String name = ff.GetName();
+			// We definitly want to list only main releases.
+			if(RegExp("^[1-9][0-9.]*$").Match(name))
+				buildTools.Add(ff.GetName());
+		}
+	}
+	
+	return buildTools;
+}
+
+Vector<String> AndroidSDK::FindAVDNames() const
 {
 	Vector<String> names;
 	
@@ -36,16 +72,44 @@ Vector<String> AndroidSDK::GetAVDNames() const
 	return names;
 }
 
-String AndroidSDK::BuildToolsDir() const
+String AndroidSDK::FindDefaultPlatform() const
 {
-	// TODO: add build tools detection.
-	return path + DIR_SEPS + "build-tools" + DIR_SEPS + "19.1.0";
+	Vector<String> platforms = FindPlatforms();
+	if(platforms.GetCount()) {
+		Sort(platforms);
+		return platforms[platforms.GetCount() - 1];
+	}
+	return "";
 }
 
-String AndroidSDK::PlatformDir() const
+String AndroidSDK::FindDefaultBuildToolsRelease() const
 {
-	// TODO: add platform detection.
-	return path + DIR_SEPS + "platforms" + DIR_SEPS + "android-22";
+	Vector<String> releases = FindBuildToolsReleases();
+	if(releases.GetCount()) {
+		Sort(releases);
+		return releases[releases.GetCount() - 1];
+	}
+	return "";
+}
+
+String AndroidSDK::BuildToolsDir() const
+{
+	return path + DIR_SEPS + "build-tools";
+}
+
+String AndroidSDK::PlatformsDir() const
+{
+	return path + DIR_SEPS + "platforms";
+}
+
+String AndroidSDK::ConcreteBuildToolsDir() const
+{
+	return BuildToolsDir() + DIR_SEPS + buildToolsRelease;
+}
+
+String AndroidSDK::ConcretePlatformDir() const
+{
+	return PlatformsDir() + DIR_SEPS + platform;
 }
 
 String AndroidSDK::PlatformToolsDir() const

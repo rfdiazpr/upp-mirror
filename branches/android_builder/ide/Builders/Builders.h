@@ -232,7 +232,6 @@ protected:
 	void GenerateMakeFile();
 	bool AddSharedLibsToApk(const String& apkPath);
 	
-	bool PreprocesAndroidManifest();
 	bool GenerateRFile();
 	
 protected:

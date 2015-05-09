@@ -1,6 +1,8 @@
 - shobjidl.h - why is "internal preprocess" not working
-- in Core .cpp files, NAMESPACE_UPP does not work (empty macro used)
 - using issues for file Checking (add to used macros)
 - FAR
 - switching
 - documentation hack
+
+----------------------
+- in Core .cpp files, NAMESPACE_UPP does not work (empty macro used)

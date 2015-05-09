@@ -80,13 +80,15 @@ void SerializeCodeBase(Stream& s)
 	CodeBase().Serialize(s);
 }
 
+#define CPP_CODEBASE_VERSION 7
+
 void SaveCodeBase()
 {
 	LTIMING("SaveCodeBase");
 	LLOG("Save code base " << CodeBase().GetCount());
 	RealizeDirectory(ConfigFile("cfg/codebase"));
 	StringStream ss;
-	Store(callback(SerializeCodeBase), ss, 3);
+	Store(callback(SerializeCodeBase), ss, CPP_CODEBASE_VERSION);
 	String data = ss.GetResult();
 	String path = CodeBaseCacheFile();
 	SaveFile(path, LZ4Compress(data));
@@ -107,7 +109,7 @@ bool TryLoadCodeBase(const char *pattern)
 	if(path.GetCount()) {
 		LTIMING("Load code base");
 		StringStream ss(LZ4Decompress(LoadFile(path)));
-		if(Load(callback(SerializeCodeBase), ss, 3)) {
+		if(Load(callback(SerializeCodeBase), ss, CPP_CODEBASE_VERSION)) {
 			LLOG("Loaded " << ff.GetPath());
 			return true;
 		}

@@ -18,7 +18,7 @@ String GetStdConfig()
 	static const char ignore[] = "__declspec(...);__cdecl;__attribute__(...);__stdcall;__forceinline;"
                                  "__out;__in;__inout;__deref_in;__deref_inout;__deref_out;"
                                  "__pragma(...);__pascal;_far;_pascal;_cdecl;"
-                                 "__AuToQuOtE;__xin;__xout;"
+                                 "__AuToQuOtE;__xin;__xout;__export;"
                                  "__clrcall;__alignof(...)";
 	ValueMap json;
 	ValueArray va;

@@ -64,25 +64,28 @@ String Cpp::Expand(const char *s)
 			while(iscid(*s))
 				s++;
 			String id(bid, s);
-			DLOG("Expand " << id);
+			if(id == "FAR") DLOG("Expand " << id);
 			LTIMING("Expand ID2");
 			ids.FindAdd(id);
 			if(notmacro.Find(id) < 0) {
-				DLOG("Expand2 " << id);
+				if(id == "FAR") DLOG("Expand2 " << id);
 				const PPMacro *pp = macro.FindLastPtr(id);
 				int segmenti = pp ? segment_id.Find(pp->segment_id) : -1;
+				if(id == "FAR") DDUMP(segmenti);
 				const CppMacro *m = FindMacro(id, segment_id, segmenti);
+				if(id == "FAR") DDUMP(segmenti);
+				if(id == "FAR") DDUMP(m);
 				if(!m && pp)
 					m = &pp->macro;
 				if(m && m->IsUndef()) DLOG("UNDEF"),
 					m = NULL;
 				if(m) {
-					DLOG("Expand3 " << id);
+					if(id == "FAR") DLOG("Expand3 " << id << ", body: " << m->body);
 					LTIMING("Expand macro");
 					Vector<String> param;
 					bool function_like = false;
+					const char *s0 = s;
 					if(m->param.GetCount()) {
-						const char *s0 = s;
 						while(*s && (byte)*s <= ' ')
 							s++;
 						if(*s == '(') {
@@ -135,9 +138,13 @@ String Cpp::Expand(const char *s)
 						id = '\x1f' + Expand(m->Expand(param, eparam)); // \x1f is info for Pre that there was a macro expansion
 						notmacro.Trim(ti);
 					}
+					else
+						s = s0;
 				}
-				else
+				else {
+					DLOG("NOTMACRO " << id);
 					notmacro.Add(id);
+				}
 			}
 			r.Cat(id);
 		}
@@ -169,7 +176,7 @@ Index<String> Cpp::kw;
 bool Cpp::Preprocess(const String& sourcefile, Stream& in, const String& currentfile,
                      bool get_macros)
 {
-	LLOG("===== Preprocess " << sourcefile << " <- " << currentfile);
+	DLOG("===== Preprocess " << sourcefile << " <- " << currentfile);
 	LTIMING("Cpp::Preprocess");
 	macro.Clear();
 	macro.Reserve(1000);
@@ -212,8 +219,10 @@ void Cpp::DoFlatInclude(const String& header_path)
 		LLOG("DoFlatInclude " << header_path << ", " << pp.item.GetCount() << " items");
 		for(int i = 0; i < pp.item.GetCount() && !done; i++) {
 			const PPItem& m = pp.item[i];
-			if(m.type == PP_DEFINES)
+			if(m.type == PP_DEFINES) {
 				segment_id.FindAdd(m.segment_id);
+			//	DDUMP(m.segment_id);
+			}
 			else
 			if(m.type == PP_NAMESPACE) {
 			//	namespace_stack.Add(m.text); we are ignoring namespace in included files

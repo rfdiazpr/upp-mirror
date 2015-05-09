@@ -55,11 +55,14 @@ struct PPItem {
 
 struct PPMacro : Moveable<PPMacro> {
 	CppMacro  macro;
-	int       segment_id;
+	int       segment_id;        // a group of macros in single file, between other elements (include, namespace. using, undef...)
+	int       line;              // line in file
+	int       undef_segment_id;  // macro has matching undef in the same file within this segment
 	
-	void Serialize(Stream& s) { s % macro % segment_id; }
+	void   Serialize(Stream& s) { s % macro % segment_id % line % undef_segment_id; }
+	String ToString() const     { return AsString(macro) + " " + AsString(segment_id); }
 	
-	String ToString() const   { return AsString(macro) + " " + AsString(segment_id); }
+	PPMacro()                   { undef_segment_id = 0; }
 };
 
 struct PPFile { // contains "macro extract" of file, only info about macros defined and namespaces
@@ -77,8 +80,10 @@ private:
 	void CheckEndNamespace(Vector<int>& namespace_block, int level);
 };
 
-const CppMacro *FindMacro(const String& id, Index<int>& segment_id, int& segmenti);
-String          GetAllMacros(const String& id, Index<int>& segment_id);
+PPMacro            *FindPPMacro(const String& id, Index<int>& segment_id, int& segmenti);
+const     CppMacro *FindMacro(const String& id, Index<int>& segment_id, int& segmenti);
+
+String    GetAllMacros(const String& id, Index<int>& segment_id);
 
 void   PPSync(const String& include_path);
 String GetIncludePath();

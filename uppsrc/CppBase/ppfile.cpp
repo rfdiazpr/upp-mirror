@@ -76,20 +76,48 @@ String GetSegmentFile(int segment_id)
 	return "<not found>";
 }
 
-const CppMacro *FindMacro(const String& id, Index<int>& segment_id, int& segmenti)
+PPMacro *FindPPMacro(const String& id, Index<int>& segment_id, int& segmenti)
 {
-	const CppMacro *r = NULL;
-	int q = sAllMacros.Find(id);
-	while(q >= 0) {
-		const PPMacro& m = sAllMacros[q];
-		int si = segment_id.Find(m.segment_id);
-		if(si > segmenti) {
-			segmenti = si;
-			r = &m.macro;
+	if(id == "_PREV_NAME") DDUMP(segment_id);
+	Index<int> undef;
+	PPMacro *r;
+
+	for(int pass = 0; pass < 2; pass++) {
+		r = NULL;
+		int best = segmenti;
+		int line = -1;
+		int q = sAllMacros.Find(id);
+		if(id == "_PREV_NAME") DDUMP(q);
+		while(q >= 0) {
+			PPMacro& m = sAllMacros[q];
+			if(m.macro.IsUndef()) {
+				if(pass == 0 && segment_id.Find(m.segment_id) >= 0) {
+					undef.FindAdd(m.segment_id);
+					if(id == "_PREV_NAME") DLOG("undef " << m.segment_id << ", line " << m.line);
+				}
+			}
+			else
+			if(pass == 0 || undef.Find(m.undef_segment_id) < 0) {
+				int si = segment_id.Find(m.segment_id);
+				if(id == "_PREV_NAME") DDUMP(m.segment_id), DDUMP(m.line), DDUMP(si);
+				if(si > best || si >= 0 && si == best && m.line > line) {
+					best = si;
+					line = m.line;
+					r = &m;
+				}
+			}
+			q = sAllMacros.FindNext(q);
 		}
-		q = sAllMacros.FindNext(q);
+		if(undef.GetCount() == 0)
+			break;
 	}
 	return r;
+}
+
+const CppMacro *FindMacro(const String& id, Index<int>& segment_id, int& segmenti)
+{
+	PPMacro *m = FindPPMacro(id, segment_id, segmenti);
+	return m ? &m->macro : NULL;
 }
 
 String GetAllMacros(const String& id, Index<int>& segment_id)
@@ -128,6 +156,7 @@ void PPFile::Parse(Stream& in)
 	Vector<int> namespace_block;
 	bool next_segment = true;
 	Index<int> local_segments;
+	int linei = 0;
 	while(!in.IsEof()) {
 		String l = in.GetLine();
 		while(*l.Last() == '\\' && !in.IsEof()) {
@@ -151,6 +180,7 @@ void PPFile::Parse(Stream& in)
 					if(id.GetCount()) {
 						PPMacro m;
 						m.segment_id = sPPserial;
+						m.line = linei;
 						m.macro = def;
 						ppmacro.Add(sAllMacros.Put(id, m));
 					}
@@ -160,15 +190,18 @@ void PPFile::Parse(Stream& in)
 					if(p.IsId()) {
 						String id = p.ReadId();
 						int segmenti = -1;
-						if(FindMacro(id, local_segments, segmenti)) { // heuristic: only local undefs are allowed
+						PPMacro *um = FindPPMacro(id, local_segments, segmenti);
+						if(um) { // heuristic: only local undefs are allowed
 							PPItem& m = item.Add();
 							m.type = PP_DEFINES;
 							m.segment_id = ++sPPserial;
+							um->undef_segment_id = m.segment_id;
 							next_segment = true;
 							local_segments.Add(sPPserial);
 							if(id.GetCount()) {
 								PPMacro m;
 								m.segment_id = sPPserial;
+								m.line = linei;
 								m.macro.SetUndef();
 								ppmacro.Add(sAllMacros.Put(id, m));
 							}
@@ -254,6 +287,7 @@ void PPFile::Parse(Stream& in)
 			}
 		}
 		catch(...) {}
+		linei++;
 	}
 }
 

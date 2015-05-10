@@ -147,13 +147,4 @@ String CppMacro::Expand(const Vector<String>& p, const Vector<String>& ep) const
 	return r;
 }
 
-String CppMacro::RemovePlaceholders(const String& m) _DBG_
-{
-	StringBuffer result;
-	for(const char *s = m; *s; s++)
-		if(*s != PLACEHOLDER)
-			result.Cat(*s);
-	return result;
-}
-
 END_UPP_NAMESPACE

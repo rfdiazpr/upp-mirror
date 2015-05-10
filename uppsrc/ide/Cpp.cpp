@@ -126,7 +126,6 @@ void AssistEditor::Context(Parser& parser, int pos)
 
 	parser.dobody = true;
 	StringStream pin(cpp.output);
-	DDUMP(CodeBase().GetCount());
 	parser.Do(pin, CodeBase(), Null, Null, GetFileTitle(theide->editfile), callback(AssistScanError),
 	          Vector<String>(), cpp.namespace_stack, cpp.namespace_using); // needs CodeBase to identify type names
 
@@ -272,7 +271,6 @@ int CharFilterT(int c)
 void AssistEditor::AssistItemAdd(const String& scope, const CppItem& m, int typei)
 {
 	CppItemInfo& f = assist_item.Add(m.name);
-	DDUMP(m.qitem);
 	f.typei = typei;
 	f.scope = scope;
 	(CppItem&)f = m;
@@ -280,9 +278,9 @@ void AssistEditor::AssistItemAdd(const String& scope, const CppItem& m, int type
 
 void AssistEditor::GatherItems0(const String& type, bool only_public, Index<String>& in_types, bool types)
 {
-	DLOG("GatherItems " << type);
+	LLOG("GatherItems " << type);
 	if(in_types.Find(type) >= 0) {
-		DLOG("-> recursion, exiting");
+		LLOG("-> recursion, exiting");
 		return;
 	}
 	in_types.Add(type);
@@ -306,10 +304,6 @@ void AssistEditor::GatherItems0(const String& type, bool only_public, Index<Stri
 				}
 			}
 		}
-		DDUMP(CodeBase().GetCount());
-		DDUMP(q);
-		DDUMP(CodeBase().FindNext(q));
-		DDUMP(CodeBase().GetKey(q));
 		const Array<CppItem>& n = CodeBase()[q];
 		String base;
 		int typei = assist_type.FindAdd(ntp);
@@ -319,11 +313,8 @@ void AssistEditor::GatherItems0(const String& type, bool only_public, Index<Stri
 				op = false;
 		for(int i = 0; i < n.GetCount(); i++) {
 			const CppItem& im = n[i];
-			if(im.kind == STRUCT || im.kind == STRUCTTEMPLATE) {
-				DDUMP(i);
-				DDUMP(im);
+			if(im.kind == STRUCT || im.kind == STRUCTTEMPLATE)
 				base << im.qptype << ';';
-			}
 			if((im.IsCode() || !thisback && (im.IsData() || im.IsMacro() && type == ""))
 			   && (!op || im.access == PUBLIC)) {
 				int q = assist_item.Find(im.name);
@@ -336,16 +327,12 @@ void AssistEditor::GatherItems0(const String& type, bool only_public, Index<Stri
 			}
 		}
 		if(!thisback) {
-			DDUMP(base);
 			Vector<String> b = Split(base, ';');
 			Index<String> h;
 			for(int i = 0; i < b.GetCount(); i++)
 				h.FindAdd(b[i]);
 			b = h.PickKeys();
-			DDUMP(b);
-			DDUMP(tparam);
 			ResolveTParam(b, tparam);
-			DDUMP(b);
 			for(int i = 0; i < b.GetCount(); i++)
 				if(b[i].GetCount())
 					GatherItems0(b[i], only_public, in_types, types);

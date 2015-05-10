@@ -37,15 +37,8 @@ void Ide::SerializeFindInFiles(Stream& s) {
 }
 
 void SearchForFiles(Vector<String>& files, String dir, String mask, int readonly, Progress& pi) {
-	DDUMP(AppendFileName(dir, "*.*"));
-	DDUMP(mask);
 	FindFile ff(AppendFileName(dir, "*.*"));
 	while(ff) {
-		DDUMP(ff.GetPath());
-		DDUMP(ff.IsFile());
-		DDUMP(readonly);
-		DDUMP(ff.IsReadOnly());
-		DDUMP(PatternMatchMulti(mask, ff.GetName()));
 		if(ff.IsFolder() && *ff.GetName() != '.')
 			SearchForFiles(files, AppendFileName(dir, ff.GetName()), mask, readonly, pi);
 		else
@@ -280,7 +273,6 @@ void Ide::FindInFiles(bool replace) {
 		else
 			SearchForFiles(files, NormalizePath((String)ff.folder, GetUppDir()),
 				           ~ff.files, ~ff.readonly, pi);
-		DDUMP(files);
 		if(!pi.Canceled()) {
 			String pattern;
 			RegExp rx, *regexp = NULL;
@@ -318,7 +310,6 @@ void Ide::FindInFiles(bool replace) {
 			for(int i = 0; i < files.GetCount(); i++) {
 				pi.SetText(files[i]);
 				if(pi.StepCanceled()) break;
-				DDUMP(files[i]);
 				if(!IsNull(pattern)) {
 					if(!SearchInFile(files[i], pattern, ff.wholeword, ff.ignorecase, n, regexp))
 						break;

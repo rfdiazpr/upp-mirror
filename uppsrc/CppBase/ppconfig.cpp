@@ -64,10 +64,6 @@ void LoadPPConfig(const String& json)
 			s_ignorelist.Add(va[i]);
 	}
 	catch(ValueTypeError) {}
-
-	DDUMP(s_namespace_macro);
-	DDUMP(s_namespace_end_macro);
-	DDUMP(s_ignorelist);
 }
 
 const VectorMap<String, String>& GetNamespaceMacros()

@@ -26,7 +26,9 @@ struct SourceFileInfo {
 	String                    included_id_macros; // included macros from ids set
 	String                    namespace_info; // namespace defined at the start of file
 	String                    using_info; // using namespace info at the start of file
-	VectorMap<String, String> defined_macros; // macros defined by the file
+	VectorMap<String, String> defined_macros; // macros defined by the file (to detect changes)
+	String                    defined_namespace_info; // set of usings and namespaces in the file (to detect changes)
+	String                    includes; // includes in the file (to detect changes)
 	
 	void Serialize(Stream& s);
 
@@ -34,11 +36,13 @@ struct SourceFileInfo {
 };
 
 void           NewCodeBase();
-Vector<String> ParseSrc(Stream& in, int file, Callback2<int, const String&> error, bool do_macros, bool get_changes);
+Vector<String> ParseSrc(Stream& in, int file, Callback2<int, const String&> error,
+                        bool do_macros, bool get_changes,
+                        bool& namespace_info_changed, bool& includes_changed);
 void           CodeBaseScanFile(Stream& in, const String& fn, bool check_macros);
 void           CodeBaseScanFile(const String& fn, bool check_macros);
 void           ClearCodeBase();
-void           CheckCodeBase();
+// void           CheckCodeBase();
 void           RescanCodeBase();
 void           SyncCodeBase();
 void           SaveCodeBase();

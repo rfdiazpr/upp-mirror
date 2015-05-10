@@ -87,19 +87,16 @@ void AssistEditor::SyncAnnotationPopup()
 	String tl;
 	if(!GetAnnotationRef(tl, coderef))
 		return;
-	DLOG("=========== SyncAnnotationPopup " << coderef << " " << tl);
 	if(tl.GetCount()) {
 		static String   last_path;
 		static RichText topic_text;
 		String path = GetTopicPath(tl);
-		DDUMP(path);
 		if(path != last_path)
 			topic_text = ParseQTF(ReadTopic(LoadFile(path)).text);
 		
 		RichText result;
 		bool found = false;
 		for(int pass = 0; pass < 2 && !found; pass++) {
-			DDUMP(coderef);
 			for(int i = 0; i < topic_text.GetPartCount(); i++)
 				if(IsCodeItem(topic_text, i) && topic_text.Get(i).format.label == coderef) {
 					while(i > 0 && IsCodeItem(topic_text, i)) i--;
@@ -116,7 +113,6 @@ void AssistEditor::SyncAnnotationPopup()
 						}
 					}
 					pass = 2;
-					DLOG("FOUND");
 					break;
 				}
 			if(pass && coderef.StartsWith("Upp::"))

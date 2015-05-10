@@ -146,23 +146,16 @@ bool AndroidBuilder::BuildPackage(const String& package, Vector<String>& linkfil
 	}
 
 	if(!isResourcesPackage && !error && !nativeSourceFiles.IsEmpty()) {
-		// GeneratePackageMakeFile(nativeSourceFiles)
-		// TODO: generate for multiple package!!!
-		if(makeFile.HasFooter())
-			makeFile.Clear();
 		if(makeFile.IsEmpty())
 			makeFile.AddHeader();
 		
-		String packageMakeFile;
-		packageMakeFile << "include $(CLEAR_VARS)\n";
-		packageMakeFile << "LOCAL_MODULE := " << package << "\n";
-		packageMakeFile << "LOCAL_SRC_FILES := ";
-		for(int i = 0; i < nativeSourceFilesInPackage.GetCount(); i++) {
-			packageMakeFile << nativeSourceFilesInPackage[i];
-			if(i + 1 < nativeSourceFilesInPackage.GetCount())
-				packageMakeFile << " ";
-		}
-		makeFile.AddPackageMakeFile(packageMakeFile);
+		AndroidModuleMakeFile pkgMakeFile(package);
+		for(int i = 0; i < nativeSourceFilesInPackage.GetCount(); i++)
+			pkgMakeFile.AddSourceFile(nativeSourceFilesInPackage[i]);
+		// TODO: ask how to implement this future
+		for(int i = 0; i < pkg.flag.GetCount(); i++)
+			pkgMakeFile.AddCppFlag(pkg.flag[i].text);
+		makeFile.AddPackageMakeFile(pkgMakeFile.ToString());
 	}
 
 	return !error;
@@ -295,8 +288,6 @@ void AndroidBuilder::CleanPackage(const String& package)
 	CppBuilder::CleanPackage(package);
 	
 	String sandboxDir = GetAndroidSandboxDir();
-	Cout() << "Outdir: " << outdir << "\n";
-	Cout() << "Sandbox: " << sandboxDir << "\n";
 	if(DirectoryExists(sandboxDir))
 		DeleteFolderDeep(sandboxDir);
 }
@@ -376,9 +367,6 @@ void AndroidBuilder::GenerateApplicationMakeFile()
 
 void AndroidBuilder::GenerateMakeFile()
 {
-	if(!makeFile.HasFooter())
-		makeFile.AddFooter();
-	
 	String makeFilePath = GetAndroidProjectJniSourcesDir() + DIR_SEPS + "Android.mk";
 	SaveFile(makeFilePath, makeFile.ToString());
 }

@@ -9,9 +9,10 @@ class AndroidSDK {
 public:
 	AndroidSDK();
 	AndroidSDK(const String& path);
+	AndroidSDK(const String& path, bool deducePaths);
 	virtual ~AndroidSDK();
 	
-	// TODO: Method may be too high level, but for testing purpose it should be OK.
+	// FIXME: Method may be too high level, but for testing purpose it should be OK.
 	void DeducePathReleatedValues();
 	
 	bool CheckIntegrity() const;

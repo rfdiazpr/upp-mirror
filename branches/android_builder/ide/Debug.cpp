@@ -103,22 +103,26 @@ void Ide::BuildAndExecute()
 		
 		if(targetExt == ".apk") {
 			AndroidSDK androidSDK("/home/klugier/AndroidStudio/sdk");
+			androidSDK.DeducePathReleatedValues();
+			Apk apk(target, androidSDK);
+			String packageName = apk.FindPackageName();
+			String lauchableActivityName = apk.FindLauchableActivity();
 			
 			String installApkOnDeviceCmd;
 			installApkOnDeviceCmd << androidSDK.AdbPath();
 			installApkOnDeviceCmd << " -d";
-			installApkOnDeviceCmd << " install " << target;
+			installApkOnDeviceCmd << " install -r " << target;
 			h->Launch(installApkOnDeviceCmd);
 			
-			Apk apk(target, androidSDK);
-			String packageName = apk.FindPackageName();
-			String lauchableActivityName = apk.FindLauchableActivity();
 			if(!packageName.IsEmpty() && !lauchableActivityName.IsEmpty()) {
 				String lauchApkOnDeviceCmd;
 				lauchApkOnDeviceCmd << androidSDK.AdbPath();
-				lauchApkOnDeviceCmd << " logcat shell am start -n";
-				lauchApkOnDeviceCmd << " " << packageName << "/" << lauchableActivityName;
-				h->Launch(lauchApkOnDeviceCmd);
+				lauchApkOnDeviceCmd << " logcat *:E shell am start";
+				//lauchApkOnDeviceCmd << " shell am start";
+				lauchApkOnDeviceCmd << " -n " << packageName << "/" << lauchableActivityName;
+				Cout() << lauchApkOnDeviceCmd << "\n";
+				// FIXME: For some resons app close immediatly after lauch, but execute command in terminal works!!!
+				//h->Launch(lauchApkOnDeviceCmd);
 			}
 			
 			return;

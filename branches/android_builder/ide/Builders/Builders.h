@@ -190,6 +190,7 @@ private:
 class AndroidMakeFile {
 public:
 	AndroidMakeFile();
+	virtual ~AndroidMakeFile();
 	
 public:
 	bool IsEmpty() const;
@@ -198,17 +199,41 @@ public:
 	bool HasFooter();
 	
 	void AddHeader();
-	void AddFooter();
 	void AddPackageMakeFile(String packageMakeFile);
 	
 	String ToString() const;
 	
-private:
+protected:
 	String GenerateHeader();
 	String GenerateFooter();
 	
 private:
 	String makeFile;
+};
+
+class AndroidModuleMakeFile {
+public:
+	AndroidModuleMakeFile();
+	AndroidModuleMakeFile(const String& name);
+	virtual ~AndroidModuleMakeFile();
+
+	String ToString() const;
+public:
+	void AddSourceFile(const String& path);
+	void AddCppFlag(const String& name, const String& value = "");
+	
+	void SetName(const String& name) { this->name = name; }
+	
+protected:
+	void AppendName(String& makeFile) const;
+	void AppendSourceFiles(String& makeFile) const;
+	void AppendCppFlags(String& makeFile) const;
+	
+private:
+	String name;
+	Vector<String> sourceFiles;
+	VectorMap<String, String> cppFlags;
+	
 };
 
 class AndroidBuilder : public CppBuilder {

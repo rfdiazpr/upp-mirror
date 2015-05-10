@@ -613,7 +613,7 @@ String Parser::StructDeclaration(const String& tn, const String& tp)
 		nn = "template " + tp + " ";
 	String key = (t == tk_class ? "class" : t == tk_union ? "union" : "struct");
 	nn << key << ' ' << name;
-	DLOG("Struct "  << context.scope << " using " << context.namespace_using);
+	LLOG("Struct "  << context.scope << " using " << context.namespace_using);
 	CppItem& im = Item(context.scope, context.namespace_using, key, name, lex != ';');
 	im.kind = tp.IsEmpty() ? STRUCT : STRUCTTEMPLATE;
 	im.type = name;
@@ -644,7 +644,6 @@ String Parser::StructDeclaration(const String& tn, const String& tp)
 			String h;
 			bool dummy;
 			String n = Name(h, dummy, dummy);
-			if(name == "String" || name == "Moveable") DLOG("%%% " << name), DLOG(tpar);
 			ScAdd(im.pname, h);
 			if(c)
 				im.ptype << ';';
@@ -1368,7 +1367,8 @@ bool Parser::Scope(const String& tp, const String& tn) {
 	if(Key(tk_namespace)) {
 		Check(lex.IsId(), "Expected name of namespace");
 		String name = lex.GetId();
-		DLOG("namespace " << name);
+		LLOG("namespace " << name);
+		namespace_info << ';' << name;
 		Context c0;
 		c0 <<= context;
 		int struct_level0 = struct_level;
@@ -1387,11 +1387,11 @@ bool Parser::Scope(const String& tp, const String& tn) {
 						throw;
 					context <<= cc;
 					struct_level = struct_level0;
-					DLOG("---- Recovery to namespace level");
+					LLOG("---- Recovery to namespace level");
 					++lex;
 					lex.SkipToGrounding();
 					lex.ClearBracesLevel();
-					DLOG("Grounding skipped to " << GetLine(lex.Pos()));
+					LLOG("Grounding skipped to " << GetLine(lex.Pos()));
 				}
 				catch(Lex::Grounding) {
 					LLOG("---- Grounding to namespace level");
@@ -1402,10 +1402,11 @@ bool Parser::Scope(const String& tp, const String& tn) {
 				}
 			}
 		}
-		DLOG("End namespace");
+		LLOG("End namespace");
 		Key(';');
 		context <<= c0;
 		SetScopeCurrent();
+		namespace_info << ";}";
 		return true;
 	}
  // TODO: Remove
@@ -1558,7 +1559,7 @@ bool Parser::UsingNamespace()
 			}
 		while(!Key(';') && lex != t_eof)
 			++lex;
-		DDUMP(context.namespace_using);
+		namespace_info << ";using " << context.namespace_using;
 		return true;
 	}
 	return false;

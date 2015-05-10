@@ -5,7 +5,8 @@
 
 NAMESPACE_UPP
 
-bool           IsCPPFile(const String& file);
+bool IsCPPFile(const String& file);
+bool IsHFile(const String& path);
 
 void RemoveComments(String& l, bool& incomment);
 
@@ -18,7 +19,6 @@ const Index<String>&             GetNamespaceEndMacros();
 const Vector<String>&            GetIgnoreList();
 
 struct CppMacro : Moveable<CppMacro> {
-	enum { PLACEHOLDER = '@' }; _DBG_ // replace with different placeholder
 
 	String        param;
 	String        body;
@@ -27,11 +27,8 @@ struct CppMacro : Moveable<CppMacro> {
 	void   SetUndef()                { body = "\x7f"; }
 	bool   IsUndef() const           { return body[0] == '\x7f' && body[1] == '\0'; }
 
-//	String Expand(const Vector<String>& p) const;
 	String Expand(const Vector<String>& p, const Vector<String>& ep) const;
 
-	static String RemovePlaceholders(const String& s);
-	
 	void   Serialize(Stream& s)      { s % param % body; }
 	
 	String ToString() const;
@@ -118,6 +115,10 @@ struct Cpp {
 	Vector<String>              namespace_stack; // namspace up to start of file
 	
 	Index<String>               ids; // all ids in the file
+	
+	String                      usings; // usings combined for the purpose of change detection ("CheckFile")
+	String                      namespaces; // namespace_stack at the beginning of file, combined, for detection
+	String                      includes; // all file includes, combined, for detection
 	
 	void   Define(const char *s);
 
@@ -581,6 +582,8 @@ public:
 	CppItem                   current;
 	int                       currentScopeDepth;
 	int                       maxScopeDepth;
+	
+	String                    namespace_info;
 
 	struct Local : Moveable<Local> {
 		String type;

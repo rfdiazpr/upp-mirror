@@ -10,6 +10,11 @@ bool IsCPPFile(const String& path)
 	return findarg(ToLower(GetFileExt(path)) , ".c", ".cpp", ".cc" , ".cxx", ".icpp") >= 0;
 }
 
+bool IsHFile(const String& path)
+{
+	return findarg(ToLower(GetFileExt(path)) , ".h", ".hpp", ".hxx" , ".hh") >= 0;
+}
+
 void SetSpaces(String& l, int pos, int count)
 {
 	StringBuffer s = l;
@@ -78,7 +83,6 @@ String GetSegmentFile(int segment_id)
 
 PPMacro *FindPPMacro(const String& id, Index<int>& segment_id, int& segmenti)
 {
-	if(id == "_PREV_NAME") DDUMP(segment_id);
 	Index<int> undef;
 	PPMacro *r;
 
@@ -87,19 +91,16 @@ PPMacro *FindPPMacro(const String& id, Index<int>& segment_id, int& segmenti)
 		int best = segmenti;
 		int line = -1;
 		int q = sAllMacros.Find(id);
-		if(id == "_PREV_NAME") DDUMP(q);
 		while(q >= 0) {
 			PPMacro& m = sAllMacros[q];
 			if(m.macro.IsUndef()) {
 				if(pass == 0 && segment_id.Find(m.segment_id) >= 0) {
 					undef.FindAdd(m.segment_id);
-					if(id == "_PREV_NAME") DLOG("undef " << m.segment_id << ", line " << m.line);
 				}
 			}
 			else
 			if(pass == 0 || undef.Find(m.undef_segment_id) < 0) {
 				int si = segment_id.Find(m.segment_id);
-				if(id == "_PREV_NAME") DDUMP(m.segment_id), DDUMP(m.line), DDUMP(si);
 				if(si > best || si >= 0 && si == best && m.line > line) {
 					best = si;
 					line = m.line;
@@ -468,6 +469,7 @@ const PPFile& GetFlatPPFile(const char *path, Index<String>& visited)
 	const PPFile& pp = GetPPFile(path);
 	for(int i = 0; i < pp.item.GetCount(); i++) {
 		const PPItem& m = pp.item[i];
+		fp.item.Add(m);
 		if(m.type == PP_INCLUDE) {
 			String s = GetIncludePath(m.text, GetFileFolder(path));
 			if(s.GetCount() && visited.Find(s) < 0) {
@@ -477,8 +479,6 @@ const PPFile& GetFlatPPFile(const char *path, Index<String>& visited)
 					fp.item.Add(pp.item[i]);
 			}
 		}
-		else
-			fp.item.Add(m);
 	}
 	return fp;
 }

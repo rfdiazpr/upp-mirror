@@ -59,7 +59,6 @@ SrcFile PreProcess(Stream& in) // This is not really C preprocess, only removes 
 						macro.Cat(*s++);
 					macro << ')';
 				}
-//				res.text << '#' << AsCString(SSpaces(macro));
 				if(include)
 					res.text << '#' << AsCString(macro);
 			}

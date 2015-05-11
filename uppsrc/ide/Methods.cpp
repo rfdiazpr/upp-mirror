@@ -423,6 +423,7 @@ void Ide::SetupBuildMethods()
 			break;
 		}
 	}
+	SyncCodeBase();
 	SyncBuildMode();
 	SetBar();
 }

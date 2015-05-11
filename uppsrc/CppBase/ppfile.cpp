@@ -144,7 +144,7 @@ void PPFile::CheckEndNamespace(Vector<int>& namespace_block, int level)
 
 void PPFile::Parse(Stream& in)
 {
-	RTIMING("PPFile::Parse");
+	LTIMING("PPFile::Parse");
 	for(int i = 0; i < ppmacro.GetCount(); i++)
 		sAllMacros.Unlink(ppmacro[i]);
 	ppmacro.Clear();
@@ -334,7 +334,7 @@ String GetIncludePath()
 
 String GetIncludePath0(const char *s, const char *filedir)
 {
-	RTIMING("GetIncludePath0");
+	LTIMING("GetIncludePath0");
 	while(IsSpace(*s))
 		s++;
 	int type = *s;
@@ -359,7 +359,7 @@ String GetIncludePath0(const char *s, const char *filedir)
 
 Time GetFileTimeCached(const String& p)
 {
-	RTIMING("GetFileTimeCached");
+	LTIMING("GetFileTimeCached");
 	int q = sPathFileTime.Find(p);
 	if(q >= 0)
 		return sPathFileTime[q];
@@ -370,16 +370,12 @@ Time GetFileTimeCached(const String& p)
 
 String GetIncludePath(const String& s, const String& filedir)
 {
-	RTIMING("GetIncludePath");
+	LTIMING("GetIncludePath");
 	String key;
-	{ RTIMING("GetIncludePath1");
 	key << s << "#" << filedir << "#" << GetIncludePath();
-	}
-	{ RTIMING("GetIncludePath2");
 	int q = sIncludePath.Find(key);
 	if(q >= 0)
 		return sIncludePath[q];
-	}
 	String p = GetIncludePath0(s, filedir);
 	sIncludePath.Add(key, p);
 	return p;

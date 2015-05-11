@@ -95,10 +95,10 @@ void AssistEditor::SyncAnnotationPopup()
 			topic_text = ParseQTF(ReadTopic(LoadFile(path)).text);
 		
 		RichText result;
-		bool found = false;
-		for(int pass = 0; pass < 2 && !found; pass++) {
+		String cr = coderef;
+		for(int pass = 0; pass < 2; pass++) {
 			for(int i = 0; i < topic_text.GetPartCount(); i++)
-				if(IsCodeItem(topic_text, i) && topic_text.Get(i).format.label == coderef) {
+				if(IsCodeItem(topic_text, i) && topic_text.Get(i).format.label == cr) {
 					while(i > 0 && IsCodeItem(topic_text, i)) i--;
 					if(!IsCodeItem(topic_text, i)) i++;
 					while(IsCodeItem(topic_text, i))
@@ -115,8 +115,8 @@ void AssistEditor::SyncAnnotationPopup()
 					pass = 2;
 					break;
 				}
-			if(pass && coderef.StartsWith("Upp::"))
-				coderef = coderef.Mid(5);
+			if(pass == 0 && cr.StartsWith("Upp::"))
+				cr = cr.Mid(5);
 			else
 				break;
 		}

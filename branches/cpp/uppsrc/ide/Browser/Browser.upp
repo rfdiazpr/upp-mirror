@@ -35,6 +35,5 @@ file
 	Topic.lay,
 	Topic.iml,
 	Info readonly separator,
-	Copying,
-	todo.txt;
+	Copying;
 

@@ -2,9 +2,9 @@
 
 #include <plugin/lz4/lz4.h>
 
-#define LTIMING(x)    RTIMING(x)
+#define LTIMING(x)    // RTIMING(x)
 #define LLOG(x)       // DLOG(x)
-#define LTIMESTOP(x)  RTIMESTOP(x)
+#define LTIMESTOP(x)  // RTIMESTOP(x)
 
 #define LDUMP(x)      // DDUMP(x)
 
@@ -130,7 +130,7 @@ void LoadCodeBase()
 
 void FinishCodeBase()
 {
-	RTIMING("FinishBase");
+	LTIMING("FinishBase");
 
 	Qualify(CodeBase());
 }
@@ -154,10 +154,10 @@ void BaseInfoSync(Progress& pi)
 { // clears temporary caches (file times etc..)
 	PPSync(TheIde()->IdeGetIncludePath());
 
-	RTIMESTOP("Gathering files");
+	LTIMESTOP("Gathering files");
 	sSrcFile.Clear();
 	const Workspace& wspc = GetIdeWorkspace();
-	RTIMING("Gathering files");
+	LTIMING("Gathering files");
 	pi.SetText("Gathering files");
 	pi.SetTotal(wspc.GetCount());
 	for(int pass = 0; pass < 2; pass++)
@@ -194,12 +194,11 @@ String GetSourceFilePath(int file)
 
 bool CheckFile(const SourceFileInfo& f, const String& path)
 {
-	RTIMING("CheckFile");
+	LTIMING("CheckFile");
 	LDUMP(f.time);
 	LDUMP(FileGetTime(path));
 	if(f.time != FileGetTime(path))
 		return false;
-	RTIMING("CheckFile 2");
 	Cpp pp;
 	FileIn in(path);
 	pp.Preprocess(path, in, GetMasterFile(path), true);
@@ -422,8 +421,8 @@ void ClearCodeBase()
 
 void SyncCodeBase()
 {
-	RTIMING("SyncCodeBase");
-	RTIMESTOP("SyncCodeBase");
+	LTIMING("SyncCodeBase");
+	LTIMESTOP("SyncCodeBase");
 	Progress pi;
 	pi.Title("Parsing source files");
 	UpdateCodeBase(pi);

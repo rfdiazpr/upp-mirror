@@ -39,7 +39,7 @@ String AndroidMakeFile::GenerateHeader()
 {
 	String header;
 	
-	header << "LOCAL_PATH := $(call my-dir)\n\n";
+	header << "LOCAL_PATH := $(call my-dir)\n";
 	
 	return header;
 }

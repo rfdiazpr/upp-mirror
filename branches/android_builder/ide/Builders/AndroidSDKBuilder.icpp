@@ -283,6 +283,14 @@ bool AndroidBuilder::Link(const Vector<String>& linkfile, const String& linkopti
 	return true;
 }
 
+bool AndroidBuilder::Preprocess(const String& package, const String& file, const String& target, bool asmout)
+{
+	String ext = GetFileExt(file);
+	if(ext == ".java")
+		return PreprocessJava(package, file, target);
+	return false;
+}
+
 void AndroidBuilder::CleanPackage(const String& package)
 {
 	CppBuilder::CleanPackage(package);
@@ -302,11 +310,6 @@ bool AndroidBuilder::MovePackageFileToAndroidProject(const String& packagePath, 
 bool AndroidBuilder::RealizePackageSourcesDirectory(const String& packageName)
 {
 	return RealizeDirectory(GetAndroidProjectJavaSourcesDir() + DIR_SEPS + packageName);
-}
-
-void AndroidBuilder::GeneratePackageMakeFile()
-{
-	
 }
 
 bool AndroidBuilder::AddSharedLibsToApk(const String& apkPath)
@@ -392,6 +395,73 @@ bool AndroidBuilder::GenerateRFile()
 	return true;
 }
 
+bool AndroidBuilder::PreprocessJava(const String& package, const String& file, const String& target)
+{
+	StringStream ss;
+	String ext = GetFileExt(file);
+	if(ext != ".java")
+		return false;
+	String fileName = GetFileName(file);
+	fileName.Replace(ext, "");
+	String targetDir = GetFileDirectory(target);
+	String classesDir = targetDir + "classes";
+	String classFileName = fileName + ".class";
+	
+	if(DirectoryExists(classesDir))
+		DeleteFolderDeep(classesDir);
+	RealizeDirectory(classesDir);
+	
+	String compileCmd;
+	compileCmd << JavacPath();
+	compileCmd << " -d "<< classesDir;
+	compileCmd << " -classpath " << androidSDK.AndroidJarPath() << JavacDelimiter() << GetAndroidProjectBuildDir();
+	compileCmd << " -sourcepath " << GetAndroidProjectJavaSourcesDir();
+	compileCmd << " " << file;
+	if(Execute(compileCmd) != 0)
+		return false;
+	
+	String classFileDir;
+	Vector <String> paths;
+	paths.Add(classesDir);
+	while(!paths.IsEmpty()) {
+		for(FindFile ff(AppendFileName(paths[0], "*")); ff; ff.Next()) {
+			if(!ff.IsHidden()) {
+				if(!ff.IsSymLink() && ff.IsDirectory())
+					paths.Add(ff.GetPath());
+				else
+				if(ff.GetName().Compare(classFileName) == 0) {
+					classFileDir = GetFileDirectory(ff.GetPath());
+					paths.Clear();
+					break;
+				}
+			}
+		}
+		if(!paths.IsEmpty())
+			paths.Remove(0);
+	}
+	
+	if(classFileDir.IsEmpty())
+		return false;
+	
+	String relativeClassFileDir = classFileDir;
+	relativeClassFileDir.Replace(classesDir + DIR_SEPS, "");
+	String className = relativeClassFileDir + fileName;
+	className.Replace(DIR_SEPS, ".");
+	
+	String javahCmd;
+	javahCmd << JavahPath();
+	javahCmd << " -classpath " << classesDir << JavacDelimiter() << androidSDK.AndroidJarPath() << JavacDelimiter() << GetAndroidProjectBuildDir();
+	javahCmd << " -o " << target;
+	javahCmd << " " << className;
+	PutConsole(javahCmd);
+	if(Execute(javahCmd, ss) != 0) {
+		PutConsole(ss.GetResult());
+		return false;
+	}
+	
+	return true;
+}
+
 // -------------------------------------------------------------------
 
 String AndroidBuilder::GetAndroidSandboxDir() const
@@ -450,6 +520,11 @@ String AndroidBuilder::GetAndroidProjectBinDir() const
 String AndroidBuilder::JavacPath() const
 {
 	return jdkPath + DIR_SEPS + "bin" + DIR_SEPS + "javac";
+}
+
+String AndroidBuilder::JavahPath() const
+{
+	return jdkPath + DIR_SEPS + "bin" + DIR_SEPS + "javah";
 }
 
 String AndroidBuilder::JarsignerPath() const

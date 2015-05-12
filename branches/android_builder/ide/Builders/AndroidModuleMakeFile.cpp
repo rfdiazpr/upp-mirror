@@ -19,11 +19,11 @@ String AndroidModuleMakeFile::ToString() const
 {
 	String makeFile;
 	
-	makeFile << "include $(CLEAR_VARS)\n";
+	makeFile << "\ninclude $(CLEAR_VARS)\n";
 	AppendName(makeFile);
 	AppendSourceFiles(makeFile);
 	AppendCppFlags(makeFile);
-	makeFile << "\ninclude $(BUILD_SHARED_LIBRARY)\n\n";
+	makeFile << "\ninclude $(BUILD_SHARED_LIBRARY)\n";
 	
 	return makeFile;
 }

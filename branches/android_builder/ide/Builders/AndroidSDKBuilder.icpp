@@ -3,7 +3,7 @@
 // Hardcoded paths.
 static String ndkPath = "/home/klugier/AndroidStudio/ndk";
 static String sdkPath = "/home/klugier/AndroidStudio/sdk";
-static String jdkPath = "/usr/lib/jvm/java-7-oracle";
+static String jdkPath = "/usr/lib/jvm/java-7-oracle"; // <- Seems android supports up to Java-7
 
 AndroidBuilder::AndroidBuilder() :
 	androidSDK(sdkPath),
@@ -49,73 +49,76 @@ bool AndroidBuilder::BuildPackage(const String& package, Vector<String>& linkfil
 	for(int i = 0; i < pkg.GetCount(); i++) {
 		if(!IdeIsBuilding())
 			return false;
-		if(!pkg[i].separator) {
-			// TODO: add global options aka gop support
-			Vector<String> allPackageFiles = CustomStep(pkg[i], package, error);
-			if(!allPackageFiles.GetCount())
-				error = true;
-			for(int j = 0; j < allPackageFiles.GetCount(); j++) {
-				String filePath = allPackageFiles[j];
-				String fileExt = ToLower(GetFileExt(filePath));
-				String fileName = GetFileName(allPackageFiles[j]);
-				String packageFile = AppendFileName(package, pkg[i]);
-				String packageFileDirectory = GetFileFolder(packageFile);
-				packageFileDirectory.Find(package + DIR_SEPS);
+		if(pkg[i].separator)
+			continue;
+		
+		// TODO: add global options aka gop support
+		Vector<String> allPackageFiles = CustomStep(pkg[i], package, error);
+		if(!allPackageFiles.GetCount())
+			error = true;
+		for(int j = 0; j < allPackageFiles.GetCount(); j++) {
+			String filePath = allPackageFiles[j];
+			String fileExt = ToLower(GetFileExt(filePath));
+			String fileName = GetFileName(allPackageFiles[j]);
+			String packageFile = AppendFileName(package, pkg[i]);
+			String packageFileDirectory = GetFileFolder(packageFile);
+			packageFileDirectory.Find(package + DIR_SEPS);
+			
+			if(isResourcesPackage) {
+				// To keep compatibility with pure Android SDK.
+				if(packageFileDirectory.Find(package + DIR_SEPS) != -1)
+					packageFileDirectory.Remove(0, String(package + DIR_SEPS).GetCount());
+				String filePathInAndroidProject;
+				filePathInAndroidProject << GetAndroidProjectResourcesDir() << DIR_SEPS;
+				filePathInAndroidProject <<	packageFileDirectory << DIR_SEPS;
+				filePathInAndroidProject <<	fileName;
 				
-				if(isResourcesPackage) {
-					// To keep compatibility with pure Android SDK.
-					if(packageFileDirectory.Find(package + DIR_SEPS) != -1)
-						packageFileDirectory.Remove(0, String(package + DIR_SEPS).GetCount());
-					String filePathInAndroidProject;
-					filePathInAndroidProject << GetAndroidProjectResourcesDir() << DIR_SEPS;
-					filePathInAndroidProject <<	packageFileDirectory << DIR_SEPS;
-					filePathInAndroidProject <<	fileName;
-					
-					if(!MovePackageFileToAndroidProject(filePath, filePathInAndroidProject))
-						error = true;
+				if(!MovePackageFileToAndroidProject(filePath, filePathInAndroidProject))
+					error = true;
+			}
+			else
+			if(fileExt == ".java") {
+				String filePathInAndroidProject;
+				filePathInAndroidProject << GetAndroidProjectJavaSourcesDir() << DIR_SEPS;
+				filePathInAndroidProject <<	packageFileDirectory << DIR_SEPS;
+				filePathInAndroidProject <<	fileName;
+				
+				if(!MovePackageFileToAndroidProject(filePath, filePathInAndroidProject)) {
+					error = true;
+					continue;
 				}
-				else
-				if(fileExt == ".java") {
-					String filePathInAndroidProject;
-					filePathInAndroidProject << GetAndroidProjectJavaSourcesDir() << DIR_SEPS;
-					filePathInAndroidProject <<	packageFileDirectory << DIR_SEPS;
-					filePathInAndroidProject <<	fileName;
-					
-					if(!MovePackageFileToAndroidProject(filePath, filePathInAndroidProject)) {
-						error = true;
-						continue;
-					}
-					javaSourceFiles.Add(filePathInAndroidProject);
+				javaSourceFiles.Add(filePathInAndroidProject);
+			}
+			else
+			if(fileExt == ".cpp" || fileExt == ".cxx" || fileExt == ".c" ||
+			   fileExt == ".hpp" || fileExt == ".hxx" || fileExt == ".h") {
+				String filePathInAndroidProject;
+				filePathInAndroidProject << GetAndroidProjectJniSourcesDir() << DIR_SEPS;
+				filePathInAndroidProject <<	packageFileDirectory << DIR_SEPS;
+				filePathInAndroidProject <<	fileName;
+				
+				if(!MovePackageFileToAndroidProject(filePath, filePathInAndroidProject)) {
+					error = true;
+					continue;
 				}
-				else
-				if(fileExt == ".cpp" || fileExt == ".cxx" || fileExt == ".c" ||
-				   fileExt == ".hpp" || fileExt == ".hxx" || fileExt == ".h") {
-					String filePathInAndroidProject;
-					filePathInAndroidProject << GetAndroidProjectJniSourcesDir() << DIR_SEPS;
-					filePathInAndroidProject <<	packageFileDirectory << DIR_SEPS;
-					filePathInAndroidProject <<	fileName;
-					
-					if(!MovePackageFileToAndroidProject(filePath, filePathInAndroidProject)) {
-						error = true;
-						continue;
-					}
+				if(fileExt == ".cpp" || fileExt == ".cxx" || fileExt == "c") {
 					nativeSourceFiles.Add(filePathInAndroidProject);
 					nativeSourceFilesInPackage.Add(packageFile);
 				}
-				else
-				if(fileExt == ".xml") {
-					if(isMainPackage && fileName == "AndroidManifest.xml") {
-						if(androidManifestPath.GetCount()) {
-							PutConsole("AndroidManifest.xml is duplicated.");
-							return false;
-						}
-						
-						if(!FileCopy(filePath, GetAndroidProjectDir() + DIR_SEPS + "AndroidManifest.xml")) {
-							error = true;
-							continue;
-						}
-						androidManifestPath = filePath;
+			}
+			else
+			if(fileExt == ".xml") {
+				if(isMainPackage && fileName == "AndroidManifest.xml") {
+					if(androidManifestPath.GetCount()) {
+						PutConsole("AndroidManifest.xml is duplicated.");
+						return false;
 					}
+					
+					if(!FileCopy(filePath, GetAndroidProjectDir() + DIR_SEPS + "AndroidManifest.xml")) {
+						error = true;
+						continue;
+					}
+					androidManifestPath = filePath;
 				}
 			}
 		}
@@ -146,8 +149,11 @@ bool AndroidBuilder::BuildPackage(const String& package, Vector<String>& linkfil
 	}
 
 	if(!isResourcesPackage && !error && !nativeSourceFiles.IsEmpty()) {
-		if(makeFile.IsEmpty())
+		AndroidMakeFile makeFile;
+		if(!FileExists(GetAndroidProjectJniMakeFilePath()))
 			makeFile.AddHeader();
+		else
+			makeFile.LoadMakeFile(LoadFile(GetAndroidProjectJniMakeFilePath()));
 		
 		AndroidModuleMakeFile pkgMakeFile(package);
 		for(int i = 0; i < nativeSourceFilesInPackage.GetCount(); i++)
@@ -155,7 +161,9 @@ bool AndroidBuilder::BuildPackage(const String& package, Vector<String>& linkfil
 		// TODO: ask how to implement this future
 		for(int i = 0; i < pkg.flag.GetCount(); i++)
 			pkgMakeFile.AddCppFlag(pkg.flag[i].text);
-		makeFile.AddPackageMakeFile(pkgMakeFile.ToString());
+		makeFile.UpdateModuleMakeFile(pkgMakeFile);
+		
+		SaveFile(GetAndroidProjectJniMakeFilePath(), makeFile.ToString());
 	}
 
 	return !error;
@@ -187,7 +195,6 @@ bool AndroidBuilder::Link(const Vector<String>& linkfile, const String& linkopti
 	if(DirectoryExists(GetAndroidProjectJniSourcesDir())) {
 		PutConsole("Compiling native sources...");
 		GenerateApplicationMakeFile();
-		GenerateMakeFile();
 		
 		String ndkBuildCmd;
 		ndkBuildCmd << androidNDK.NdkBuildPath();
@@ -320,7 +327,7 @@ bool AndroidBuilder::AddSharedLibsToApk(const String& apkPath)
 	const String libsDir = GetAndroidProjectLibsDir();
 	const String libDir = androidProjectDir + DIR_SEPS + "lib";
 	
-	Vector <String> sharedLibsToAdd;
+	Vector<String> sharedLibsToAdd;
 	for(FindFile ff(AppendFileName (libsDir, "*")); ff; ff.Next()) {
 		if (!ff.IsHidden () && !ff.IsSymLink () && ff.IsDirectory()) {
 			for(FindFile ffa(AppendFileName (ff.GetPath(), "*")); ffa; ffa.Next ()) {
@@ -358,20 +365,9 @@ bool AndroidBuilder::AddSharedLibsToApk(const String& apkPath)
 
 void AndroidBuilder::GenerateApplicationMakeFile()
 {
-	// TODO: developer should decide which platfor she/he wants to build.
-	String applicationMakeFile;
+	AndroidApplicationMakeFile appMakeFile;
 	
-	applicationMakeFile << "APP_ABI := ";
-	applicationMakeFile << "all";
-	
-	String makeFilePath = GetAndroidProjectJniSourcesDir() + DIR_SEPS + "Application.mk";
-	SaveFile(makeFilePath, applicationMakeFile);
-}
-
-void AndroidBuilder::GenerateMakeFile()
-{
-	String makeFilePath = GetAndroidProjectJniSourcesDir() + DIR_SEPS + "Android.mk";
-	SaveFile(makeFilePath, makeFile.ToString());
+	SaveFile(GetAndroidProjectJniApplicationMakeFilePath(), appMakeFile.ToString());
 }
 
 bool AndroidBuilder::GenerateRFile()
@@ -421,13 +417,13 @@ bool AndroidBuilder::PreprocessJava(const String& package, const String& file, c
 		return false;
 	
 	String classFileDir;
-	Vector <String> paths;
-	paths.Add(classesDir);
+	BiVector<String> paths;
+	paths.AddTail(classesDir);
 	while(!paths.IsEmpty()) {
-		for(FindFile ff(AppendFileName(paths[0], "*")); ff; ff.Next()) {
+		for(FindFile ff(AppendFileName(paths.Head(), "*")); ff; ff.Next()) {
 			if(!ff.IsHidden()) {
 				if(!ff.IsSymLink() && ff.IsDirectory())
-					paths.Add(ff.GetPath());
+					paths.AddTail(ff.GetPath());
 				else
 				if(ff.GetName().Compare(classFileName) == 0) {
 					classFileDir = GetFileDirectory(ff.GetPath());
@@ -437,7 +433,7 @@ bool AndroidBuilder::PreprocessJava(const String& package, const String& file, c
 			}
 		}
 		if(!paths.IsEmpty())
-			paths.Remove(0);
+			paths.DropHead();
 	}
 	
 	if(classFileDir.IsEmpty())
@@ -513,6 +509,18 @@ String AndroidBuilder::GetAndroidProjectClassesDir() const
 String AndroidBuilder::GetAndroidProjectBinDir() const
 {
 	return GetAndroidProjectBuildDir() + DIR_SEPS + "bin";
+}
+
+// -------------------------------------------------------------------
+
+String AndroidBuilder::GetAndroidProjectJniMakeFilePath() const
+{
+	return GetAndroidProjectJniSourcesDir() + DIR_SEPS + "Android.mk";
+}
+
+String AndroidBuilder::GetAndroidProjectJniApplicationMakeFilePath() const
+{
+	return GetAndroidProjectJniSourcesDir() + DIR_SEPS + "Application.mk";
 }
 
 // -------------------------------------------------------------------

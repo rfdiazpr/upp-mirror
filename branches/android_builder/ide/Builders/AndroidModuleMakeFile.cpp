@@ -23,7 +23,7 @@ String AndroidModuleMakeFile::ToString() const
 	AppendName(makeFile);
 	AppendSourceFiles(makeFile);
 	AppendCppFlags(makeFile);
-	makeFile << "\ninclude $(BUILD_SHARED_LIBRARY)\n";
+	makeFile << "include $(BUILD_SHARED_LIBRARY)\n";
 	
 	return makeFile;
 }

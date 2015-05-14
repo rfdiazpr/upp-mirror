@@ -185,6 +185,48 @@ private:
 	bool script_error;
 };
 
+class AndroidApplicationMakeFile {
+public:
+	AndroidApplicationMakeFile();
+	virtual ~AndroidApplicationMakeFile();
+	
+	String ToString() const;
+public:
+	void AddArchitecture(const String& architecture);
+	
+protected:
+	void AppendArchitectures(String& makeFile) const;
+	
+private:
+	Vector<String> architectures;
+};
+
+class AndroidModuleMakeFile : public Moveable<AndroidModuleMakeFile> {
+public:
+	AndroidModuleMakeFile();
+	AndroidModuleMakeFile(const String& name);
+	virtual ~AndroidModuleMakeFile();
+
+	String ToString() const;
+public:
+	void AddSourceFile(const String& path);
+	void AddCppFlag(const String& name, const String& value = "");
+	
+	String GetName() const { return this->name; }	
+	void   SetName(const String& name) { this->name = name; }
+	
+protected:
+	void AppendName(String& makeFile) const;
+	void AppendSourceFiles(String& makeFile) const;
+	void AppendCppFlags(String& makeFile) const;
+	
+private:
+	String name;
+	Vector<String> sourceFiles;
+	VectorMap<String, String> cppFlags;
+	
+};
+
 // TODO: This class can be hiddent. I don't want it move to ide/Android, beacuse
 // it is only used by AndroidBuilder.
 class AndroidMakeFile {
@@ -199,41 +241,21 @@ public:
 	bool HasFooter();
 	
 	void AddHeader();
-	void AddPackageMakeFile(String packageMakeFile);
+	void AddModuleMakeFile(const AndroidModuleMakeFile& moduleMakeFile);
+	
+	void UpdateModuleMakeFile(const AndroidModuleMakeFile& moduleMakeFile);
+	
+	void LoadMakeFile(const String& makeFile);
 	
 	String ToString() const;
 	
 protected:
-	String GenerateHeader();
-	String GenerateFooter();
+	void AppendHeader(String& makeFile) const;
+	void AppendModulesMakeFiles(String& makeFile) const;
 	
 private:
-	String makeFile;
-};
-
-class AndroidModuleMakeFile {
-public:
-	AndroidModuleMakeFile();
-	AndroidModuleMakeFile(const String& name);
-	virtual ~AndroidModuleMakeFile();
-
-	String ToString() const;
-public:
-	void AddSourceFile(const String& path);
-	void AddCppFlag(const String& name, const String& value = "");
-	
-	void SetName(const String& name) { this->name = name; }
-	
-protected:
-	void AppendName(String& makeFile) const;
-	void AppendSourceFiles(String& makeFile) const;
-	void AppendCppFlags(String& makeFile) const;
-	
-private:
-	String name;
-	Vector<String> sourceFiles;
-	VectorMap<String, String> cppFlags;
-	
+	bool hasHeader;
+	Vector<AndroidModuleMakeFile> modulesMakeFile;
 };
 
 class AndroidBuilder : public CppBuilder {
@@ -254,7 +276,6 @@ protected:
 
 protected:
 	void GenerateApplicationMakeFile();
-	void GenerateMakeFile();
 	
 	bool AddSharedLibsToApk(const String& apkPath);
 	
@@ -272,6 +293,9 @@ protected:
 	String GetAndroidProjectBuildDir() const;
 	String GetAndroidProjectClassesDir() const;
 	String GetAndroidProjectBinDir() const;
+	
+	String GetAndroidProjectJniMakeFilePath() const;
+	String GetAndroidProjectJniApplicationMakeFilePath() const;
 	
 	String JavacPath() const;
 	String JavahPath() const;

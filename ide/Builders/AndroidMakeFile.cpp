@@ -31,6 +31,11 @@ void AndroidMakeFile::AddModuleMakeFile(const AndroidModuleMakeFile& moduleMakeF
 	modulesMakeFile.Add(moduleMakeFile);
 }
 
+void AndroidMakeFile::AddInclusion(const String& inclusion)
+{
+	inclusions.Add(inclusion);
+}
+
 void AndroidMakeFile::UpdateModuleMakeFile(const AndroidModuleMakeFile& moduleMakeFile)
 {
 	bool isFound = false;
@@ -47,7 +52,7 @@ void AndroidMakeFile::UpdateModuleMakeFile(const AndroidModuleMakeFile& moduleMa
 
 void AndroidMakeFile::LoadMakeFile(const String& makeFile)
 {
-	//this->makeFile = makeFile;
+	
 }
 
 String AndroidMakeFile::ToString() const
@@ -57,17 +62,24 @@ String AndroidMakeFile::ToString() const
 	if(hasHeader)
 		AppendHeader(makeFile);
 	AppendModulesMakeFiles(makeFile);
+	AppendInclusions(makeFile);
 	
 	return makeFile;
 }
 
 void AndroidMakeFile::AppendHeader(String& makeFile) const
 {
-	makeFile << "LOCAL_PATH := $(call my-dir)\n";
+	makeFile << "LOCAL_PATH := $(call my-dir)\n\n";
 }
 
 void AndroidMakeFile::AppendModulesMakeFiles(String& makeFile) const
 {
 	for(int i = 0; i < modulesMakeFile.GetCount(); i++)
 		makeFile << modulesMakeFile[i].ToString();
+}
+
+void AndroidMakeFile::AppendInclusions(String& makeFile) const
+{
+	for(int i = 0; i < inclusions.GetCount(); i++)
+		makeFile << "include $(LOCAL_PATH)" << DIR_SEPS << inclusions[i] << "\n";
 }

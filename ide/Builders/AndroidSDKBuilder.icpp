@@ -149,21 +149,16 @@ bool AndroidBuilder::BuildPackage(const String& package, Vector<String>& linkfil
 	}
 
 	if(!isResourcesPackage && !error && !nativeSourceFiles.IsEmpty()) {
-		AndroidMakeFile makeFile;
-		if(!FileExists(GetAndroidProjectJniMakeFilePath()))
-			makeFile.AddHeader();
-		else
-			makeFile.LoadMakeFile(LoadFile(GetAndroidProjectJniMakeFilePath()));
-		
 		AndroidModuleMakeFile pkgMakeFile(package);
 		for(int i = 0; i < nativeSourceFilesInPackage.GetCount(); i++)
 			pkgMakeFile.AddSourceFile(nativeSourceFilesInPackage[i]);
-		// TODO: ask how to implement this future
 		for(int i = 0; i < pkg.flag.GetCount(); i++)
 			pkgMakeFile.AddCppFlag(pkg.flag[i].text);
-		makeFile.UpdateModuleMakeFile(pkgMakeFile);
+		for(int i = 0; i < pkg.uses.GetCount(); i++)
+			pkgMakeFile.AddSharedLibrary(pkg.uses[i].text);
 		
-		SaveFile(GetAndroidProjectJniMakeFilePath(), makeFile.ToString());
+		String pkgMakeFilePath = GetAndroidProjectJniSourcesDir() + DIR_SEPS + package + DIR_SEPS + "Android.mk";
+		SaveFile(pkgMakeFilePath, pkgMakeFile.ToString());
 	}
 
 	return !error;
@@ -195,6 +190,7 @@ bool AndroidBuilder::Link(const Vector<String>& linkfile, const String& linkopti
 	if(DirectoryExists(GetAndroidProjectJniSourcesDir())) {
 		PutConsole("Compiling native sources...");
 		GenerateApplicationMakeFile();
+		GenerateMakeFile();
 		
 		String ndkBuildCmd;
 		ndkBuildCmd << androidNDK.NdkBuildPath();
@@ -328,7 +324,7 @@ bool AndroidBuilder::AddSharedLibsToApk(const String& apkPath)
 	const String libDir = androidProjectDir + DIR_SEPS + "lib";
 	
 	Vector<String> sharedLibsToAdd;
-	for(FindFile ff(AppendFileName (libsDir, "*")); ff; ff.Next()) {
+	for(FindFile ff(AppendFileName(libsDir, "*")); ff; ff.Next()) {
 		if (!ff.IsHidden () && !ff.IsSymLink () && ff.IsDirectory()) {
 			for(FindFile ffa(AppendFileName (ff.GetPath(), "*")); ffa; ffa.Next ()) {
 				if(!ffa.IsHidden() && !ffa.IsSymLink() && !ffa.IsDirectory()) {
@@ -365,9 +361,24 @@ bool AndroidBuilder::AddSharedLibsToApk(const String& apkPath)
 
 void AndroidBuilder::GenerateApplicationMakeFile()
 {
-	AndroidApplicationMakeFile appMakeFile;
+	AndroidApplicationMakeFile makeFile;
 	
-	SaveFile(GetAndroidProjectJniApplicationMakeFilePath(), appMakeFile.ToString());
+	SaveFile(GetAndroidProjectJniApplicationMakeFilePath(), makeFile.ToString());
+}
+
+void AndroidBuilder::GenerateMakeFile()
+{
+	Vector<String> modules;
+	for(FindFile ff(AppendFileName(GetAndroidProjectJniSourcesDir(), "*")); ff; ff.Next()) {
+		if(!ff.IsHidden() && !ff.IsSymLink() && ff.IsDirectory())
+			modules.Add(ff.GetName());
+	}
+	
+	AndroidMakeFile makeFile;
+	makeFile.AddHeader();
+	for(int i = 0; i < modules.GetCount(); i++)
+		makeFile.AddInclusion(modules[i] + DIR_SEPS + "Android.mk");
+	SaveFile(GetAndroidProjectJniMakeFilePath(), makeFile.ToString());
 }
 
 bool AndroidBuilder::GenerateRFile()

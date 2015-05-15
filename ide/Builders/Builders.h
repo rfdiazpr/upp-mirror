@@ -211,6 +211,8 @@ public:
 public:
 	void AddSourceFile(const String& path);
 	void AddCppFlag(const String& name, const String& value = "");
+	void AddStaticLibrary(const String& staticLibrary);
+	void AddSharedLibrary(const String& sharedLibrary);
 	
 	String GetName() const { return this->name; }	
 	void   SetName(const String& name) { this->name = name; }
@@ -219,12 +221,17 @@ protected:
 	void AppendName(String& makeFile) const;
 	void AppendSourceFiles(String& makeFile) const;
 	void AppendCppFlags(String& makeFile) const;
+	void AppendStaticLibraries(String& makeFile) const;
+	void AppendSharedLibraries(String& makeFile) const;
+	
+	void AppendStringVector(const Vector<String>& vec, const String& variableName, String& makeFile) const;
 	
 private:
 	String name;
 	Vector<String> sourceFiles;
 	VectorMap<String, String> cppFlags;
-	
+	Vector<String> staticLibraries;
+	Vector<String> sharedLibraries;
 };
 
 // TODO: This class can be hiddent. I don't want it move to ide/Android, beacuse
@@ -242,6 +249,7 @@ public:
 	
 	void AddHeader();
 	void AddModuleMakeFile(const AndroidModuleMakeFile& moduleMakeFile);
+	void AddInclusion(const String& inclusion);
 	
 	void UpdateModuleMakeFile(const AndroidModuleMakeFile& moduleMakeFile);
 	
@@ -252,10 +260,12 @@ public:
 protected:
 	void AppendHeader(String& makeFile) const;
 	void AppendModulesMakeFiles(String& makeFile) const;
+	void AppendInclusions(String& makeFile) const;
 	
 private:
 	bool hasHeader;
 	Vector<AndroidModuleMakeFile> modulesMakeFile;
+	Vector<String> inclusions;
 };
 
 class AndroidBuilder : public CppBuilder {
@@ -276,6 +286,7 @@ protected:
 
 protected:
 	void GenerateApplicationMakeFile();
+	void GenerateMakeFile();
 	
 	bool AddSharedLibsToApk(const String& apkPath);
 	
@@ -303,11 +314,9 @@ protected:
 	String KeytoolPath() const;
 	String JavacDelimiter() const;
 	
-protected:
+private:
 	AndroidSDK androidSDK;
 	AndroidNDK androidNDK;
-	
-	AndroidMakeFile makeFile;
 };
 
 void DeletePCHFile(const String& pch_file);

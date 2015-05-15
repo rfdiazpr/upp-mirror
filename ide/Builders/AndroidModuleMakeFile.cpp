@@ -19,10 +19,12 @@ String AndroidModuleMakeFile::ToString() const
 {
 	String makeFile;
 	
-	makeFile << "\ninclude $(CLEAR_VARS)\n";
+	makeFile << "include $(CLEAR_VARS)\n";
 	AppendName(makeFile);
 	AppendSourceFiles(makeFile);
 	AppendCppFlags(makeFile);
+	AppendStaticLibraries(makeFile);
+	AppendSharedLibraries(makeFile);
 	makeFile << "include $(BUILD_SHARED_LIBRARY)\n";
 	
 	return makeFile;
@@ -38,6 +40,16 @@ void AndroidModuleMakeFile::AddCppFlag(const String& name, const String& value)
 	cppFlags.Add(name, value);
 }
 
+void AndroidModuleMakeFile::AddStaticLibrary(const String& staticLibrary)
+{
+	staticLibraries.Add(staticLibrary);
+}
+
+void AndroidModuleMakeFile::AddSharedLibrary(const String& sharedLibrary)
+{
+	sharedLibraries.Add(sharedLibrary);
+}
+
 void AndroidModuleMakeFile::AppendName(String& makeFile) const
 {
 	makeFile << "LOCAL_MODULE := " << name << "\n";
@@ -45,16 +57,7 @@ void AndroidModuleMakeFile::AppendName(String& makeFile) const
 
 void AndroidModuleMakeFile::AppendSourceFiles(String& makeFile) const
 {
-	if(!sourceFiles.IsEmpty()) {
-		makeFile << "LOCAL_SRC_FILES := ";
-		for(int i = 0; i < sourceFiles.GetCount(); i++) {
-			makeFile << sourceFiles[i];
-			if(i + 1 < sourceFiles.GetCount())
-				makeFile << " ";
-		}
-		makeFile << "\n";
-	}
-	
+	AppendStringVector(sourceFiles , "LOCAL_SRC_FILES", makeFile);
 }
 
 void AndroidModuleMakeFile::AppendCppFlags(String& makeFile) const
@@ -67,6 +70,31 @@ void AndroidModuleMakeFile::AppendCppFlags(String& makeFile) const
 			if(!value.IsEmpty())
 				makeFile << "=" << value;
 			if(i + 1 < sourceFiles.GetCount())
+				makeFile << " ";
+		}
+		makeFile << "\n";
+	}
+}
+
+void AndroidModuleMakeFile::AppendStaticLibraries(String& makeFile) const
+{
+	AppendStringVector(staticLibraries , "LOCAL_STATIC_LIBRARIES", makeFile);
+}
+
+void AndroidModuleMakeFile::AppendSharedLibraries(String& makeFile) const
+{
+	AppendStringVector(sharedLibraries , "LOCAL_SHARED_LIBRARIES", makeFile);
+}
+
+void AndroidModuleMakeFile::AppendStringVector(const Vector<String>& vec, 
+                                               const String& variableName,
+                                               String& makeFile) const
+{
+	if(!vec.IsEmpty()) {
+		makeFile << variableName << " := ";
+		for(int i = 0; i < vec.GetCount(); i++) {
+			makeFile << vec[i];
+			if(i + 1 < vec.GetCount())
 				makeFile << " ";
 		}
 		makeFile << "\n";

@@ -154,6 +154,8 @@ bool AndroidBuilder::BuildPackage(const String& package, Vector<String>& linkfil
 			pkgMakeFile.AddSourceFile(nativeSourceFilesInPackage[i]);
 		for(int i = 0; i < pkg.flag.GetCount(); i++)
 			pkgMakeFile.AddCppFlag(pkg.flag[i].text);
+		for(int i = 0; i < pkg.library.GetCount(); i++)
+			pkgMakeFile.AddLdLibrary(pkg.library[i].text);
 		for(int i = 0; i < pkg.uses.GetCount(); i++)
 			pkgMakeFile.AddSharedLibrary(pkg.uses[i].text);
 		

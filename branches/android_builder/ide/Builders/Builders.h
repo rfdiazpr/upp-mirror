@@ -207,10 +207,13 @@ public:
 	AndroidModuleMakeFile(const String& name);
 	virtual ~AndroidModuleMakeFile();
 
+	void Clear();
 	String ToString() const;
+
 public:
 	void AddSourceFile(const String& path);
 	void AddCppFlag(const String& name, const String& value = "");
+	void AddLdLibrary(const String& ldLibrary);
 	void AddStaticLibrary(const String& staticLibrary);
 	void AddSharedLibrary(const String& sharedLibrary);
 	
@@ -221,15 +224,20 @@ protected:
 	void AppendName(String& makeFile) const;
 	void AppendSourceFiles(String& makeFile) const;
 	void AppendCppFlags(String& makeFile) const;
+	void AppendLdLibraries(String& makeFile) const;
 	void AppendStaticLibraries(String& makeFile) const;
 	void AppendSharedLibraries(String& makeFile) const;
 	
-	void AppendStringVector(const Vector<String>& vec, const String& variableName, String& makeFile) const;
+	void AppendStringVector(String& makeFile,
+	                        const Vector<String>& vec,
+	                        const String& variableName,
+	                        const String& variablePrefix = "") const;
 	
 private:
 	String name;
 	Vector<String> sourceFiles;
 	VectorMap<String, String> cppFlags;
+	Vector<String> ldLibraries;
 	Vector<String> staticLibraries;
 	Vector<String> sharedLibraries;
 };
@@ -250,6 +258,7 @@ public:
 	void AddHeader();
 	void AddModuleMakeFile(const AndroidModuleMakeFile& moduleMakeFile);
 	void AddInclusion(const String& inclusion);
+	void AddModuleImport(const String& moduleName);
 	
 	void UpdateModuleMakeFile(const AndroidModuleMakeFile& moduleMakeFile);
 	
@@ -261,11 +270,13 @@ protected:
 	void AppendHeader(String& makeFile) const;
 	void AppendModulesMakeFiles(String& makeFile) const;
 	void AppendInclusions(String& makeFile) const;
+	void AppendImportedModules(String& makeFile) const;
 	
 private:
 	bool hasHeader;
 	Vector<AndroidModuleMakeFile> modulesMakeFile;
 	Vector<String> inclusions;
+	Vector<String> importedModules;
 };
 
 class AndroidBuilder : public CppBuilder {

@@ -6,6 +6,9 @@
 //#include <coff/binobj/binobj.h>
 #include <plugin/bz2/bz2.h>
 
+#include "Android.h"
+#include "Java.h"
+
 #include "Build.h"
 
 void PutCompileTime(int time, int count);
@@ -185,100 +188,6 @@ private:
 	bool script_error;
 };
 
-class AndroidApplicationMakeFile {
-public:
-	AndroidApplicationMakeFile();
-	virtual ~AndroidApplicationMakeFile();
-	
-	String ToString() const;
-public:
-	void AddArchitecture(const String& architecture);
-	
-protected:
-	void AppendArchitectures(String& makeFile) const;
-	
-private:
-	Vector<String> architectures;
-};
-
-class AndroidModuleMakeFile : public Moveable<AndroidModuleMakeFile> {
-public:
-	AndroidModuleMakeFile();
-	AndroidModuleMakeFile(const String& name);
-	virtual ~AndroidModuleMakeFile();
-
-	void Clear();
-	String ToString() const;
-
-public:
-	void AddSourceFile(const String& path);
-	void AddCppFlag(const String& name, const String& value = "");
-	void AddLdLibrary(const String& ldLibrary);
-	void AddStaticLibrary(const String& staticLibrary);
-	void AddSharedLibrary(const String& sharedLibrary);
-	
-	String GetName() const { return this->name; }	
-	void   SetName(const String& name) { this->name = name; }
-	
-protected:
-	void AppendName(String& makeFile) const;
-	void AppendSourceFiles(String& makeFile) const;
-	void AppendCppFlags(String& makeFile) const;
-	void AppendLdLibraries(String& makeFile) const;
-	void AppendStaticLibraries(String& makeFile) const;
-	void AppendSharedLibraries(String& makeFile) const;
-	
-	void AppendStringVector(String& makeFile,
-	                        const Vector<String>& vec,
-	                        const String& variableName,
-	                        const String& variablePrefix = "") const;
-	
-private:
-	String name;
-	Vector<String> sourceFiles;
-	VectorMap<String, String> cppFlags;
-	Vector<String> ldLibraries;
-	Vector<String> staticLibraries;
-	Vector<String> sharedLibraries;
-};
-
-// TODO: This class can be hiddent. I don't want it move to ide/Android, beacuse
-// it is only used by AndroidBuilder.
-class AndroidMakeFile {
-public:
-	AndroidMakeFile();
-	virtual ~AndroidMakeFile();
-	
-public:
-	bool IsEmpty() const;
-	void Clear();
-	
-	bool HasFooter();
-	
-	void AddHeader();
-	void AddModuleMakeFile(const AndroidModuleMakeFile& moduleMakeFile);
-	void AddInclusion(const String& inclusion);
-	void AddModuleImport(const String& moduleName);
-	
-	void UpdateModuleMakeFile(const AndroidModuleMakeFile& moduleMakeFile);
-	
-	void LoadMakeFile(const String& makeFile);
-	
-	String ToString() const;
-	
-protected:
-	void AppendHeader(String& makeFile) const;
-	void AppendModulesMakeFiles(String& makeFile) const;
-	void AppendInclusions(String& makeFile) const;
-	void AppendImportedModules(String& makeFile) const;
-	
-private:
-	bool hasHeader;
-	Vector<AndroidModuleMakeFile> modulesMakeFile;
-	Vector<String> inclusions;
-	Vector<String> importedModules;
-};
-
 class AndroidBuilder : public CppBuilder {
 public:
 	AndroidBuilder();
@@ -319,15 +228,10 @@ protected:
 	String GetAndroidProjectJniMakeFilePath() const;
 	String GetAndroidProjectJniApplicationMakeFilePath() const;
 	
-	String JavacPath() const;
-	String JavahPath() const;
-	String JarsignerPath() const;
-	String KeytoolPath() const;
-	String JavacDelimiter() const;
-	
 private:
 	AndroidSDK androidSDK;
 	AndroidNDK androidNDK;
+	Jdk jdk;
 };
 
 void DeletePCHFile(const String& pch_file);

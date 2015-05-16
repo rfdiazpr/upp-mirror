@@ -68,6 +68,7 @@ public:
 public:
 	// TODO: MS Windows exe.
 	String NdkBuildPath() const { return path + DIR_SEPS + "ndk-build"; }
+	String GdbPath() const      { return path + DIR_SEPS + "ndk-gdb"; }
 	
 public:
 	String GetPath() const { return this->path; }

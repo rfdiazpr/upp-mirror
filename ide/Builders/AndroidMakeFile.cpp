@@ -1,4 +1,6 @@
-#include "Builders.h"
+#include "Android.h"
+
+NAMESPACE_UPP
 
 AndroidMakeFile::AndroidMakeFile()
 {
@@ -99,3 +101,5 @@ void AndroidMakeFile::AppendImportedModules(String& makeFile) const
 	for(int i = 0; i < importedModules.GetCount(); i++)
 		makeFile << "$(call import-module, " << importedModules[i] << ")\n";
 }
+
+END_UPP_NAMESPACE

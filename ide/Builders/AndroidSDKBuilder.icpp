@@ -7,7 +7,8 @@ static String jdkPath = "/usr/lib/jvm/java-7-oracle"; // <- Seems android suppor
 
 AndroidBuilder::AndroidBuilder() :
 	androidSDK(sdkPath),
-	androidNDK(ndkPath)
+	androidNDK(ndkPath),
+	jdk(jdkPath)
 {
 	androidSDK.DeducePathReleatedValues();
 }
@@ -134,10 +135,10 @@ bool AndroidBuilder::BuildPackage(const String& package, Vector<String>& linkfil
 			return false;
 		
 		String compileCmd;
-		compileCmd << JavacPath();
+		compileCmd << jdk.GetJavacPath();
 		compileCmd << (HasFlag("DEBUG") ? " -g" : " -g:none");
 		compileCmd << " -d "<< GetAndroidProjectClassesDir();
-		compileCmd << " -classpath " << androidSDK.AndroidJarPath() << JavacDelimiter() << GetAndroidProjectBuildDir();
+		compileCmd << " -classpath " << androidSDK.AndroidJarPath() << Java::GetDelimiter() << GetAndroidProjectBuildDir();
 		compileCmd << " -sourcepath " << GetAndroidProjectJavaSourcesDir() << " ";
 		for(int i = 0; i < javaSourceFiles.GetCount(); i++) {
 			compileCmd << javaSourceFiles[i];
@@ -169,12 +170,15 @@ bool AndroidBuilder::BuildPackage(const String& package, Vector<String>& linkfil
 bool AndroidBuilder::Link(const Vector<String>& linkfile, const String& linkoptions,
 	                         bool createmap)
 {
+	PutConsole("Building Android Project");
+	
 	StringStream ss;
 	if(!GenerateRFile())
 		return false;
 	
 	// We need to compile java packages in this place, because we need to generate "R.java" file before...
 	// We don't know which packages contain resources.
+	PutConsole("-----");
 	PutConsole("Compiling java sources...");
 	bool error = false;
 	int time = GetTickCount();
@@ -187,22 +191,29 @@ bool AndroidBuilder::Link(const Vector<String>& linkfile, const String& linkopti
 	}
 	if(error)
 		return false;
+	PutConsole("Java sources compiled in " + GetPrintTime(time) + ".");
 	
 	// Now, we are going to start compiling c/c++ sources
 	if(DirectoryExists(GetAndroidProjectJniSourcesDir())) {
+		time = GetTickCount();
+		PutConsole("-----");
 		PutConsole("Compiling native sources...");
+		
 		GenerateApplicationMakeFile();
 		GenerateMakeFile();
 		
 		String ndkBuildCmd;
 		ndkBuildCmd << androidNDK.NdkBuildPath();
+		ndkBuildCmd << " -j " << CPU_Cores(); // TODO: get hydra_threads variable instead!!!
 		ndkBuildCmd << " -C " << GetAndroidProjectDir();
-		if(Execute(ndkBuildCmd, ss) != 0 ){
+		if(Execute(ndkBuildCmd, ss) != 0 ) {
 			PutConsole(ss.GetResult());
 			return false;
 		}
+		PutConsole("Native sources compiled in " + GetPrintTime(time) + ".");
 	}
 	
+	PutConsole("-----");
 	PutConsole("Creating dex file...");
 	RealizeDirectory(GetAndroidProjectBinDir());
 	String dxCmd;
@@ -245,7 +256,8 @@ bool AndroidBuilder::Link(const Vector<String>& linkfile, const String& linkopti
 		if(!FileExists(debugKeystorePath)) { 
 			PutConsole("Generating debug key...");
 			String keytoolCmd;
-			keytoolCmd << KeytoolPath() << " -genkeypair -alias androiddebugkey -keypass android"; 
+			keytoolCmd << jdk.GetKeytoolPath();
+			keytoolCmd << " -genkeypair -alias androiddebugkey -keypass android"; 
 			keytoolCmd << " -keystore " << debugKeystorePath;
 			keytoolCmd << " -storepass android -dname \"CN=Android Debug,O=Android,C=US\" -validity 10000";
 			//PutConsole(keytoolCmd);
@@ -258,7 +270,7 @@ bool AndroidBuilder::Link(const Vector<String>& linkfile, const String& linkopti
 		PutConsole("Signing apk file...");
 		DeleteFile(signedApkPath);
 		String jarsignerCmd;
-		jarsignerCmd << JarsignerPath();
+		jarsignerCmd << jdk.GetJarsignerPath();
 		jarsignerCmd << " -keystore " + debugKeystorePath;
 		jarsignerCmd << " -storepass android";
 		jarsignerCmd << " -keypass android";
@@ -364,6 +376,7 @@ bool AndroidBuilder::AddSharedLibsToApk(const String& apkPath)
 void AndroidBuilder::GenerateApplicationMakeFile()
 {
 	AndroidApplicationMakeFile makeFile;
+	makeFile.SetPlatform(androidSDK.GetPlatform());
 	
 	SaveFile(GetAndroidProjectJniApplicationMakeFilePath(), makeFile.ToString());
 }
@@ -421,9 +434,9 @@ bool AndroidBuilder::PreprocessJava(const String& package, const String& file, c
 	RealizeDirectory(classesDir);
 	
 	String compileCmd;
-	compileCmd << JavacPath();
+	compileCmd << jdk.GetJavacPath();
 	compileCmd << " -d "<< classesDir;
-	compileCmd << " -classpath " << androidSDK.AndroidJarPath() << JavacDelimiter() << GetAndroidProjectBuildDir();
+	compileCmd << " -classpath " << androidSDK.AndroidJarPath() << Java::GetDelimiter() << GetAndroidProjectBuildDir();
 	compileCmd << " -sourcepath " << GetAndroidProjectJavaSourcesDir();
 	compileCmd << " " << file;
 	if(Execute(compileCmd) != 0)
@@ -458,8 +471,8 @@ bool AndroidBuilder::PreprocessJava(const String& package, const String& file, c
 	className.Replace(DIR_SEPS, ".");
 	
 	String javahCmd;
-	javahCmd << JavahPath();
-	javahCmd << " -classpath " << classesDir << JavacDelimiter() << androidSDK.AndroidJarPath() << JavacDelimiter() << GetAndroidProjectBuildDir();
+	javahCmd << jdk.GetJavahPath();
+	javahCmd << " -classpath " << classesDir << Java::GetDelimiter() << androidSDK.AndroidJarPath() << Java::GetDelimiter() << GetAndroidProjectBuildDir();
 	javahCmd << " -o " << target;
 	javahCmd << " " << className;
 	PutConsole(javahCmd);
@@ -537,37 +550,6 @@ String AndroidBuilder::GetAndroidProjectJniApplicationMakeFilePath() const
 }
 
 // -------------------------------------------------------------------
-
-String AndroidBuilder::JavacPath() const
-{
-	return jdkPath + DIR_SEPS + "bin" + DIR_SEPS + "javac";
-}
-
-String AndroidBuilder::JavahPath() const
-{
-	return jdkPath + DIR_SEPS + "bin" + DIR_SEPS + "javah";
-}
-
-String AndroidBuilder::JarsignerPath() const
-{
-	return jdkPath + DIR_SEPS + "bin" + DIR_SEPS + "jarsigner";
-}
-
-String AndroidBuilder::KeytoolPath() const
-{
-	return jdkPath + DIR_SEPS + "bin" + DIR_SEPS + "keytool";
-}
-
-// -------------------------------------------------------------------
-
-String AndroidBuilder::JavacDelimiter() const
-{
-#if defined(PLATFORM_WIN32) || defined(PLATFORM_WIN64)
-	return ";";
-#else
-	return ":";
-#endif
-}
 
 Builder *CreateAndroidBuilder()
 {

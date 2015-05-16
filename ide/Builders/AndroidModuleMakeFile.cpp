@@ -1,4 +1,6 @@
-#include "Builders.h"
+#include "Android.h"
+
+NAMESPACE_UPP
 
 AndroidModuleMakeFile::AndroidModuleMakeFile()
 {
@@ -122,3 +124,5 @@ void AndroidModuleMakeFile::AppendStringVector(String& makeFile,
 		makeFile << "\n";
 	}
 }
+
+END_UPP_NAMESPACE

@@ -603,11 +603,9 @@ LAYOUT(SetupAstyleLayout, 544, 288)
 END_LAYOUT
 
 LAYOUT(SetupMobilePlatformsLayout, 544, 288)
-	ITEM(LabelBox, dv___0, SetLabel(t_("Android")).LeftPosZ(4, 536).TopPosZ(4, 68))
+	ITEM(LabelBox, dv___0, SetLabel(t_("Android")).LeftPosZ(4, 536).TopPosZ(4, 44))
 	ITEM(StaticText, dv___1, SetText(t_("Android SDK path:")).LeftPosZ(12, 120).TopPosZ(20, 19))
-	ITEM(EditField, AndroidSDKPath, HSizePosZ(140, 12).TopPosZ(20, 19))
-	ITEM(StaticText, dv___3, SetText(t_("Android NDK path:")).LeftPosZ(12, 120).TopPosZ(44, 19))
-	ITEM(EditField, AndroidNDKPath, HSizePosZ(140, 12).TopPosZ(44, 19))
+	ITEM(EditString, AndroidSDKPath, HSizePosZ(140, 12).TopPosZ(20, 19))
 END_LAYOUT
 
 LAYOUT(GotoLayout, 796, 524)

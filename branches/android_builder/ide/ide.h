@@ -600,7 +600,9 @@ public:
 	bool	astyle_EmptyLineFill;
 	bool	astyle_TabSpaceConversionMode;
 	WString	astyle_TestBox;
-
+	
+	String androidSDKPath;
+	
 	// Formats a string of code with a given formatter
 	WString FormatCodeString(WString const &Src, astyle::ASFormatter &Formatter);
 

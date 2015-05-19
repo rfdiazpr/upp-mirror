@@ -2,14 +2,13 @@
 
 // Hardcoded paths.
 static String ndkPath = "/home/klugier/AndroidStudio/ndk";
-static String sdkPath = "/home/klugier/AndroidStudio/sdk";
 static String jdkPath = "/usr/lib/jvm/java-7-oracle"; // <- Seems android supports up to Java-7
 
 AndroidBuilder::AndroidBuilder() :
-	androidSDK(sdkPath),
 	androidNDK(ndkPath),
 	jdk(jdkPath)
 {
+	androidSDK.SetPath(GetAndroidSDKPath());
 	androidSDK.DeducePathReleatedValues();
 }
 
@@ -24,7 +23,8 @@ bool AndroidBuilder::BuildPackage(const String& package, Vector<String>& linkfil
 	                                 const Vector<String>& all_libraries,
 	                                 int)
 {
-	// Cout() << "Package: " << package << " ,Outdir: " << outdir << "\n"; 
+	if(!ValidateBuilderEnviorement())
+		return false;
 	
 	const bool isMainPackage = HasFlag("MAIN");
 	const bool isResourcesPackage = HasFlag("ANDROID_RESOURCES_PACKAGE");
@@ -151,6 +151,7 @@ bool AndroidBuilder::BuildPackage(const String& package, Vector<String>& linkfil
 
 	if(!isResourcesPackage && !error && !nativeSourceFiles.IsEmpty()) {
 		AndroidModuleMakeFile pkgMakeFile(package);
+		// TODO: refactor to achieve better code readability.
 		for(int i = 0; i < nativeSourceFilesInPackage.GetCount(); i++)
 			pkgMakeFile.AddSourceFile(nativeSourceFilesInPackage[i]);
 		for(int i = 0; i < pkg.flag.GetCount(); i++)
@@ -170,8 +171,10 @@ bool AndroidBuilder::BuildPackage(const String& package, Vector<String>& linkfil
 bool AndroidBuilder::Link(const Vector<String>& linkfile, const String& linkoptions,
 	                         bool createmap)
 {
-	PutConsole("Building Android Project");
+	if(!ValidateBuilderEnviorement())
+		return false;
 	
+	PutConsole("Building Android Project");
 	StringStream ss;
 	if(!GenerateRFile())
 		return false;
@@ -204,7 +207,7 @@ bool AndroidBuilder::Link(const Vector<String>& linkfile, const String& linkopti
 		
 		String ndkBuildCmd;
 		ndkBuildCmd << androidNDK.NdkBuildPath();
-		ndkBuildCmd << " -j " << CPU_Cores(); // TODO: get hydra_threads variable instead!!!
+		ndkBuildCmd << " -j " << GetHydraThreads();
 		ndkBuildCmd << " -C " << GetAndroidProjectDir();
 		if(Execute(ndkBuildCmd, ss) != 0 ) {
 			PutConsole(ss.GetResult());
@@ -227,8 +230,8 @@ bool AndroidBuilder::Link(const Vector<String>& linkfile, const String& linkopti
 	}
 	
 	PutConsole("Creating apk file...");
-	String unsignedApkPath = GetAndroidSandboxDir() + DIR_SEPS + GetFileTitle(target) + ".unsigned.apk";
-	String signedApkPath = GetAndroidSandboxDir() + DIR_SEPS + GetFileTitle(target) + ".signed.apk";
+	String unsignedApkPath = GetSandboxDir() + DIR_SEPS + GetFileTitle(target) + ".unsigned.apk";
+	String signedApkPath = GetSandboxDir() + DIR_SEPS + GetFileTitle(target) + ".signed.apk";
 	DeleteFile(unsignedApkPath);
 	String apkCmd;
 	apkCmd << androidSDK.AaptPath() << " package -v -f";
@@ -252,7 +255,7 @@ bool AndroidBuilder::Link(const Vector<String>& linkfile, const String& linkopti
 	
 	// In release mode we definitly shouldn't signing apk!!!
 	if(HasFlag("DEBUG")) {
-		String debugKeystorePath = GetAndroidSandboxDir() + DIR_SEPS + "debug.keystore";
+		String debugKeystorePath = GetSandboxDir() + DIR_SEPS + "debug.keystore";
 		if(!FileExists(debugKeystorePath)) { 
 			PutConsole("Generating debug key...");
 			String keytoolCmd;
@@ -312,7 +315,7 @@ void AndroidBuilder::CleanPackage(const String& package)
 {
 	CppBuilder::CleanPackage(package);
 	
-	String sandboxDir = GetAndroidSandboxDir();
+	String sandboxDir = GetSandboxDir();
 	if(DirectoryExists(sandboxDir))
 		DeleteFolderDeep(sandboxDir);
 }
@@ -369,6 +372,16 @@ bool AndroidBuilder::AddSharedLibsToApk(const String& apkPath)
 	}
 	if(!DeleteFolderDeep(libDir))
 		return false;
+	
+	return true;
+}
+
+bool AndroidBuilder::ValidateBuilderEnviorement()
+{
+	if(!androidSDK.CheckIntegrity()) {
+		PutConsole("Error: Android SDK was not detected.");
+		return false;
+	}
 	
 	return true;
 }
@@ -486,7 +499,7 @@ bool AndroidBuilder::PreprocessJava(const String& package, const String& file, c
 
 // -------------------------------------------------------------------
 
-String AndroidBuilder::GetAndroidSandboxDir() const
+String AndroidBuilder::GetSandboxDir() const
 {
 	if(target.IsEmpty())
 		return String();
@@ -499,7 +512,7 @@ String AndroidBuilder::GetAndroidSandboxDir() const
 
 String AndroidBuilder::GetAndroidProjectDir() const
 {
-	return GetAndroidSandboxDir() + DIR_SEPS + "AndroidProject";
+	return GetSandboxDir() + DIR_SEPS + "AndroidProject";
 }
 
 String AndroidBuilder::GetAndroidProjectJavaSourcesDir() const

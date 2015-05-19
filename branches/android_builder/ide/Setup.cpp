@@ -461,6 +461,8 @@ void Ide::SetupFormat() {
 		(ast.EmptyLineFill,                 astyle_EmptyLineFill)
 		(ast.TabSpaceConversionMode,        astyle_TabSpaceConversionMode)
 		(ast.TestBox,						astyle_TestBox)
+		
+		(mobile.AndroidSDKPath, androidSDKPath)
 	;
 	hlt.hlstyle.AddColumn("Style");
 	hlt.hlstyle.AddColumn("Color").Ctrls(HlPusherFactory);
@@ -482,12 +484,18 @@ void Ide::SetupFormat() {
 	ide.chstyle.Add(3, "Host platform, blue bars");
 	ide.chstyle.Add(4, "Standard, blue bars");
 
-	FrameRight<Button> browse;
-	browse.SetImage(CtrlImg::right_arrow());
-	browse <<= callback1(AddPath, &ide.uscpath);
-	ide.uscpath.AddFrame(browse);
+	FrameRight<Button> uscBrowse;
+	uscBrowse.SetImage(CtrlImg::right_arrow());
+	uscBrowse <<= callback1(AddPath, &ide.uscpath);
+	ide.uscpath.AddFrame(uscBrowse);
 	ide.uscpath <<= LoadFile(GetHomeDirFile("usc.path"));
-
+	
+	FrameRight<Button> androidSDKBrowse;
+	androidSDKBrowse.SetImage(CtrlImg::right_arrow());
+	androidSDKBrowse <<= callback1(AddPath, &mobile.AndroidSDKPath);
+	mobile.AndroidSDKPath.AddFrame(androidSDKBrowse);
+	mobile.AndroidSDKPath <<= androidSDKPath;
+	
 	for(;;) {
 		int c = dlg.Run();
 		Upp::SaveFile(GetHomeDirFile("usc.path"), ~ide.uscpath);

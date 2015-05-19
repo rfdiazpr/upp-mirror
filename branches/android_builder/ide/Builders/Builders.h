@@ -205,17 +205,18 @@ protected:
 	bool RealizePackageSourcesDirectory(const String& packageName);
 
 protected:
+	bool ValidateBuilderEnviorement();
 	void GenerateApplicationMakeFile();
 	void GenerateMakeFile();
+	bool GenerateRFile();
 	
 	bool AddSharedLibsToApk(const String& apkPath);
-	
-	bool GenerateRFile();
 	
 	bool PreprocessJava(const String& package, const String& file, const String& target);
 	
 protected:
-	String GetAndroidSandboxDir() const;
+	String GetSandboxDir() const;
+	
 	String GetAndroidProjectDir() const;
 	String GetAndroidProjectJavaSourcesDir() const;
 	String GetAndroidProjectJniSourcesDir() const;

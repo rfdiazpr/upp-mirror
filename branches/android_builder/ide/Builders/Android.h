@@ -5,13 +5,6 @@
 
 NAMESPACE_UPP
 
-class AndroidProject {
-public:
-	
-private:
-	String sandboxDir;
-};
-
 class AndroidApplicationMakeFile {
 public:
 	AndroidApplicationMakeFile();
@@ -72,8 +65,6 @@ private:
 	Vector<String> sharedLibraries;
 };
 
-// TODO: This class can be hidden. I don't want it move to ide/Android, beacuse
-// it is only used by AndroidBuilder.
 class AndroidMakeFile {
 public:
 	AndroidMakeFile();

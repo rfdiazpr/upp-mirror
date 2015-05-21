@@ -1,10 +1,4 @@
-#include "ide.h"
-
-class TextOption : public Option {
-public:
-	virtual void   SetData(const Value& data);
-	virtual Value  GetData() const;
-};
+#include "Methods.h"
 
 void  TextOption::SetData(const Value& data)
 {
@@ -17,12 +11,6 @@ Value TextOption::GetData() const
 	return Get() ? "1" : "0";
 }
 
-class TextSwitch : public Switch {
-public:
-	virtual void   SetData(const Value& data);
-	virtual Value  GetData() const;
-};
-
 void  TextSwitch::SetData(const Value& data)
 {
 	String s = data;
@@ -34,25 +22,7 @@ Value TextSwitch::GetData() const
 	return AsString(Switch::GetData());
 }
 
-class DirTable : public ArrayCtrl {
-public:
-	virtual void   SetData(const Value& data);
-	virtual Value  GetData() const;
-
-protected:
-	void Modify()  { Update(); }
-
-	EditString      edit;
-	SelectDirButton edit_dir;
-
-	void Init(const char *name = NULL);
-
-public:
-	DirTable();
-	DirTable(const char *name);
-};
-
-void   DirTable::SetData(const Value& data)
+void DirTable::SetData(const Value& data)
 {
 	Vector<String> l = Split((String)data, ';');
 	Clear();
@@ -60,7 +30,7 @@ void   DirTable::SetData(const Value& data)
 		Add(l[i]);
 }
 
-Value  DirTable::GetData() const
+Value DirTable::GetData() const
 {
 	String s;
 	for(int i = 0; i < GetCount(); i++) {
@@ -90,21 +60,6 @@ DirTable::DirTable(const char *name)
 {
 	Init(name);
 }
-
-class DirMap : public ArrayCtrl {
-public:
-	virtual void   SetData(const Value& data);
-	virtual Value  GetData() const;
-
-protected:
-	void Modify()  { Update(); }
-
-	EditString      localpath, remotepath;
-	SelectDirButton edit_dir;
-
-public:
-	DirMap();
-};
 
 void DirMap::SetData(const Value& data)
 {
@@ -138,39 +93,51 @@ DirMap::DirMap()
 	WhenArrayAction = localpath <<= remotepath <<= callback(this, &DirMap::Modify);
 }
 
-struct BuildMethods : public WithBuildMethodsLayout<TopWindow>
+AndroidBuilderSetup::AndroidBuilderSetup()
 {
-	TextOption debug_blitz;
-	TextSwitch debug_linkmode;
-	TextOption release_blitz;
-	TextSwitch release_linkmode;
-	TextOption linkmode_lock;
-	TextOption allow_pch;
-	DirTable   path;
-	DirTable   include;
-	DirTable   lib;
-	DirMap     remote_path_map;
-	OpenFileButton open_script;
+	CtrlLayout(*this);
+}
 
-	EditStringNotNull name;
-	Index<String>     origfile;
-	String            default_method;
+void AndroidBuilderSetup::New()
+{
+	
+}
 
-	void Load();
-	bool Save();
+DefaultBuilderSetup::DefaultBuilderSetup()
+{
+	CtrlLayout(*this);
+}
 
-	void NewBuilder();
-	void ShowDefault();
-	void SetDefault();
-	void ChangeMethod();
-	void Import();
-
-	void MethodMenu(Bar& bar);
-
-	typedef BuildMethods CLASSNAME;
-
-	BuildMethods();
-};
+void DefaultBuilderSetup::New(const String& builder)
+{
+	bool gcc = builder == "GCC" || builder == "GCC32" || builder == "GCC_ARM";
+	if(IsNull(speed_options)) {
+		if(gcc)
+			speed_options <<= "-O3 -ffunction-sections -fdata-sections";
+		else
+			speed_options <<= "-O2";
+	}
+	if(IsNull(size_options)) {
+		if(gcc)
+			size_options <<= "-Os -finline-limit=20 -ffunction-sections -fdata-sections";
+		else
+			size_options <<= "-O1";
+	}
+	if(IsNull(debug_options)) {
+		if(gcc)
+			debug_options <<= "-O0";
+		else
+			debug_options <<= "-Od";
+	}
+	if(IsNull(debugger)) {
+		if(gcc)
+			debugger <<= "gdb";
+		else
+			debugger <<= "msdev";
+	}
+	if(IsNull(release_link) && gcc)
+		release_link <<= "-Wl,--gc-sections";
+}
 
 int CharFilterFileName(int c)
 {
@@ -180,30 +147,32 @@ int CharFilterFileName(int c)
 BuildMethods::BuildMethods()
 {
 	CtrlLayoutOKCancel(*this, "Build methods");
+	Sizeable().Zoomable();
 	method.AddColumn("Method").Edit(name);
 	name.SetFilter(CharFilterFileName);
+	// TODO: move
 	method.AddCtrl("BUILDER", builder);
-	method.AddCtrl("COMPILER", compiler);
-	method.AddCtrl("COMMON_OPTIONS", common_options);
-	method.AddCtrl("COMMON_CPP_OPTIONS", common_cpp_options);
-	method.AddCtrl("COMMON_C_OPTIONS", common_c_options);
-	method.AddCtrl("COMMON_FLAGS", common_flags);
-	method.AddCtrl("DEBUG_INFO", debug_info);
-	method.AddCtrl("DEBUG_BLITZ", debug_blitz);
-	method.AddCtrl("DEBUG_LINKMODE", debug_linkmode);
-	method.AddCtrl("DEBUG_OPTIONS", debug_options);
-	method.AddCtrl("DEBUG_FLAGS", debug_flags);
-	method.AddCtrl("DEBUG_LINK", debug_link);
-	method.AddCtrl("RELEASE_BLITZ", release_blitz);
-	method.AddCtrl("RELEASE_LINKMODE", release_linkmode);
-	method.AddCtrl("RELEASE_OPTIONS", speed_options);
-	method.AddCtrl("RELEASE_SIZE_OPTIONS", size_options);
-	method.AddCtrl("RELEASE_FLAGS", release_flags);
-	method.AddCtrl("RELEASE_LINK", release_link);
-	method.AddCtrl("DEBUGGER", debugger);
-	method.AddCtrl("PATH", path);
-	method.AddCtrl("INCLUDE", include);
-	method.AddCtrl("LIB", lib);
+	method.AddCtrl("COMPILER", defaultSetup.compiler);
+	method.AddCtrl("COMMON_OPTIONS", defaultSetup.common_options);
+	method.AddCtrl("COMMON_CPP_OPTIONS", defaultSetup.common_cpp_options);
+	method.AddCtrl("COMMON_C_OPTIONS", defaultSetup.common_c_options);
+	method.AddCtrl("COMMON_FLAGS", defaultSetup.common_flags);
+	method.AddCtrl("DEBUG_INFO", defaultSetup.debug_info);
+	method.AddCtrl("DEBUG_BLITZ", defaultSetup.debug_blitz);
+	method.AddCtrl("DEBUG_LINKMODE", defaultSetup.debug_linkmode);
+	method.AddCtrl("DEBUG_OPTIONS", defaultSetup.debug_options);
+	method.AddCtrl("DEBUG_FLAGS", defaultSetup.debug_flags);
+	method.AddCtrl("DEBUG_LINK", defaultSetup.debug_link);
+	method.AddCtrl("RELEASE_BLITZ", defaultSetup.release_blitz);
+	method.AddCtrl("RELEASE_LINKMODE", defaultSetup.release_linkmode);
+	method.AddCtrl("RELEASE_OPTIONS", defaultSetup.speed_options);
+	method.AddCtrl("RELEASE_SIZE_OPTIONS", defaultSetup.size_options);
+	method.AddCtrl("RELEASE_FLAGS", defaultSetup.release_flags);
+	method.AddCtrl("RELEASE_LINK", defaultSetup.release_link);
+	method.AddCtrl("DEBUGGER", defaultSetup.debugger);
+	method.AddCtrl("PATH", defaultSetup.path);
+	method.AddCtrl("INCLUDE", defaultSetup.include);
+	method.AddCtrl("LIB", defaultSetup.lib);
 #if 0 // REMOTE REMOVED
 	method.AddCtrl("REMOTE_HOST", remote_host);
 	method.AddCtrl("REMOTE_OS", remote_os);
@@ -221,8 +190,8 @@ BuildMethods::BuildMethods()
 	method.AddCtrl("SCRIPT", scriptfile);
 	method.AddCtrl("LINKMODE_LOCK", linkmode_lock);
 	
-	allow_pch.SetLabel("Allow precompiled headers");
-	method.AddCtrl("ALLOW_PRECOMPILED_HEADERS", allow_pch);
+	defaultSetup.allow_pch.SetLabel("Allow precompiled headers"); // <- TODO: move
+	method.AddCtrl("ALLOW_PRECOMPILED_HEADERS", defaultSetup.allow_pch);
 	
 	open_script.Attach(scriptfile);
 	open_script.Type("Build scripts (*.bsc)", "*.bsc")
@@ -232,13 +201,14 @@ BuildMethods::BuildMethods()
 	method.WhenCursor = THISBACK(ChangeMethod);
 	method.WhenBar = THISBACK(MethodMenu);
 
-	paths.Add(path.SizePos(), "PATH - executable directories");
-	paths.Add(include.SizePos(), "INCLUDE directories");
-	paths.Add(lib.SizePos(), "LIB directories");
+	// TODO: move
+	defaultSetup.paths.Add(defaultSetup.path.SizePos(), "PATH - executable directories");
+	defaultSetup.paths.Add(defaultSetup.include.SizePos(), "INCLUDE directories");
+	defaultSetup.paths.Add(defaultSetup.lib.SizePos(), "LIB directories");
 
-	debug_info.Add("0", "None");
-	debug_info.Add("1", "Minimal");
-	debug_info.Add("2", "Full");
+	defaultSetup.debug_info.Add("0", "None");
+	defaultSetup.debug_info.Add("1", "Minimal");
+	defaultSetup.debug_info.Add("2", "Full");
 
 	for(int i = 0; i < BuilderMap().GetCount(); i++)
 		builder.Add(BuilderMap().GetKey(i));
@@ -247,6 +217,9 @@ BuildMethods::BuildMethods()
 	setdefault <<= THISBACK(SetDefault);
 
 	linkmode_lock.SetLabel("Lock link mode");
+	
+	androidSetup.SizePos();
+	defaultSetup.SizePos();
 }
 
 void BuildMethods::MethodMenu(Bar& bar)
@@ -291,35 +264,12 @@ static int sCompare(const Value& v1, const Value& v2)
 
 void BuildMethods::NewBuilder()
 {
-	String b = ~builder;
-	bool gcc = b == "GCC" || b == "GCC32" || b == "GCC_ARM";
-	if(IsNull(speed_options)) {
-		if(gcc)
-			speed_options <<= "-O3 -ffunction-sections -fdata-sections";
-		else
-			speed_options <<= "-O2";
-	}
-	if(IsNull(size_options)) {
-		if(gcc)
-			size_options <<= "-Os -finline-limit=20 -ffunction-sections -fdata-sections";
-		else
-			size_options <<= "-O1";
-	}
-	if(IsNull(debug_options)) {
-		if(gcc)
-			debug_options <<= "-O0";
-		else
-			debug_options <<= "-Od";
-	}
-	if(IsNull(debugger)) {
-		if(gcc)
-			debugger <<= "gdb";
-		else
-			debugger <<= "msdev";
-	}
-	if(IsNull(release_link) && gcc)
-		release_link <<= "-Wl,--gc-sections";
-	ChangeMethod();
+	String builderName = ~builder;
+	if(builderName == "ANDROID")
+		androidSetup.New();
+	else
+		defaultSetup.New(builderName);
+	SwitchSetupView();
 }
 
 void BuildMethods::ChangeMethod()
@@ -328,6 +278,7 @@ void BuildMethods::ChangeMethod()
 	if(method.IsCursor())
 		b = method.Get("BUILDER");
 	scriptfile.Enable(b == "SCRIPT");
+	SwitchSetupView();
 }
 
 void BuildMethods::Load()
@@ -404,6 +355,18 @@ void BuildMethods::SetDefault()
 	if(method.IsCursor()) {
 		SaveFile(ConfigFile("default_method"), method.GetKey());
 		ShowDefault();
+	}
+}
+
+void BuildMethods::SwitchSetupView() {
+	builderSetup.ClearFrames();
+	
+	String builderName = ~builder;
+	if(builderName == "ANDROID") {
+		builderSetup.Add(androidSetup);
+	}
+	else {
+		builderSetup.Add(defaultSetup);
 	}
 }
 

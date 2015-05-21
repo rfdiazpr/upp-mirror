@@ -73,6 +73,7 @@ file
 	Json.cpp,
 	Update.cpp,
 	Compile readonly separator,
+	Methods.h,
 	Methods.cpp,
 	AutoSetup.cpp,
 	OutputMode.cpp,
@@ -81,8 +82,8 @@ file
 	Valgrind.cpp,
 	Export.cpp,
 	Resources readonly separator,
-	ide.iml,
 	ide.lay,
+	ide.iml,
 	app.tpp,
 	ide.rc
 		depends() xide.ico

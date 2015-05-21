@@ -571,5 +571,5 @@ Builder *CreateAndroidBuilder()
 
 INITBLOCK
 {
-	RegisterBuilder("Android_SDK", &CreateAndroidBuilder);
+	RegisterBuilder("ANDROID", &CreateAndroidBuilder);
 }

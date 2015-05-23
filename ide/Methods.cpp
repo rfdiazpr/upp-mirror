@@ -93,19 +93,62 @@ DirMap::DirMap()
 	WhenArrayAction = localpath <<= remotepath <<= callback(this, &DirMap::Modify);
 }
 
+BuilderSetup::BuilderSetup(const String& prefix_) :
+	prefix(prefix_)
+{
+	
+}
+
+Index<String> BuilderSetup::GetCoreIds()
+{
+	Index<String> ids;
+	
+	VectorMap<Id, Ctrl*> map = GetSetupCtrlsMap();
+	for(int i = 0; i < map.GetCount(); i++) {
+		String key = map.GetKey(i);
+		if(key.StartsWith(prefix))
+			key.Remove(0, prefix.GetCount());
+		ids.Add(key);
+	}
+	
+	return ids;
+}
+
 AndroidBuilderSetup::AndroidBuilderSetup()
+	: BuilderSetup("ANDROID_")
 {
 	CtrlLayout(*this);
 }
 
 void AndroidBuilderSetup::New()
 {
-	
+	sdkDir.SetData(GetAndroidSDKPath());
 }
 
-DefaultBuilderSetup::DefaultBuilderSetup()
+VectorMap<Id, Ctrl*> AndroidBuilderSetup::GetSetupCtrlsMap()
+{
+	VectorMap<Id, Ctrl*> map;
+	
+	map.Add(prefix + "NDK_DIR", &ndkDir);
+	map.Add(prefix + "JDK_DIR", &jdkDir);
+	
+	return map;
+}
+
+DefaultBuilderSetup::DefaultBuilderSetup() :
+	BuilderSetup("DEFAULT_")
 {
 	CtrlLayout(*this);
+	
+	allow_pch.SetLabel("Allow precompiled headers");
+	
+	paths.Add(path.SizePos(), "PATH - executable directories");
+	paths.Add(include.SizePos(), "INCLUDE directories");
+	paths.Add(lib.SizePos(), "LIB directories");
+
+	debug_info.Add("0", "None");
+	debug_info.Add("1", "Minimal");
+	debug_info.Add("2", "Full");
 }
 
 void DefaultBuilderSetup::New(const String& builder)
@@ -139,6 +182,36 @@ void DefaultBuilderSetup::New(const String& builder)
 		release_link <<= "-Wl,--gc-sections";
 }
 
+VectorMap<Id, Ctrl*> DefaultBuilderSetup::GetSetupCtrlsMap()
+{
+	VectorMap<Id, Ctrl*> map;
+	
+	map.Add(prefix + "COMPILER",                  &compiler);
+	map.Add(prefix + "COMMON_OPTIONS",            &common_options);
+	map.Add(prefix + "COMMON_CPP_OPTIONS",        &common_cpp_options);
+	map.Add(prefix + "COMMON_C_OPTIONS",          &common_c_options);
+	map.Add(prefix + "COMMON_FLAGS",              &common_flags);
+	map.Add(prefix + "DEBUG_INFO",                &debug_info);
+	map.Add(prefix + "DEBUG_BLITZ",               &debug_blitz);
+	map.Add(prefix + "DEBUG_LINKMODE",            &debug_linkmode);
+	map.Add(prefix + "DEBUG_OPTIONS",             &debug_options);
+	map.Add(prefix + "DEBUG_FLAGS",               &debug_flags);
+	map.Add(prefix + "DEBUG_LINK",                &debug_link);
+	map.Add(prefix + "RELEASE_BLITZ",             &release_blitz);
+	map.Add(prefix + "RELEASE_LINKMODE",          &release_linkmode);
+	map.Add(prefix + "RELEASE_OPTIONS",           &speed_options);
+	map.Add(prefix + "RELEASE_SIZE_OPTIONS",      &size_options);
+	map.Add(prefix + "RELEASE_FLAGS",             &release_flags);
+	map.Add(prefix + "RELEASE_LINK",              &release_link);
+	map.Add(prefix + "DEBUGGER",                  &debugger);
+	map.Add(prefix + "ALLOW_PRECOMPILED_HEADERS", &allow_pch);
+	map.Add(prefix + "PATH",                      &path);
+	map.Add(prefix + "INCLUDE",                   &include);
+	map.Add(prefix + "LIB",                       &lib);
+	
+	return map;
+}
+
 int CharFilterFileName(int c)
 {
 	return IsAlNum(c) || c == '_' ? c : 0;
@@ -150,31 +223,12 @@ BuildMethods::BuildMethods()
 	Sizeable().Zoomable();
 	method.AddColumn("Method").Edit(name);
 	name.SetFilter(CharFilterFileName);
-	// TODO: move
+	
 	method.AddCtrl("BUILDER", builder);
-	method.AddCtrl("COMPILER", defaultSetup.compiler);
-	method.AddCtrl("COMMON_OPTIONS", defaultSetup.common_options);
-	method.AddCtrl("COMMON_CPP_OPTIONS", defaultSetup.common_cpp_options);
-	method.AddCtrl("COMMON_C_OPTIONS", defaultSetup.common_c_options);
-	method.AddCtrl("COMMON_FLAGS", defaultSetup.common_flags);
-	method.AddCtrl("DEBUG_INFO", defaultSetup.debug_info);
-	method.AddCtrl("DEBUG_BLITZ", defaultSetup.debug_blitz);
-	method.AddCtrl("DEBUG_LINKMODE", defaultSetup.debug_linkmode);
-	method.AddCtrl("DEBUG_OPTIONS", defaultSetup.debug_options);
-	method.AddCtrl("DEBUG_FLAGS", defaultSetup.debug_flags);
-	method.AddCtrl("DEBUG_LINK", defaultSetup.debug_link);
-	method.AddCtrl("RELEASE_BLITZ", defaultSetup.release_blitz);
-	method.AddCtrl("RELEASE_LINKMODE", defaultSetup.release_linkmode);
-	method.AddCtrl("RELEASE_OPTIONS", defaultSetup.speed_options);
-	method.AddCtrl("RELEASE_SIZE_OPTIONS", defaultSetup.size_options);
-	method.AddCtrl("RELEASE_FLAGS", defaultSetup.release_flags);
-	method.AddCtrl("RELEASE_LINK", defaultSetup.release_link);
-	method.AddCtrl("DEBUGGER", defaultSetup.debugger);
-	method.AddCtrl("PATH", defaultSetup.path);
-	method.AddCtrl("INCLUDE", defaultSetup.include);
-	method.AddCtrl("LIB", defaultSetup.lib);
+	AddBuilderSetupCtrls(androidSetup);
+	AddBuilderSetupCtrls(defaultSetup);
+	
 #if 0 // REMOTE REMOVED
-	method.AddCtrl("REMOTE_HOST", remote_host);
 	method.AddCtrl("REMOTE_OS", remote_os);
 	remote_os.Add("WIN32");
 	remote_os.Add("LINUX");
@@ -190,9 +244,6 @@ BuildMethods::BuildMethods()
 	method.AddCtrl("SCRIPT", scriptfile);
 	method.AddCtrl("LINKMODE_LOCK", linkmode_lock);
 	
-	defaultSetup.allow_pch.SetLabel("Allow precompiled headers"); // <- TODO: move
-	method.AddCtrl("ALLOW_PRECOMPILED_HEADERS", defaultSetup.allow_pch);
-	
 	open_script.Attach(scriptfile);
 	open_script.Type("Build scripts (*.bsc)", "*.bsc")
 		.AllFilesType();
@@ -200,15 +251,6 @@ BuildMethods::BuildMethods()
 	method.Appending().Removing().Duplicating();
 	method.WhenCursor = THISBACK(ChangeMethod);
 	method.WhenBar = THISBACK(MethodMenu);
-
-	// TODO: move
-	defaultSetup.paths.Add(defaultSetup.path.SizePos(), "PATH - executable directories");
-	defaultSetup.paths.Add(defaultSetup.include.SizePos(), "INCLUDE directories");
-	defaultSetup.paths.Add(defaultSetup.lib.SizePos(), "LIB directories");
-
-	defaultSetup.debug_info.Add("0", "None");
-	defaultSetup.debug_info.Add("1", "Minimal");
-	defaultSetup.debug_info.Add("2", "Full");
 
 	for(int i = 0; i < BuilderMap().GetCount(); i++)
 		builder.Add(BuilderMap().GetKey(i));
@@ -288,6 +330,7 @@ void BuildMethods::Load()
 		VectorMap<String, String> map;
 		String fn = ConfigFile(ff.GetName());
 		if(LoadVarFile(fn, map)) {
+			map = MapBuilderVars(map);
 			origfile.Add(fn);
 			method.Add(GetFileTitle(fn));
 			for(int j = 1; j < method.GetIndexCount(); j++)
@@ -318,6 +361,9 @@ bool BuildMethods::Save()
 			map.Add(method.GetId(j).ToString(), method.Get(i, j));
 		if(map.Get("BUILDER", "") != "SCRIPT")
 			map.RemoveKey("SCRIPT");
+		
+		map = SieveBuilderVars(map);
+		
 		String fn = ConfigFile(String(method.Get(i, 0)) + ".bm");
 		if(!SaveVarFile(fn, map)) {
 			Exclamation("Error saving [* " + fn + "] !");
@@ -358,16 +404,106 @@ void BuildMethods::SetDefault()
 	}
 }
 
-void BuildMethods::SwitchSetupView() {
-	builderSetup.ClearFrames();
-	
-	String builderName = ~builder;
-	if(builderName == "ANDROID") {
-		builderSetup.Add(androidSetup);
+void BuildMethods::SwitchSetupView()
+{
+	if(!method.IsCursor()) {
+		builder.Hide();
+		builderLabel.Hide();
+		setupParent.Hide();
+		return;
 	}
 	else {
-		builderSetup.Add(defaultSetup);
+		builder.Show();
+		builderLabel.Show();
 	}
+	String builderName = ~builder;
+	builderName.IsEmpty() ? setupParent.Hide() : setupParent.Show();
+	
+	setupParent.ClearFrames(); // FIXME: this works well with TopWindow parametrization
+	if(builderName == "ANDROID") {
+		setupParent.Add(androidSetup);
+	}
+	else {
+		setupParent.Add(defaultSetup);
+	}
+}
+
+void BuildMethods::AddBuilderSetupCtrls(BuilderSetup& builderSetup)
+{
+	VectorMap<Id, Ctrl*> map = builderSetup.GetSetupCtrlsMap();
+	for(int i = 0; i < map.GetCount(); i++)
+		method.AddCtrl(map.GetKey(i), *map[i]);
+}
+
+VectorMap<String, String> BuildMethods::SieveBuilderVars(const VectorMap<String, String>& map)
+{
+	VectorMap<String, String> sievedMap;
+	
+	String builder = map.Get("BUILDER");
+	if(builder.IsEmpty())
+		return VectorMap<String, String>();
+	
+	String androidPrefix = androidSetup.GetPrefix();
+	String defaultPrefix = defaultSetup.GetPrefix();
+	for(int i = 0; i < map.GetCount(); i++) {
+		String key = map.GetKey(i);
+		String value = map[i];
+		
+		if(key.StartsWith(androidPrefix)) {
+			// TODO: remove hardcoded android builder name
+			if(builder == "ANDROID") {
+				key.Remove(0, androidPrefix.GetCount());
+				sievedMap.Add(key, value);
+			}
+		}
+		else
+		if(key.StartsWith(defaultPrefix)) {
+			// Different than all special builders -> can be vectorized in the future.
+			if(builder != "ANDROID") {
+				key.Remove(0, defaultPrefix.GetCount());
+				sievedMap.Add(key, value);
+			}
+		}
+		else
+			sievedMap.Add(key, value);
+	}
+	
+	return sievedMap;
+}
+
+VectorMap<String, String> BuildMethods::MapBuilderVars(const VectorMap<String, String>& map)
+{
+	VectorMap<String, String> mapedMap;
+	Index<String> varsToMaped;
+	
+	String builder = map.Get("BUILDER");
+	if(builder.IsEmpty())
+		return VectorMap<String, String>();
+	
+	if(builder == "ANDROID")
+		varsToMaped = androidSetup.GetCoreIds();
+	else
+	if(builder != "ANDROID") {
+		// Different than all special builders -> can be vectorized in the future.
+		varsToMaped = defaultSetup.GetCoreIds();
+	}
+	
+	for(int i = 0; i < map.GetCount(); i++) {
+		String key = map.GetKey(i);
+		String value = map[i];
+		
+		if(varsToMaped.Find(key) > -1) {
+			if(builder == "ANDROID")
+				key = androidSetup.GetPrefix() + key;
+			else
+			if(builder != "ANDROID")
+				key = defaultSetup.GetPrefix() + key;
+		}
+		
+		mapedMap.Add(key, value);
+	}
+	
+	return mapedMap;
 }
 
 void Ide::SetupBuildMethods()

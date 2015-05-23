@@ -50,14 +50,33 @@ public:
 	DirMap();
 };
 
-class AndroidBuilderSetup : public WithBuildMethodsAndroidBuilderSetupLayout<TopWindow> {
+class BuilderSetup {
+public:
+	BuilderSetup(const String& prefix_);
+	virtual ~BuilderSetup() {}
+	
+	virtual String GetPrefix() const { return this->prefix; }
+	
+	virtual VectorMap<Id, Ctrl*> GetSetupCtrlsMap() = 0;
+	virtual Index<String> GetCoreIds();
+	
+protected:
+	const String prefix;
+};
+
+class AndroidBuilderSetup :
+	public WithBuildMethodsAndroidBuilderSetupLayout<TopWindow>,
+	public BuilderSetup  {
 public:
 	AndroidBuilderSetup();
 	
 	void New();
+	virtual VectorMap<Id, Ctrl*> GetSetupCtrlsMap();
 };
 
-class DefaultBuilderSetup : public WithBuildMethodsDefaultBuilderSetupLayout<TopWindow> {
+class DefaultBuilderSetup :
+	public WithBuildMethodsDefaultBuilderSetupLayout<TopWindow>,
+	public BuilderSetup {
 public:
 	TextOption debug_blitz;
 	TextSwitch debug_linkmode;
@@ -68,8 +87,11 @@ public:
 	DirTable   include;
 	DirTable   lib;
 	
+public:
 	DefaultBuilderSetup();
+	
 	void New(const String& builder);
+	virtual VectorMap<Id, Ctrl*> GetSetupCtrlsMap();
 };
 
 class BuildMethods : public WithBuildMethodsLayout<TopWindow> {
@@ -96,6 +118,9 @@ public:
 	void MethodMenu(Bar& bar);
 	
 	void SwitchSetupView();
+	void AddBuilderSetupCtrls(BuilderSetup& builderSetup);
+	VectorMap<String, String> SieveBuilderVars(const VectorMap<String, String>& map);
+	VectorMap<String, String> MapBuilderVars(const VectorMap<String, String>& map);
 	
 	typedef BuildMethods CLASSNAME;
 

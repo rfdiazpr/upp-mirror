@@ -50,6 +50,14 @@ public:
 	DirMap();
 };
 
+class BuilderSetupHelperInterface {
+public:
+	virtual ~BuilderSetupHelperInterface() {}
+
+	virtual void New(const String& builder) = 0;
+	virtual void OnLoad() = 0;
+};
+
 class AndroidBuilderSetup :
 	public WithBuildMethodsAndroidBuilderSetupLayout<ParentCtrl> {
 public:
@@ -57,9 +65,20 @@ public:
 	
 	VectorMap<Id, Ctrl*> GetSetupCtrlsMap();
 
-private:
+public:
 	FrameRight<Button> ndkBrowse;
 	FrameRight<Button> jdkBrowse;
+};
+
+class AndroidBuilderSetupHelper : public BuilderSetupHelperInterface {
+public:
+	void SetSetup(AndroidBuilderSetup* setup) { this->setup = setup; }
+	
+	virtual void New(const String& builder);
+	virtual void OnLoad();
+	
+private:
+	AndroidBuilderSetup* setup;
 };
 
 class DefaultBuilderSetup :
@@ -77,15 +96,30 @@ public:
 public:
 	DefaultBuilderSetup();
 	
-	void New(const String& builder);
 	VectorMap<Id, Ctrl*> GetSetupCtrlsMap();
+};
+
+class DefaultBuilderSetupHelper : public BuilderSetupHelperInterface {
+public:
+	DefaultBuilderSetupHelper();
+	
+	void SetSetup(DefaultBuilderSetup* setup) { this->setup = setup; }
+	
+	virtual void New(const String& builder);
+	virtual void OnLoad() {}
+	
+private:
+	DefaultBuilderSetup* setup;
 };
 
 class BuilderSetup : public Moveable<BuilderSetup> {
 public:
-	BuilderSetup(ParentCtrl* setupCtrl, VectorMap<Id, Ctrl*> setupCtrlsMap);
+	BuilderSetup(ParentCtrl* setupCtrl,
+	             BuilderSetupHelperInterface* setupCtrlHelper,
+	             VectorMap<Id, Ctrl*> setupCtrlsMap);
 	
 	ParentCtrl* setupCtrl;
+	BuilderSetupHelperInterface* setupCtrlHelper;
 	VectorMap<Id, Ctrl*> setupCtrlsMap;
 };
 
@@ -100,8 +134,10 @@ public:
 	
 	VectorMap<String, BuilderSetup> setups;
 	
-	AndroidBuilderSetup androidSetup;
-	DefaultBuilderSetup defaultSetup;
+	AndroidBuilderSetup       androidSetup;
+	AndroidBuilderSetupHelper androidSetupHelper;
+	DefaultBuilderSetup       defaultSetup;
+	DefaultBuilderSetupHelper defaultSetupHelper;
 	
 	void Load();
 	bool Save();
@@ -123,6 +159,12 @@ public:
 	typedef BuildMethods CLASSNAME;
 
 	BuildMethods();
+	
+private:
+	void          SieveBuilders(Index<String>& sievedBuilders, const Index<String>& builders) const;
+	String        BuildersToString(const Index<String>& builders) const;
+	Index<String> StringToBuilders(const String& str) const;
+	Index<String> GetBuilders() const;
 };
 
 END_UPP_NAMESPACE

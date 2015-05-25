@@ -50,33 +50,20 @@ public:
 	DirMap();
 };
 
-class BuilderSetup {
-public:
-	BuilderSetup(const String& prefix_);
-	virtual ~BuilderSetup() {}
-	
-	virtual String GetPrefix() const { return this->prefix; }
-	
-	virtual VectorMap<Id, Ctrl*> GetSetupCtrlsMap() = 0;
-	virtual Index<String> GetCoreIds();
-	
-protected:
-	const String prefix;
-};
-
 class AndroidBuilderSetup :
-	public WithBuildMethodsAndroidBuilderSetupLayout<TopWindow>,
-	public BuilderSetup  {
+	public WithBuildMethodsAndroidBuilderSetupLayout<ParentCtrl> {
 public:
 	AndroidBuilderSetup();
 	
-	void New();
-	virtual VectorMap<Id, Ctrl*> GetSetupCtrlsMap();
+	VectorMap<Id, Ctrl*> GetSetupCtrlsMap();
+
+private:
+	FrameRight<Button> ndkBrowse;
+	FrameRight<Button> jdkBrowse;
 };
 
 class DefaultBuilderSetup :
-	public WithBuildMethodsDefaultBuilderSetupLayout<TopWindow>,
-	public BuilderSetup {
+	public WithBuildMethodsDefaultBuilderSetupLayout<ParentCtrl> {
 public:
 	TextOption debug_blitz;
 	TextSwitch debug_linkmode;
@@ -91,21 +78,31 @@ public:
 	DefaultBuilderSetup();
 	
 	void New(const String& builder);
-	virtual VectorMap<Id, Ctrl*> GetSetupCtrlsMap();
+	VectorMap<Id, Ctrl*> GetSetupCtrlsMap();
+};
+
+class BuilderSetup : public Moveable<BuilderSetup> {
+public:
+	BuilderSetup(ParentCtrl* setupCtrl, VectorMap<Id, Ctrl*> setupCtrlsMap);
+	
+	ParentCtrl* setupCtrl;
+	VectorMap<Id, Ctrl*> setupCtrlsMap;
 };
 
 class BuildMethods : public WithBuildMethodsLayout<TopWindow> {
 public:
-	AndroidBuilderSetup androidSetup;
-	DefaultBuilderSetup defaultSetup;
-	
 	OpenFileButton open_script;
 	TextOption linkmode_lock;
 	
 	EditStringNotNull name;
 	Index<String>     origfile;
 	String            default_method;
-
+	
+	VectorMap<String, BuilderSetup> setups;
+	
+	AndroidBuilderSetup androidSetup;
+	DefaultBuilderSetup defaultSetup;
+	
 	void Load();
 	bool Save();
 
@@ -117,8 +114,9 @@ public:
 
 	void MethodMenu(Bar& bar);
 	
-	void SwitchSetupView();
-	void AddBuilderSetupCtrls(BuilderSetup& builderSetup);
+	String GetSetupPrefix(const String& setupKey) const;
+	void   InitSetups();
+	void   SwitchSetupView();
 	VectorMap<String, String> SieveBuilderVars(const VectorMap<String, String>& map);
 	VectorMap<String, String> MapBuilderVars(const VectorMap<String, String>& map);
 	

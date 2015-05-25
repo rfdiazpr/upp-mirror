@@ -190,6 +190,9 @@ private:
 
 class AndroidBuilder : public CppBuilder {
 public:
+	static Index<String> GetBuildersNames();
+	
+public:
 	AndroidBuilder();
 	
 	String GetTargetExt() const;

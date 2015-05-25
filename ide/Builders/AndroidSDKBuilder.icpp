@@ -4,6 +4,15 @@
 static String ndkPath = "/home/klugier/AndroidStudio/ndk";
 static String jdkPath = "/usr/lib/jvm/java-7-oracle"; // <- Seems android supports up to Java-7
 
+Index<String> AndroidBuilder::GetBuildersNames()
+{
+	Index<String> builders;
+	
+	builders.Add("ANDROID");
+	
+	return builders;
+}
+
 AndroidBuilder::AndroidBuilder() :
 	androidNDK(ndkPath),
 	jdk(jdkPath)
@@ -571,5 +580,7 @@ Builder *CreateAndroidBuilder()
 
 INITBLOCK
 {
-	RegisterBuilder("ANDROID", &CreateAndroidBuilder);
+	Index<String> builders = AndroidBuilder::GetBuildersNames();
+	for(int i = 0; i < builders.GetCount(); i++)
+		RegisterBuilder(builders[i], &CreateAndroidBuilder);
 }

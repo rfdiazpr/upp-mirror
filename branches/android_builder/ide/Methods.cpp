@@ -93,50 +93,28 @@ DirMap::DirMap()
 	WhenArrayAction = localpath <<= remotepath <<= callback(this, &DirMap::Modify);
 }
 
-BuilderSetup::BuilderSetup(const String& prefix_) :
-	prefix(prefix_)
-{
-	
-}
-
-Index<String> BuilderSetup::GetCoreIds()
-{
-	Index<String> ids;
-	
-	VectorMap<Id, Ctrl*> map = GetSetupCtrlsMap();
-	for(int i = 0; i < map.GetCount(); i++) {
-		String key = map.GetKey(i);
-		if(key.StartsWith(prefix))
-			key.Remove(0, prefix.GetCount());
-		ids.Add(key);
-	}
-	
-	return ids;
-}
-
 AndroidBuilderSetup::AndroidBuilderSetup()
-	: BuilderSetup("ANDROID_")
 {
 	CtrlLayout(*this);
-}
-
-void AndroidBuilderSetup::New()
-{
-	sdkDir.SetData(GetAndroidSDKPath());
+	
+	ndkBrowse.SetImage(CtrlImg::right_arrow());
+	ndkPath.AddFrame(ndkBrowse);
+	
+	jdkBrowse.SetImage(CtrlImg::right_arrow());
+	jdkPath.AddFrame(jdkBrowse);
 }
 
 VectorMap<Id, Ctrl*> AndroidBuilderSetup::GetSetupCtrlsMap()
 {
 	VectorMap<Id, Ctrl*> map;
 	
-	map.Add(prefix + "NDK_DIR", &ndkDir);
-	map.Add(prefix + "JDK_DIR", &jdkDir);
+	map.Add("NDK_PATH", &ndkPath);
+	map.Add("JDK_PATH", &jdkPath);
 	
 	return map;
 }
 
-DefaultBuilderSetup::DefaultBuilderSetup() :
-	BuilderSetup("DEFAULT_")
+DefaultBuilderSetup::DefaultBuilderSetup()
 {
 	CtrlLayout(*this);
 	
@@ -186,30 +164,36 @@ VectorMap<Id, Ctrl*> DefaultBuilderSetup::GetSetupCtrlsMap()
 {
 	VectorMap<Id, Ctrl*> map;
 	
-	map.Add(prefix + "COMPILER",                  &compiler);
-	map.Add(prefix + "COMMON_OPTIONS",            &common_options);
-	map.Add(prefix + "COMMON_CPP_OPTIONS",        &common_cpp_options);
-	map.Add(prefix + "COMMON_C_OPTIONS",          &common_c_options);
-	map.Add(prefix + "COMMON_FLAGS",              &common_flags);
-	map.Add(prefix + "DEBUG_INFO",                &debug_info);
-	map.Add(prefix + "DEBUG_BLITZ",               &debug_blitz);
-	map.Add(prefix + "DEBUG_LINKMODE",            &debug_linkmode);
-	map.Add(prefix + "DEBUG_OPTIONS",             &debug_options);
-	map.Add(prefix + "DEBUG_FLAGS",               &debug_flags);
-	map.Add(prefix + "DEBUG_LINK",                &debug_link);
-	map.Add(prefix + "RELEASE_BLITZ",             &release_blitz);
-	map.Add(prefix + "RELEASE_LINKMODE",          &release_linkmode);
-	map.Add(prefix + "RELEASE_OPTIONS",           &speed_options);
-	map.Add(prefix + "RELEASE_SIZE_OPTIONS",      &size_options);
-	map.Add(prefix + "RELEASE_FLAGS",             &release_flags);
-	map.Add(prefix + "RELEASE_LINK",              &release_link);
-	map.Add(prefix + "DEBUGGER",                  &debugger);
-	map.Add(prefix + "ALLOW_PRECOMPILED_HEADERS", &allow_pch);
-	map.Add(prefix + "PATH",                      &path);
-	map.Add(prefix + "INCLUDE",                   &include);
-	map.Add(prefix + "LIB",                       &lib);
+	map.Add("COMPILER",                  &compiler);
+	map.Add("COMMON_OPTIONS",            &common_options);
+	map.Add("COMMON_CPP_OPTIONS",        &common_cpp_options);
+	map.Add("COMMON_C_OPTIONS",          &common_c_options);
+	map.Add("COMMON_FLAGS",              &common_flags);
+	map.Add("DEBUG_INFO",                &debug_info);
+	map.Add("DEBUG_BLITZ",               &debug_blitz);
+	map.Add("DEBUG_LINKMODE",            &debug_linkmode);
+	map.Add("DEBUG_OPTIONS",             &debug_options);
+	map.Add("DEBUG_FLAGS",               &debug_flags);
+	map.Add("DEBUG_LINK",                &debug_link);
+	map.Add("RELEASE_BLITZ",             &release_blitz);
+	map.Add("RELEASE_LINKMODE",          &release_linkmode);
+	map.Add("RELEASE_OPTIONS",           &speed_options);
+	map.Add("RELEASE_SIZE_OPTIONS",      &size_options);
+	map.Add("RELEASE_FLAGS",             &release_flags);
+	map.Add("RELEASE_LINK",              &release_link);
+	map.Add("DEBUGGER",                  &debugger);
+	map.Add("ALLOW_PRECOMPILED_HEADERS", &allow_pch);
+	map.Add("PATH",                      &path);
+	map.Add("INCLUDE",                   &include);
+	map.Add("LIB",                       &lib);
 	
 	return map;
+}
+
+BuilderSetup::BuilderSetup(ParentCtrl* setupCtrl, VectorMap<Id, Ctrl*> setupCtrlsMap)
+{
+	this->setupCtrl = setupCtrl;
+	this->setupCtrlsMap = setupCtrlsMap;
 }
 
 int CharFilterFileName(int c)
@@ -225,8 +209,7 @@ BuildMethods::BuildMethods()
 	name.SetFilter(CharFilterFileName);
 	
 	method.AddCtrl("BUILDER", builder);
-	AddBuilderSetupCtrls(androidSetup);
-	AddBuilderSetupCtrls(defaultSetup);
+	InitSetups();
 	
 #if 0 // REMOTE REMOVED
 	method.AddCtrl("REMOTE_OS", remote_os);
@@ -259,9 +242,6 @@ BuildMethods::BuildMethods()
 	setdefault <<= THISBACK(SetDefault);
 
 	linkmode_lock.SetLabel("Lock link mode");
-	
-	androidSetup.SizePos();
-	defaultSetup.SizePos();
 }
 
 void BuildMethods::MethodMenu(Bar& bar)
@@ -306,11 +286,13 @@ static int sCompare(const Value& v1, const Value& v2)
 
 void BuildMethods::NewBuilder()
 {
+	/*
 	String builderName = ~builder;
 	if(builderName == "ANDROID")
 		androidSetup.New();
 	else
 		defaultSetup.New(builderName);
+	*/
 	SwitchSetupView();
 }
 
@@ -330,6 +312,9 @@ void BuildMethods::Load()
 		VectorMap<String, String> map;
 		String fn = ConfigFile(ff.GetName());
 		if(LoadVarFile(fn, map)) {
+			String builder = map.Get("BUILDER");
+			//if(builder == "ANDROID")
+			//	androidSetup.OnLoad();
 			map = MapBuilderVars(map);
 			origfile.Add(fn);
 			method.Add(GetFileTitle(fn));
@@ -404,12 +389,74 @@ void BuildMethods::SetDefault()
 	}
 }
 
+String BuildMethods::GetSetupPrefix(const String& setupKey) const
+{
+	return setupKey + "_";
+}
+
+void SieveBuilders(Index<String>& sievedBuilders, const Index<String>& builders)
+{
+	for(int i = 0; i < builders.GetCount(); i++)
+		sievedBuilders.RemoveKey(builders[i]);
+}
+
+String BuildersToString(const Index<String>& builders)
+{
+	String str;
+	for(int i = 0; i < builders.GetCount(); i++) {
+		str << builders[i];
+		if(i + 1 < builders.GetCount())
+			str << " ";
+	}
+	return str;
+}
+
+Index<String> StringToBuilders(const String& str) {
+	Vector<String> vec = Split(str, ' ');
+	Index<String> builders;
+	for(int i = 0; i < vec.GetCount(); i++)
+		builders.Add(vec[i]);
+	return builders;
+}
+
+void BuildMethods::InitSetups()
+{
+	Index<String> builders;
+	for(int i = 0; i < BuilderMap().GetCount(); i++)
+		builders.Add(BuilderMap().GetKey(i));
+
+	setups.Add(BuildersToString(AndroidBuilder::GetBuildersNames()),
+	           BuilderSetup(&androidSetup, androidSetup.GetSetupCtrlsMap()));
+	SieveBuilders(builders, AndroidBuilder::GetBuildersNames());
+	
+	setups.Add(BuildersToString(builders), BuilderSetup(&defaultSetup, defaultSetup.GetSetupCtrlsMap()));
+	
+	for(int i = 0; i < setups.GetCount(); i++) {
+		Index<String> currentBuilders = StringToBuilders(setups.GetKey(i));
+		if(currentBuilders.IsEmpty())
+			continue;
+			
+		String setupKey = currentBuilders[0];
+		
+		ParentCtrl *currentSetup = setups[i].setupCtrl;
+		setup.Add(currentSetup->SizePos());
+		currentSetup->Hide();
+		
+		for(int j = 0; j < setups[i].setupCtrlsMap.GetCount(); j++) {
+			String ctrlKey = setups[i].setupCtrlsMap.GetKey(j);
+			Ctrl*  ctrl    = setups[i].setupCtrlsMap[j];
+			
+			method.AddCtrl(GetSetupPrefix(setupKey) + ctrlKey, *ctrl);
+		}
+	}
+}
+
 void BuildMethods::SwitchSetupView()
 {
 	if(!method.IsCursor()) {
 		builder.Hide();
 		builderLabel.Hide();
-		setupParent.Hide();
+		setup.Hide();
 		return;
 	}
 	else {
@@ -417,22 +464,19 @@ void BuildMethods::SwitchSetupView()
 		builderLabel.Show();
 	}
 	String builderName = ~builder;
-	builderName.IsEmpty() ? setupParent.Hide() : setupParent.Show();
+	builderName.IsEmpty() ? setup.Hide() : setup.Show();
 	
-	setupParent.ClearFrames(); // FIXME: this works well with TopWindow parametrization
-	if(builderName == "ANDROID") {
-		setupParent.Add(androidSetup);
+	if(!builderName.IsEmpty()) {
+		bool showed = false;
+		for(int i = 0; i < setups.GetCount(); i++) {
+			Index<String> currentBuilders = StringToBuilders(setups.GetKey(i));
+			
+			if(currentBuilders.Find(builderName) > -1)
+				setups[i].setupCtrl->Show();
+			else
+				setups[i].setupCtrl->Hide();
+		}
 	}
-	else {
-		setupParent.Add(defaultSetup);
-	}
-}
-
-void BuildMethods::AddBuilderSetupCtrls(BuilderSetup& builderSetup)
-{
-	VectorMap<Id, Ctrl*> map = builderSetup.GetSetupCtrlsMap();
-	for(int i = 0; i < map.GetCount(); i++)
-		method.AddCtrl(map.GetKey(i), *map[i]);
 }
 
 VectorMap<String, String> BuildMethods::SieveBuilderVars(const VectorMap<String, String>& map)
@@ -443,28 +487,24 @@ VectorMap<String, String> BuildMethods::SieveBuilderVars(const VectorMap<String,
 	if(builder.IsEmpty())
 		return VectorMap<String, String>();
 	
-	String androidPrefix = androidSetup.GetPrefix();
-	String defaultPrefix = defaultSetup.GetPrefix();
 	for(int i = 0; i < map.GetCount(); i++) {
 		String key = map.GetKey(i);
 		String value = map[i];
 		
-		if(key.StartsWith(androidPrefix)) {
-			// TODO: remove hardcoded android builder name
-			if(builder == "ANDROID") {
-				key.Remove(0, androidPrefix.GetCount());
-				sievedMap.Add(key, value);
+		bool toInsert = true;
+		for(int j = 0; j < setups.GetCount(); j++) {
+			Index<String> currentBuilders = StringToBuilders(setups.GetKey(j));
+			if(currentBuilders.IsEmpty())
+				continue;
+			String prefix = GetSetupPrefix(currentBuilders[0]);
+			if(key.StartsWith(prefix)) {
+				if(currentBuilders.Find(builder) > -1)
+					key.Remove(0, prefix.GetCount());
+				else
+					toInsert = false;
 			}
 		}
-		else
-		if(key.StartsWith(defaultPrefix)) {
-			// Different than all special builders -> can be vectorized in the future.
-			if(builder != "ANDROID") {
-				key.Remove(0, defaultPrefix.GetCount());
-				sievedMap.Add(key, value);
-			}
-		}
-		else
+		if(toInsert)
 			sievedMap.Add(key, value);
 	}
 	
@@ -475,34 +515,32 @@ VectorMap<String, String> BuildMethods::MapBuilderVars(const VectorMap<String, S
 {
 	VectorMap<String, String> mapedMap;
 	Index<String> varsToMaped;
-	
+
 	String builder = map.Get("BUILDER");
 	if(builder.IsEmpty())
 		return VectorMap<String, String>();
 	
-	if(builder == "ANDROID")
-		varsToMaped = androidSetup.GetCoreIds();
-	else
-	if(builder != "ANDROID") {
-		// Different than all special builders -> can be vectorized in the future.
-		varsToMaped = defaultSetup.GetCoreIds();
-	}
-	
-	for(int i = 0; i < map.GetCount(); i++) {
-		String key = map.GetKey(i);
-		String value = map[i];
+	for(int i = 0; i < setups.GetCount(); i++) {
+		Index<String> currentBuilders = StringToBuilders(setups.GetKey(i));
+		if(currentBuilders.IsEmpty())
+			continue;
 		
-		if(varsToMaped.Find(key) > -1) {
-			if(builder == "ANDROID")
-				key = androidSetup.GetPrefix() + key;
-			else
-			if(builder != "ANDROID")
-				key = defaultSetup.GetPrefix() + key;
+		String currentBuilder = currentBuilders[0];
+		
+		if(currentBuilder.Find(builder) > -1) {
+			String setupPrefix = GetSetupPrefix(currentBuilder);
+			
+			for(int j = 0; j < map.GetCount(); j++) {
+				String ctrlName = map.GetKey(j);
+				
+				if(setups[i].setupCtrlsMap.Find(ctrlName) > -1)
+					mapedMap.Add(setupPrefix + ctrlName, map[j]);
+				else
+					mapedMap.Add(ctrlName, map[j]);
+			}
 		}
-		
-		mapedMap.Add(key, value);
 	}
-	
+
 	return mapedMap;
 }
 

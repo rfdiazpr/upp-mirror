@@ -317,6 +317,16 @@ void AddPath(EditString *es)
 	es->SetWantFocus();
 }
 
+void InsertPath(EditString *es)
+{
+	String s = SelectDirectory();
+	if(IsNull(s))
+		return;
+	es->Clear();
+	*es <<= s;
+	es->SetWantFocus();
+}
+
 void Ide::SetupFormat() {
 	FormatDlg dlg;
 	dlg.Title("Format setup");

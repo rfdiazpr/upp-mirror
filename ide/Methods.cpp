@@ -98,9 +98,11 @@ AndroidBuilderSetup::AndroidBuilderSetup()
 	CtrlLayout(*this);
 	
 	ndkBrowse.SetImage(CtrlImg::right_arrow());
+	ndkBrowse <<= callback1(InsertPath, &ndk_path);
 	ndk_path.AddFrame(ndkBrowse);
 	
 	jdkBrowse.SetImage(CtrlImg::right_arrow());
+	jdkBrowse <<= callback1(InsertPath, &jdk_path);
 	jdk_path.AddFrame(jdkBrowse);
 }
 
@@ -112,6 +114,11 @@ VectorMap<Id, Ctrl*> AndroidBuilderSetup::GetSetupCtrlsMap()
 	map.Add("JDK_PATH", &jdk_path);
 	
 	return map;
+}
+
+AndroidBuilderSetupHelper::AndroidBuilderSetupHelper()
+{
+	this->setup = NULL;
 }
 
 void AndroidBuilderSetupHelper::New(const String& builder)

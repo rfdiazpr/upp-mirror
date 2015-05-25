@@ -58,20 +58,20 @@ public:
 	virtual void OnLoad() = 0;
 };
 
-class AndroidBuilderSetup :
-	public WithBuildMethodsAndroidBuilderSetupLayout<ParentCtrl> {
-public:
-	AndroidBuilderSetup();
-	
-	VectorMap<Id, Ctrl*> GetSetupCtrlsMap();
-
+class AndroidBuilderSetup : public WithBuildMethodsAndroidBuilderSetupLayout<ParentCtrl> {
 public:
 	FrameRight<Button> ndkBrowse;
 	FrameRight<Button> jdkBrowse;
+	
+	AndroidBuilderSetup();
+	
+	VectorMap<Id, Ctrl*> GetSetupCtrlsMap();
 };
 
 class AndroidBuilderSetupHelper : public BuilderSetupHelperInterface {
 public:
+	AndroidBuilderSetupHelper();
+
 	void SetSetup(AndroidBuilderSetup* setup) { this->setup = setup; }
 	
 	virtual void New(const String& builder);
@@ -81,8 +81,7 @@ private:
 	AndroidBuilderSetup* setup;
 };
 
-class DefaultBuilderSetup :
-	public WithBuildMethodsDefaultBuilderSetupLayout<ParentCtrl> {
+class DefaultBuilderSetup : public WithBuildMethodsDefaultBuilderSetupLayout<ParentCtrl> {
 public:
 	TextOption debug_blitz;
 	TextSwitch debug_linkmode;

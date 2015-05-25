@@ -98,20 +98,33 @@ AndroidBuilderSetup::AndroidBuilderSetup()
 	CtrlLayout(*this);
 	
 	ndkBrowse.SetImage(CtrlImg::right_arrow());
-	ndkPath.AddFrame(ndkBrowse);
+	ndk_path.AddFrame(ndkBrowse);
 	
 	jdkBrowse.SetImage(CtrlImg::right_arrow());
-	jdkPath.AddFrame(jdkBrowse);
+	jdk_path.AddFrame(jdkBrowse);
 }
 
 VectorMap<Id, Ctrl*> AndroidBuilderSetup::GetSetupCtrlsMap()
 {
 	VectorMap<Id, Ctrl*> map;
 	
-	map.Add("NDK_PATH", &ndkPath);
-	map.Add("JDK_PATH", &jdkPath);
+	map.Add("NDK_PATH", &ndk_path);
+	map.Add("JDK_PATH", &jdk_path);
 	
 	return map;
+}
+
+void AndroidBuilderSetupHelper::New(const String& builder)
+{
+	OnLoad();
+}
+
+void AndroidBuilderSetupHelper::OnLoad()
+{
+	if(!setup)
+		return;
+	
+	setup->sdk_path.SetData(GetAndroidSDKPath());
 }
 
 DefaultBuilderSetup::DefaultBuilderSetup()
@@ -127,37 +140,6 @@ DefaultBuilderSetup::DefaultBuilderSetup()
 	debug_info.Add("0", "None");
 	debug_info.Add("1", "Minimal");
 	debug_info.Add("2", "Full");
-}
-
-void DefaultBuilderSetup::New(const String& builder)
-{
-	bool gcc = builder == "GCC" || builder == "GCC32" || builder == "GCC_ARM";
-	if(IsNull(speed_options)) {
-		if(gcc)
-			speed_options <<= "-O3 -ffunction-sections -fdata-sections";
-		else
-			speed_options <<= "-O2";
-	}
-	if(IsNull(size_options)) {
-		if(gcc)
-			size_options <<= "-Os -finline-limit=20 -ffunction-sections -fdata-sections";
-		else
-			size_options <<= "-O1";
-	}
-	if(IsNull(debug_options)) {
-		if(gcc)
-			debug_options <<= "-O0";
-		else
-			debug_options <<= "-Od";
-	}
-	if(IsNull(debugger)) {
-		if(gcc)
-			debugger <<= "gdb";
-		else
-			debugger <<= "msdev";
-	}
-	if(IsNull(release_link) && gcc)
-		release_link <<= "-Wl,--gc-sections";
 }
 
 VectorMap<Id, Ctrl*> DefaultBuilderSetup::GetSetupCtrlsMap()
@@ -190,10 +172,52 @@ VectorMap<Id, Ctrl*> DefaultBuilderSetup::GetSetupCtrlsMap()
 	return map;
 }
 
-BuilderSetup::BuilderSetup(ParentCtrl* setupCtrl, VectorMap<Id, Ctrl*> setupCtrlsMap)
+DefaultBuilderSetupHelper::DefaultBuilderSetupHelper()
 {
-	this->setupCtrl = setupCtrl;
-	this->setupCtrlsMap = setupCtrlsMap;
+	this->setup = NULL;
+}
+
+void DefaultBuilderSetupHelper::New(const String& builder)
+{
+	if(!setup)
+		return;
+		
+	bool gcc = builder == "GCC" || builder == "GCC32" || builder == "GCC_ARM";
+	if(IsNull(setup->speed_options)) {
+		if(gcc)
+			setup->speed_options <<= "-O3 -ffunction-sections -fdata-sections";
+		else
+			setup->speed_options <<= "-O2";
+	}
+	if(IsNull(setup->size_options)) {
+		if(gcc)
+			setup->size_options <<= "-Os -finline-limit=20 -ffunction-sections -fdata-sections";
+		else
+			setup->size_options <<= "-O1";
+	}
+	if(IsNull(setup->debug_options)) {
+		if(gcc)
+			setup->debug_options <<= "-O0";
+		else
+			setup->debug_options <<= "-Od";
+	}
+	if(IsNull(setup->debugger)) {
+		if(gcc)
+			setup->debugger <<= "gdb";
+		else
+			setup->debugger <<= "msdev";
+	}
+	if(IsNull(setup->release_link) && gcc)
+		setup->release_link <<= "-Wl,--gc-sections";
+}
+
+BuilderSetup::BuilderSetup(ParentCtrl* setupCtrl,
+                           BuilderSetupHelperInterface* setupCtrlHelper,
+                           VectorMap<Id, Ctrl*> setupCtrlsMap)
+{
+	this->setupCtrl       = setupCtrl;
+	this->setupCtrlHelper = setupCtrlHelper;
+	this->setupCtrlsMap   = setupCtrlsMap;
 }
 
 int CharFilterFileName(int c)
@@ -286,13 +310,13 @@ static int sCompare(const Value& v1, const Value& v2)
 
 void BuildMethods::NewBuilder()
 {
-	/*
 	String builderName = ~builder;
-	if(builderName == "ANDROID")
-		androidSetup.New();
-	else
-		defaultSetup.New(builderName);
-	*/
+	for(int i = 0; i < setups.GetCount(); i++) {
+		Index<String> currentBuilders = StringToBuilders(setups.GetKey(i));
+		if(currentBuilders.Find(builderName) > -1)
+			setups[i].setupCtrlHelper->New(builderName);
+	}
+	
 	SwitchSetupView();
 }
 
@@ -312,9 +336,14 @@ void BuildMethods::Load()
 		VectorMap<String, String> map;
 		String fn = ConfigFile(ff.GetName());
 		if(LoadVarFile(fn, map)) {
-			String builder = map.Get("BUILDER");
-			//if(builder == "ANDROID")
-			//	androidSetup.OnLoad();
+			String builderName = map.Get("BUILDER");
+			
+			for(int i = 0; i < setups.GetCount(); i++) {
+				Index<String> currentBuilders = StringToBuilders(setups.GetKey(i));
+				if(currentBuilders.Find(builderName) > -1)
+					setups[i].setupCtrlHelper->OnLoad();
+			}
+			
 			map = MapBuilderVars(map);
 			origfile.Add(fn);
 			method.Add(GetFileTitle(fn));
@@ -370,7 +399,6 @@ struct BoldDisplay : Display {
 	}
 };
 
-
 void BuildMethods::ShowDefault()
 {
 	String m = GetDefaultMethod();
@@ -394,42 +422,18 @@ String BuildMethods::GetSetupPrefix(const String& setupKey) const
 	return setupKey + "_";
 }
 
-void SieveBuilders(Index<String>& sievedBuilders, const Index<String>& builders)
-{
-	for(int i = 0; i < builders.GetCount(); i++)
-		sievedBuilders.RemoveKey(builders[i]);
-}
-
-String BuildersToString(const Index<String>& builders)
-{
-	String str;
-	for(int i = 0; i < builders.GetCount(); i++) {
-		str << builders[i];
-		if(i + 1 < builders.GetCount())
-			str << " ";
-	}
-	return str;
-}
-
-Index<String> StringToBuilders(const String& str) {
-	Vector<String> vec = Split(str, ' ');
-	Index<String> builders;
-	for(int i = 0; i < vec.GetCount(); i++)
-		builders.Add(vec[i]);
-	return builders;
-}
-
 void BuildMethods::InitSetups()
 {
-	Index<String> builders;
-	for(int i = 0; i < BuilderMap().GetCount(); i++)
-		builders.Add(BuilderMap().GetKey(i));
-
+	Index<String> builders = GetBuilders();
+	
+	androidSetupHelper.SetSetup(&androidSetup);
 	setups.Add(BuildersToString(AndroidBuilder::GetBuildersNames()),
-	           BuilderSetup(&androidSetup, androidSetup.GetSetupCtrlsMap()));
+	           BuilderSetup(&androidSetup, &androidSetupHelper, androidSetup.GetSetupCtrlsMap()));
 	SieveBuilders(builders, AndroidBuilder::GetBuildersNames());
 	
-	setups.Add(BuildersToString(builders), BuilderSetup(&defaultSetup, defaultSetup.GetSetupCtrlsMap()));
+	defaultSetupHelper.SetSetup(&defaultSetup);
+	setups.Add(BuildersToString(builders),
+	           BuilderSetup(&defaultSetup, &defaultSetupHelper, defaultSetup.GetSetupCtrlsMap()));
 	
 	for(int i = 0; i < setups.GetCount(); i++) {
 		Index<String> currentBuilders = StringToBuilders(setups.GetKey(i));
@@ -542,6 +546,41 @@ VectorMap<String, String> BuildMethods::MapBuilderVars(const VectorMap<String, S
 	}
 
 	return mapedMap;
+}
+
+void BuildMethods::SieveBuilders(Index<String>& sievedBuilders,
+                                 const Index<String>& builders) const
+{
+	for(int i = 0; i < builders.GetCount(); i++)
+		sievedBuilders.RemoveKey(builders[i]);
+}
+
+String BuildMethods::BuildersToString(const Index<String>& builders) const
+{
+	String str;
+	for(int i = 0; i < builders.GetCount(); i++) {
+		str << builders[i];
+		if(i + 1 < builders.GetCount())
+			str << " ";
+	}
+	return str;
+}
+
+Index<String> BuildMethods::StringToBuilders(const String& str) const
+{
+	Vector<String> vec = Split(str, ' ');
+	Index<String> builders;
+	for(int i = 0; i < vec.GetCount(); i++)
+		builders.Add(vec[i]);
+	return builders;
+}
+
+Index<String> BuildMethods::GetBuilders() const
+{
+	Index<String> builders;
+	for(int i = 0; i < BuilderMap().GetCount(); i++)
+		builders.Add(BuilderMap().GetKey(i));
+	return builders;
 }
 
 void Ide::SetupBuildMethods()

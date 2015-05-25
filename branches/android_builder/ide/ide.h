@@ -293,6 +293,9 @@ bool   isincludefnchar(int c);
 Size   GetDrawFileNameSize(const String& h);
 void   DrawFileName(Draw& w, const Rect& r, const String& h, Color ink);
 
+void   AddPath(EditString *es);
+void   InsertPath(EditString *es);
+
 #include "Assist.h"
 
 void DirSel(EditField& f, FrameRight<Button>& b);

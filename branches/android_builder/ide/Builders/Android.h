@@ -77,25 +77,18 @@ public:
 	bool HasFooter();
 	
 	void AddHeader();
-	void AddModuleMakeFile(const AndroidModuleMakeFile& moduleMakeFile);
 	void AddInclusion(const String& inclusion);
 	void AddModuleImport(const String& moduleName);
-	
-	void UpdateModuleMakeFile(const AndroidModuleMakeFile& moduleMakeFile);
-	
-	void LoadMakeFile(const String& makeFile);
 	
 	String ToString() const;
 	
 protected:
 	void AppendHeader(String& makeFile) const;
-	void AppendModulesMakeFiles(String& makeFile) const;
 	void AppendInclusions(String& makeFile) const;
 	void AppendImportedModules(String& makeFile) const;
 	
 private:
 	bool hasHeader;
-	Vector<AndroidModuleMakeFile> modulesMakeFile;
 	Vector<String> inclusions;
 	Vector<String> importedModules;
 };

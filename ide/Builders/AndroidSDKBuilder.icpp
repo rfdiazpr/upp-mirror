@@ -1,9 +1,5 @@
 #include "Builders.h"
 
-// Hardcoded paths.
-static String ndkPath = "/home/klugier/AndroidStudio/ndk";
-static String jdkPath = "/usr/lib/jvm/java-7-oracle"; // <- Seems android supports up to Java-7
-
 Index<String> AndroidBuilder::GetBuildersNames()
 {
 	Index<String> builders;
@@ -13,9 +9,7 @@ Index<String> AndroidBuilder::GetBuildersNames()
 	return builders;
 }
 
-AndroidBuilder::AndroidBuilder() :
-	androidNDK(ndkPath),
-	jdk(jdkPath)
+AndroidBuilder::AndroidBuilder()
 {
 	androidSDK.SetPath(GetAndroidSDKPath());
 	androidSDK.DeducePathReleatedValues();
@@ -27,10 +21,10 @@ String AndroidBuilder::GetTargetExt() const
 }
 
 bool AndroidBuilder::BuildPackage(const String& package, Vector<String>& linkfile,
-	                                 Vector<String>&, String& linkoptions,
-	                                 const Vector<String>& all_uses,
-	                                 const Vector<String>& all_libraries,
-	                                 int)
+	                              Vector<String>&, String& linkoptions,
+	                              const Vector<String>& all_uses,
+	                              const Vector<String>& all_libraries,
+	                              int)
 {
 	if(!ValidateBuilderEnviorement())
 		return false;
@@ -50,7 +44,6 @@ bool AndroidBuilder::BuildPackage(const String& package, Vector<String>& linkfil
 		if(!RealizePackageSourcesDirectory(package))
 			return false;
 	
-	
 	Vector<String> javaSourceFiles;
 	Vector<String> nativeSourceFiles;
 	Vector<String> nativeSourceFilesInPackage;
@@ -62,74 +55,68 @@ bool AndroidBuilder::BuildPackage(const String& package, Vector<String>& linkfil
 		if(pkg[i].separator)
 			continue;
 		
-		// TODO: add global options aka gop support
-		Vector<String> allPackageFiles = CustomStep(pkg[i], package, error);
-		if(!allPackageFiles.GetCount())
-			error = true;
-		for(int j = 0; j < allPackageFiles.GetCount(); j++) {
-			String filePath = allPackageFiles[j];
-			String fileExt = ToLower(GetFileExt(filePath));
-			String fileName = GetFileName(allPackageFiles[j]);
-			String packageFile = AppendFileName(package, pkg[i]);
-			String packageFileDirectory = GetFileFolder(packageFile);
-			packageFileDirectory.Find(package + DIR_SEPS);
-			
-			if(isResourcesPackage) {
-				// To keep compatibility with pure Android SDK.
-				if(packageFileDirectory.Find(package + DIR_SEPS) != -1)
-					packageFileDirectory.Remove(0, String(package + DIR_SEPS).GetCount());
-				String filePathInAndroidProject;
-				filePathInAndroidProject << GetAndroidProjectResourcesDir() << DIR_SEPS;
-				filePathInAndroidProject <<	packageFileDirectory << DIR_SEPS;
-				filePathInAndroidProject <<	fileName;
+		String filePath = SourcePath(package, pkg[i]);
+		String fileExt = ToLower(GetFileExt(filePath));
+		String fileName = GetFileName(filePath);
+		String packageFile = AppendFileName(package, pkg[i]);
+		String packageFileDirectory = GetFileFolder(packageFile);
+		packageFileDirectory.Find(package + DIR_SEPS);
+		
+		if(isResourcesPackage) {
+			// To keep compatibility with pure Android SDK.
+			if(packageFileDirectory.Find(package + DIR_SEPS) != -1)
+				packageFileDirectory.Remove(0, String(package + DIR_SEPS).GetCount());
+			String filePathInAndroidProject;
+			filePathInAndroidProject << GetAndroidProjectResourcesDir() << DIR_SEPS;
+			filePathInAndroidProject <<	packageFileDirectory << DIR_SEPS;
+			filePathInAndroidProject <<	fileName;
 				
-				if(!MovePackageFileToAndroidProject(filePath, filePathInAndroidProject))
-					error = true;
+			if(!MovePackageFileToAndroidProject(filePath, filePathInAndroidProject))
+				error = true;
+		}
+		else
+		if(fileExt == ".java") {
+			String filePathInAndroidProject;
+			filePathInAndroidProject << GetAndroidProjectJavaSourcesDir() << DIR_SEPS;
+			filePathInAndroidProject <<	packageFileDirectory << DIR_SEPS;
+			filePathInAndroidProject <<	fileName;
+				
+			if(!MovePackageFileToAndroidProject(filePath, filePathInAndroidProject)) {
+				error = true;
+				continue;
 			}
-			else
-			if(fileExt == ".java") {
-				String filePathInAndroidProject;
-				filePathInAndroidProject << GetAndroidProjectJavaSourcesDir() << DIR_SEPS;
-				filePathInAndroidProject <<	packageFileDirectory << DIR_SEPS;
-				filePathInAndroidProject <<	fileName;
+			javaSourceFiles.Add(filePathInAndroidProject);
+		}
+		else
+		if(fileExt == ".cpp" || fileExt == ".cxx" || fileExt == ".c" ||
+		   fileExt == ".hpp" || fileExt == ".hxx" || fileExt == ".h") {
+			String filePathInAndroidProject;
+			filePathInAndroidProject << GetAndroidProjectJniSourcesDir() << DIR_SEPS;
+			filePathInAndroidProject <<	packageFileDirectory << DIR_SEPS;
+			filePathInAndroidProject <<	fileName;
 				
-				if(!MovePackageFileToAndroidProject(filePath, filePathInAndroidProject)) {
+			if(!MovePackageFileToAndroidProject(filePath, filePathInAndroidProject)) {
+				error = true;
+				continue;
+			}
+			if(fileExt == ".cpp" || fileExt == ".cxx" || fileExt == "c") {
+				nativeSourceFiles.Add(filePathInAndroidProject);
+				nativeSourceFilesInPackage.Add(packageFile);
+			}
+		}
+		else
+		if(fileExt == ".xml") {
+			if(isMainPackage && fileName == "AndroidManifest.xml") {
+				if(androidManifestPath.GetCount()) {
+					PutConsole("AndroidManifest.xml is duplicated.");
+					return false;
+				}
+				
+				if(!FileCopy(filePath, GetAndroidProjectDir() + DIR_SEPS + "AndroidManifest.xml")) {
 					error = true;
 					continue;
 				}
-				javaSourceFiles.Add(filePathInAndroidProject);
-			}
-			else
-			if(fileExt == ".cpp" || fileExt == ".cxx" || fileExt == ".c" ||
-			   fileExt == ".hpp" || fileExt == ".hxx" || fileExt == ".h") {
-				String filePathInAndroidProject;
-				filePathInAndroidProject << GetAndroidProjectJniSourcesDir() << DIR_SEPS;
-				filePathInAndroidProject <<	packageFileDirectory << DIR_SEPS;
-				filePathInAndroidProject <<	fileName;
-				
-				if(!MovePackageFileToAndroidProject(filePath, filePathInAndroidProject)) {
-					error = true;
-					continue;
-				}
-				if(fileExt == ".cpp" || fileExt == ".cxx" || fileExt == "c") {
-					nativeSourceFiles.Add(filePathInAndroidProject);
-					nativeSourceFilesInPackage.Add(packageFile);
-				}
-			}
-			else
-			if(fileExt == ".xml") {
-				if(isMainPackage && fileName == "AndroidManifest.xml") {
-					if(androidManifestPath.GetCount()) {
-						PutConsole("AndroidManifest.xml is duplicated.");
-						return false;
-					}
-					
-					if(!FileCopy(filePath, GetAndroidProjectDir() + DIR_SEPS + "AndroidManifest.xml")) {
-						error = true;
-						continue;
-					}
-					androidManifestPath = filePath;
-				}
+				androidManifestPath = filePath;
 			}
 		}
 	}
@@ -322,8 +309,6 @@ bool AndroidBuilder::Preprocess(const String& package, const String& file, const
 
 void AndroidBuilder::CleanPackage(const String& package)
 {
-	CppBuilder::CleanPackage(package);
-	
 	String sandboxDir = GetSandboxDir();
 	if(DirectoryExists(sandboxDir))
 		DeleteFolderDeep(sandboxDir);
@@ -387,8 +372,12 @@ bool AndroidBuilder::AddSharedLibsToApk(const String& apkPath)
 
 bool AndroidBuilder::ValidateBuilderEnviorement()
 {
-	if(!androidSDK.CheckIntegrity()) {
+	if(!androidSDK.Validate()) {
 		PutConsole("Error: Android SDK was not detected.");
+		return false;
+	}
+	if(!jdk.Validate()) {
+		PutConsole("Error: JDK was not detected.");
 		return false;
 	}
 	

@@ -17,4 +17,11 @@ Jdk::~Jdk()
 	
 }
 
+bool Jdk::Validate() const
+{
+	if(!FileExists(GetJavacPath())) return false;
+	
+	return true;
+}
+
 END_UPP_NAMESPACE

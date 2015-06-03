@@ -7,6 +7,9 @@ NAMESPACE_UPP
 
 class Java {
 public:
+	Java();
+	~Java();
+
 	static String GetDelimiter();
 	
 };
@@ -16,6 +19,8 @@ public:
 	Jdk();
 	Jdk(const String& path);
 	virtual ~Jdk();
+	
+	bool Validate() const;
 	
 public:
 	String GetBinDir() const        { return path + DIR_SEPS + "bin"; }

@@ -44,18 +44,14 @@ struct CppBuilder : Builder {
 	bool                   FileExists(const String& path) const;
 	void                   DeleteFile(const Vector<String>& path);
 	void                   DeleteFile(const String& path);
-	void                   ChDir(const String& path);
 	void                   SaveFile(const String& path, const String& data);
 	String                 LoadFile(const String& path);
-	int                    Execute(const char *cmdline);
-	int                    Execute(const char *cl, Stream& out);
 	int                    AllocSlot();
 	bool                   Run(const char *cmdline, int slot, String key, int blitz_count);
 	bool                   Run(const char *cmdline, Stream& out, int slot, String key, int blitz_count);
 	bool                   Wait();
 	bool                   Wait(int slot);
 	void                   OnFinish(Callback cb);
-	bool                   HasFlag(const char *f) const        { return config.Find(f) >= 0; }
 	bool                   Cp(const String& cmd, const String& package, bool& error);
 	bool                   Cd(const String& cmd);
 	Vector<String>         CustomStep(const String& path, const String& package, bool& error);
@@ -188,7 +184,7 @@ private:
 	bool script_error;
 };
 
-class AndroidBuilder : public CppBuilder {
+class AndroidBuilder : public Builder {
 public:
 	static Index<String> GetBuildersNames();
 	
@@ -202,6 +198,10 @@ public:
 	virtual bool Link(const Vector<String>& linkfile, const String& linkoptions, bool createmap);
 	virtual bool Preprocess(const String& package, const String& file, const String& target, bool asmout);
 	virtual void CleanPackage(const String& package);
+	
+	void SetAndroidSDK(const String& androidSDKPath) { androidSDK.SetPath(androidSDKPath); }
+	void SetAndroidNDK(const String& androidNDKPath) { androidNDK.SetPath(androidNDKPath); }
+	void SetJDK(const String& jdkPath)               { jdk.SetPath(jdkPath); }
 	
 protected:
 	bool MovePackageFileToAndroidProject(const String& packagePath, const String& androidProjectPath); 

@@ -135,28 +135,39 @@ One<Builder> MakeBuild::CreateBuilder(Host *host)
 		ConsoleShow();
 		return NULL;
 	}
-	One<Builder> b = (*BuilderMap().Get(builder))();
+	Builder* b = (*BuilderMap().Get(builder))();
 	b->host = host;
-	b->compiler = bm.Get("COMPILER", "");
-	b->include = SplitDirs(GetVar("UPP") + ';' + bm.Get("INCLUDE", "") + ';' + add_includes);
-	const Workspace& wspc = GetIdeWorkspace();
-	for(int i = 0; i < wspc.GetCount(); i++) {
-		const Package& pkg = wspc.GetPackage(i);
-		for(int j = 0; j < pkg.include.GetCount(); j++)
-			b->include.Add(SourcePath(wspc[i], pkg.include[j].text));
-	}	
-	b->libpath = SplitDirs(bm.Get("LIB", ""));
-	b->cpp_options = bm.Get("COMMON_CPP_OPTIONS", "");
-	b->c_options = bm.Get("COMMON_C_OPTIONS", "");
-	b->debug_options = Join(bm.Get("COMMON_OPTIONS", ""), bm.Get("DEBUG_OPTIONS", ""));
-	b->release_options = Join(bm.Get("COMMON_OPTIONS", ""), bm.Get("RELEASE_OPTIONS", ""));
-	b->release_size_options = Join(bm.Get("COMMON_OPTIONS", ""), bm.Get("RELEASE_SIZE_OPTIONS", ""));
-	b->debug_link = bm.Get("DEBUG_LINK", "");
-	b->release_link = bm.Get("RELEASE_LINK", "");
 	b->script = bm.Get("SCRIPT", "");
-	b->main_conf = !!main_conf.GetCount();
-	b->allow_pch = bm.Get("ALLOW_PRECOMPILED_HEADERS", "") == "1";
-	b->start_time = start_time;
+	if(AndroidBuilder::GetBuildersNames().Find(builder) > -1) {
+		AndroidBuilder* ab = dynamic_cast<AndroidBuilder*>(b);
+		
+		ab->SetAndroidNDK(bm.Get("NDK_PATH", ""));
+		ab->SetJDK(bm.Get("JDK_PATH", ""));
+		
+		b = ab;
+	}
+	else {
+		// TODO: cpp builder variables only!!!
+		b->compiler = bm.Get("COMPILER", "");
+		b->include = SplitDirs(GetVar("UPP") + ';' + bm.Get("INCLUDE", "") + ';' + add_includes);
+		const Workspace& wspc = GetIdeWorkspace();
+		for(int i = 0; i < wspc.GetCount(); i++) {
+			const Package& pkg = wspc.GetPackage(i);
+			for(int j = 0; j < pkg.include.GetCount(); j++)
+				b->include.Add(SourcePath(wspc[i], pkg.include[j].text));
+		}	
+		b->libpath = SplitDirs(bm.Get("LIB", ""));
+		b->cpp_options = bm.Get("COMMON_CPP_OPTIONS", "");
+		b->c_options = bm.Get("COMMON_C_OPTIONS", "");
+		b->debug_options = Join(bm.Get("COMMON_OPTIONS", ""), bm.Get("DEBUG_OPTIONS", ""));
+		b->release_options = Join(bm.Get("COMMON_OPTIONS", ""), bm.Get("RELEASE_OPTIONS", ""));
+		b->release_size_options = Join(bm.Get("COMMON_OPTIONS", ""), bm.Get("RELEASE_SIZE_OPTIONS", ""));
+		b->debug_link = bm.Get("DEBUG_LINK", "");
+		b->release_link = bm.Get("RELEASE_LINK", "");
+		b->main_conf = !!main_conf.GetCount();
+		b->allow_pch = bm.Get("ALLOW_PRECOMPILED_HEADERS", "") == "1";
+		b->start_time = start_time;
+	}
 	return b;
 }
 

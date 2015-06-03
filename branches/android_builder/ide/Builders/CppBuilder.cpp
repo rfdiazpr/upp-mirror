@@ -153,16 +153,6 @@ void CppBuilder::DeleteFile(const String& path)
 	host->DeleteFile(Vector<String>() << path);
 }
 
-int CppBuilder::Execute(const char *cmdline)
-{
-	return host->Execute(cmdline);
-}
-
-int CppBuilder::Execute(const char *cl, Stream& out)
-{
-	return host->Execute(cl, out);
-}
-
 int CppBuilder::AllocSlot()
 {
 	return host->AllocSlot();
@@ -191,11 +181,6 @@ bool CppBuilder::Wait(int slot)
 void CppBuilder::OnFinish(Callback cb)
 {
 	host->OnFinish(cb);
-}
-
-void CppBuilder::ChDir(const String& path)
-{
-	host->ChDir(path);
 }
 
 void CppBuilder::SaveFile(const String& path, const String& data)

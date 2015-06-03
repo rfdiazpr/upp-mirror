@@ -25,7 +25,7 @@ void AndroidSDK::DeducePathReleatedValues()
 	buildToolsRelease = FindDefaultBuildToolsRelease();
 }
 
-bool AndroidSDK::CheckIntegrity() const
+bool AndroidSDK::Validate() const
 {
 	if(!DirectoryExists(path) || !FileExists(AndroidPath()))
 		return false;

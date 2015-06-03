@@ -383,8 +383,9 @@ String Join(const String& a, const String& b, const char *sep = " ");
 struct Builder {
 	Host            *host;
 	Index<String>    config;
-	String           compiler;
 	String           method;
+	
+	String           compiler;
 	String           outdir;
 	Vector<String>   include;
 	Vector<String>   libpath;
@@ -397,8 +398,10 @@ struct Builder {
 	String           debug_link;
 	String           release_link;
 	String           version;
+	
 	String           script;
 	String           mainpackage;
+	
 	bool             doall;
 	bool             main_conf;
 	bool             allow_pch;
@@ -420,6 +423,12 @@ struct Builder {
 
 	Builder()          { doall = false; main_conf = false; }
 	virtual ~Builder() {}
+	
+	// TODO: move other methods if needed
+	void ChDir(const String& path);
+	int  Execute(const char *cmdline);
+	int  Execute(const char *cl, Stream& out);
+	bool HasFlag(const char *f) const { return config.Find(f) >= 0; }
 };
 
 VectorMap<String, Builder *(*)()>& BuilderMap();

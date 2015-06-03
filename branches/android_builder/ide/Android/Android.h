@@ -15,7 +15,7 @@ public:
 	// FIXME: Method may be too high level, but for testing purpose it should be OK.
 	void DeducePathReleatedValues();
 	
-	bool CheckIntegrity() const;
+	bool Validate() const;
 	
 	Vector<String> FindPlatforms() const;
 	Vector<String> FindBuildToolsReleases() const;

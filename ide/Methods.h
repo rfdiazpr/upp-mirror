@@ -113,10 +113,6 @@ private:
 
 class BuilderSetup : public Moveable<BuilderSetup> {
 public:
-	BuilderSetup(ParentCtrl* setupCtrl,
-	             BuilderSetupHelperInterface* setupCtrlHelper,
-	             VectorMap<Id, Ctrl*> setupCtrlsMap);
-	
 	ParentCtrl* setupCtrl;
 	BuilderSetupHelperInterface* setupCtrlHelper;
 	VectorMap<Id, Ctrl*> setupCtrlsMap;

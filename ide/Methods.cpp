@@ -218,15 +218,6 @@ void DefaultBuilderSetupHelper::New(const String& builder)
 		setup->release_link <<= "-Wl,--gc-sections";
 }
 
-BuilderSetup::BuilderSetup(ParentCtrl* setupCtrl,
-                           BuilderSetupHelperInterface* setupCtrlHelper,
-                           VectorMap<Id, Ctrl*> setupCtrlsMap)
-{
-	this->setupCtrl       = setupCtrl;
-	this->setupCtrlHelper = setupCtrlHelper;
-	this->setupCtrlsMap   = setupCtrlsMap;
-}
-
 int CharFilterFileName(int c)
 {
 	return IsAlNum(c) || c == '_' ? c : 0;
@@ -434,13 +425,20 @@ void BuildMethods::InitSetups()
 	Index<String> builders = GetBuilders();
 	
 	androidSetupHelper.SetSetup(&androidSetup);
-	setups.Add(BuildersToString(AndroidBuilder::GetBuildersNames()),
-	           BuilderSetup(&androidSetup, &androidSetupHelper, androidSetup.GetSetupCtrlsMap()));
-	SieveBuilders(builders, AndroidBuilder::GetBuildersNames());
 	
+	String androidKey = BuildersToString(AndroidBuilder::GetBuildersNames());
+	setups.Add(androidKey);
+	setups.Get(androidKey).setupCtrl = &androidSetup;
+	setups.Get(androidKey).setupCtrlHelper = &androidSetupHelper;
+	setups.Get(androidKey).setupCtrlsMap = androidSetup.GetSetupCtrlsMap();
+	SieveBuilders(builders, AndroidBuilder::GetBuildersNames());
+	androidSetupHelper.SetSetup(&androidSetup);
+	
+	String defaultKey = BuildersToString(builders);
+	setups.Get(defaultKey).setupCtrl = &androidSetup;
+	setups.Get(defaultKey).setupCtrlHelper = &androidSetupHelper;
+	setups.Get(defaultKey).setupCtrlsMap = androidSetup.GetSetupCtrlsMap();
 	defaultSetupHelper.SetSetup(&defaultSetup);
-	setups.Add(BuildersToString(builders),
-	           BuilderSetup(&defaultSetup, &defaultSetupHelper, defaultSetup.GetSetupCtrlsMap()));
 	
 	for(int i = 0; i < setups.GetCount(); i++) {
 		Index<String> currentBuilders = StringToBuilders(setups.GetKey(i));

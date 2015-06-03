@@ -3,8 +3,6 @@
 
 #include "ide.h"
 
-NAMESPACE_UPP
-
 class TextOption : public Option {
 public:
 	virtual void   SetData(const Value& data);
@@ -50,38 +48,41 @@ public:
 	DirMap();
 };
 
-class BuilderSetupHelperInterface {
+class BuilderSetup;
+
+class BuilderSetupInterface : public ParentCtrl {
 public:
-	virtual ~BuilderSetupHelperInterface() {}
+	virtual ~BuilderSetupInterface() {}
 
 	virtual void New(const String& builder) = 0;
 	virtual void OnLoad() = 0;
+	virtual void GetSetupCtrlsMap(VectorMap<Id, Ctrl*>& map) = 0;
+	
+	virtual void InitBuilderSetup(BuilderSetup& bs);
 };
 
-class AndroidBuilderSetup : public WithBuildMethodsAndroidBuilderSetupLayout<ParentCtrl> {
+
+class AndroidBuilderSetup : public WithBuildMethodsAndroidBuilderSetupLayout<BuilderSetupInterface> {
 public:
 	FrameRight<Button> ndkBrowse;
 	FrameRight<Button> jdkBrowse;
 	
-	AndroidBuilderSetup();
-	
-	VectorMap<Id, Ctrl*> GetSetupCtrlsMap();
-};
-
-class AndroidBuilderSetupHelper : public BuilderSetupHelperInterface {
 public:
-	AndroidBuilderSetupHelper();
-
-	void SetSetup(AndroidBuilderSetup* setup) { this->setup = setup; }
+	AndroidBuilderSetup();
 	
 	virtual void New(const String& builder);
 	virtual void OnLoad();
 	
-private:
-	AndroidBuilderSetup* setup;
+	virtual void GetSetupCtrlsMap(VectorMap<Id, Ctrl*>& map);
 };
 
-class DefaultBuilderSetup : public WithBuildMethodsDefaultBuilderSetupLayout<ParentCtrl> {
+class BuilderSetup : public Moveable<BuilderSetup> {
+public:
+	BuilderSetupInterface* setupCtrl;
+	VectorMap<Id, Ctrl*> setupCtrlsMap;
+};
+
+class DefaultBuilderSetup : public WithBuildMethodsDefaultBuilderSetupLayout<BuilderSetupInterface> {
 public:
 	TextOption debug_blitz;
 	TextSwitch debug_linkmode;
@@ -95,27 +96,10 @@ public:
 public:
 	DefaultBuilderSetup();
 	
-	VectorMap<Id, Ctrl*> GetSetupCtrlsMap();
-};
-
-class DefaultBuilderSetupHelper : public BuilderSetupHelperInterface {
-public:
-	DefaultBuilderSetupHelper();
-	
-	void SetSetup(DefaultBuilderSetup* setup) { this->setup = setup; }
-	
 	virtual void New(const String& builder);
-	virtual void OnLoad() {}
+	virtual void OnLoad();
 	
-private:
-	DefaultBuilderSetup* setup;
-};
-
-class BuilderSetup : public Moveable<BuilderSetup> {
-public:
-	ParentCtrl* setupCtrl;
-	BuilderSetupHelperInterface* setupCtrlHelper;
-	VectorMap<Id, Ctrl*> setupCtrlsMap;
+	virtual void GetSetupCtrlsMap(VectorMap<Id, Ctrl*>& map);
 };
 
 class BuildMethods : public WithBuildMethodsLayout<TopWindow> {
@@ -129,10 +113,8 @@ public:
 	
 	VectorMap<String, BuilderSetup> setups;
 	
-	AndroidBuilderSetup       androidSetup;
-	AndroidBuilderSetupHelper androidSetupHelper;
-	DefaultBuilderSetup       defaultSetup;
-	DefaultBuilderSetupHelper defaultSetupHelper;
+	AndroidBuilderSetup androidSetup;
+	DefaultBuilderSetup defaultSetup;
 	
 	void Load();
 	bool Save();
@@ -161,7 +143,5 @@ private:
 	Index<String> StringToBuilders(const String& str) const;
 	Index<String> GetBuilders() const;
 };
-
-END_UPP_NAMESPACE
 
 #endif

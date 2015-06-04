@@ -141,8 +141,20 @@ One<Builder> MakeBuild::CreateBuilder(Host *host)
 	if(AndroidBuilder::GetBuildersNames().Find(builder) > -1) {
 		AndroidBuilder* ab = dynamic_cast<AndroidBuilder*>(b);
 		
-		ab->SetAndroidNDK(bm.Get("NDK_PATH", ""));
-		ab->SetJDK(bm.Get("JDK_PATH", ""));
+		ab->androidNDK.SetPath((bm.Get("NDK_PATH", "")));
+		ab->jdk.SetPath((bm.Get("JDK_PATH", "")));
+		
+		String platformVersion = bm.Get("SDK_PLATFORM_VERSION", "");
+		if(!platformVersion.IsEmpty())
+			ab->androidSDK.SetPlatform(platformVersion);
+		else
+			ab->androidSDK.DeducePlatform();
+		
+		String buildToolsRelease = bm.Get("SDK_BUILD_TOOLS_RELEASE", "");
+		if(!buildToolsRelease.IsEmpty())
+			ab->androidSDK.SetBuildToolsRelease(buildToolsRelease);
+		else
+			ab->androidSDK.DeduceBuildToolsRelease();
 		
 		b = ab;
 	}

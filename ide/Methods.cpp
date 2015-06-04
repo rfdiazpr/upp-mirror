@@ -96,7 +96,7 @@ DirMap::DirMap()
 void BuilderSetupInterface::InitBuilderSetup(BuilderSetup& bs)
 {
 	bs.setupCtrl = this;
-	GetSetupCtrlsMap(bs.setupCtrlsMap);
+	InitSetupCtrlsMap(bs.setupCtrlsMap);
 }
 
 AndroidBuilderSetup::AndroidBuilderSetup()
@@ -112,10 +112,12 @@ AndroidBuilderSetup::AndroidBuilderSetup()
 	jdk_path.AddFrame(jdkBrowse);
 }
 
-void AndroidBuilderSetup::GetSetupCtrlsMap(VectorMap<Id, Ctrl*>& map)
+void AndroidBuilderSetup::InitSetupCtrlsMap(VectorMap<Id, Ctrl*>& map)
 {
-	map.Add("NDK_PATH", &ndk_path);
-	map.Add("JDK_PATH", &jdk_path);
+	map.Add("NDK_PATH",                &ndk_path);
+	map.Add("JDK_PATH",                &jdk_path);
+	map.Add("SDK_PLATFORM_VERSION",    &sdk_platform_version);
+	map.Add("SDK_BUILD_TOOLS_RELEASE", &sdk_build_tools_release);
 }
 
 void AndroidBuilderSetup::New(const String& builder)
@@ -125,7 +127,33 @@ void AndroidBuilderSetup::New(const String& builder)
 
 void AndroidBuilderSetup::OnLoad()
 {
-	sdk_path.SetData(GetAndroidSDKPath());
+	AndroidSDK sdk(GetAndroidSDKPath(), true);
+	
+	sdk_path.SetData(sdk.GetPath());
+	LoadPlatforms(sdk);
+	LoadBuildTools(sdk);
+}
+
+void AndroidBuilderSetup::LoadPlatforms(const AndroidSDK& sdk)
+{
+	LoadDropList(sdk_platform_version, sdk.FindPlatforms());
+}
+
+void AndroidBuilderSetup::LoadBuildTools(const AndroidSDK& sdk)
+{
+	LoadDropList(sdk_build_tools_release, sdk.FindBuildToolsReleases());
+}
+
+void AndroidBuilderSetup::LoadDropList(DropList& dropList, Vector<String> values)
+{
+	dropList.Clear();
+	
+	Sort(values);
+	for(int i = values.GetCount() - 1; i >= 0 ; i--)
+		dropList.Add(values[i]);
+	
+	if(dropList.GetCount())
+		dropList.SetIndex(0);
 }
 
 DefaultBuilderSetup::DefaultBuilderSetup()
@@ -143,7 +171,7 @@ DefaultBuilderSetup::DefaultBuilderSetup()
 	debug_info.Add("2", "Full");
 }
 
-void DefaultBuilderSetup::GetSetupCtrlsMap(VectorMap<Id, Ctrl*>& map)
+void DefaultBuilderSetup::InitSetupCtrlsMap(VectorMap<Id, Ctrl*>& map)
 {
 	map.Add("COMPILER",                  &compiler);
 	map.Add("COMMON_OPTIONS",            &common_options);
@@ -412,13 +440,11 @@ void BuildMethods::InitSetups()
 	Index<String> builders = GetBuilders();
 	
 	String androidKey = BuildersToString(AndroidBuilder::GetBuildersNames());
-	setups.Add(androidKey);
-	androidSetup.InitBuilderSetup(setups.Get(androidKey));
+	androidSetup.InitBuilderSetup(setups.Add(androidKey));
 	SieveBuilders(builders, AndroidBuilder::GetBuildersNames());
 	
 	String defaultKey = BuildersToString(builders);
-	setups.Add(defaultKey);
-	defaultSetup.InitBuilderSetup(setups.Get(defaultKey));
+	defaultSetup.InitBuilderSetup(setups.Add(defaultKey));
 	
 	for(int i = 0; i < setups.GetCount(); i++) {
 		Index<String> currentBuilders = StringToBuilders(setups.GetKey(i));

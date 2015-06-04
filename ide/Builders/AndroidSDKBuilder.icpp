@@ -12,7 +12,6 @@ Index<String> AndroidBuilder::GetBuildersNames()
 AndroidBuilder::AndroidBuilder()
 {
 	androidSDK.SetPath(GetAndroidSDKPath());
-	androidSDK.DeducePathReleatedValues();
 }
 
 String AndroidBuilder::GetTargetExt() const
@@ -373,15 +372,28 @@ bool AndroidBuilder::AddSharedLibsToApk(const String& apkPath)
 bool AndroidBuilder::ValidateBuilderEnviorement()
 {
 	if(!androidSDK.Validate()) {
-		PutConsole("Error: Android SDK was not detected.");
+		PutErrorOnConsole("Android SDK was not detected.");
+		return false;
+	}
+	if(!androidSDK.ValidateBuildTools()) {
+		PutErrorOnConsole("Android SDK build tools was not detected.");
+		return false;
+	}
+	if(!androidSDK.ValidatePlatform()) {
+		PutErrorOnConsole("Android SDK platform was not detected.");
 		return false;
 	}
 	if(!jdk.Validate()) {
-		PutConsole("Error: JDK was not detected.");
+		PutErrorOnConsole("JDK was not detected.");
 		return false;
 	}
 	
 	return true;
+}
+
+void AndroidBuilder::PutErrorOnConsole(const String& msg)
+{
+	PutConsole("Error: " + msg);
 }
 
 void AndroidBuilder::GenerateApplicationMakeFile()

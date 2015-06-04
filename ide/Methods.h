@@ -56,11 +56,10 @@ public:
 
 	virtual void New(const String& builder) = 0;
 	virtual void OnLoad() = 0;
-	virtual void GetSetupCtrlsMap(VectorMap<Id, Ctrl*>& map) = 0;
+	virtual void InitSetupCtrlsMap(VectorMap<Id, Ctrl*>& map) = 0;
 	
 	virtual void InitBuilderSetup(BuilderSetup& bs);
 };
-
 
 class AndroidBuilderSetup : public WithBuildMethodsAndroidBuilderSetupLayout<BuilderSetupInterface> {
 public:
@@ -73,10 +72,15 @@ public:
 	virtual void New(const String& builder);
 	virtual void OnLoad();
 	
-	virtual void GetSetupCtrlsMap(VectorMap<Id, Ctrl*>& map);
+	virtual void InitSetupCtrlsMap(VectorMap<Id, Ctrl*>& map);
+
+private:
+	void LoadPlatforms(const AndroidSDK& sdk);
+	void LoadBuildTools(const AndroidSDK& sdk);
+	void LoadDropList(DropList& dropList, Vector<String> values);
 };
 
-class BuilderSetup : public Moveable<BuilderSetup> {
+class BuilderSetup {
 public:
 	BuilderSetupInterface* setupCtrl;
 	VectorMap<Id, Ctrl*> setupCtrlsMap;
@@ -99,7 +103,7 @@ public:
 	virtual void New(const String& builder);
 	virtual void OnLoad();
 	
-	virtual void GetSetupCtrlsMap(VectorMap<Id, Ctrl*>& map);
+	virtual void InitSetupCtrlsMap(VectorMap<Id, Ctrl*>& map);
 };
 
 class BuildMethods : public WithBuildMethodsLayout<TopWindow> {
@@ -111,7 +115,7 @@ public:
 	Index<String>     origfile;
 	String            default_method;
 	
-	VectorMap<String, BuilderSetup> setups;
+	ArrayMap<String, BuilderSetup> setups;
 	
 	AndroidBuilderSetup androidSetup;
 	DefaultBuilderSetup defaultSetup;

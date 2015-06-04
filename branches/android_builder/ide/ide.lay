@@ -204,9 +204,9 @@ LAYOUT(BuildMethodsAndroidBuilderSetupLayout, 628, 500)
 	ITEM(EditString, jdk_path, HSizePosZ(100, 8).TopPosZ(96, 19))
 	ITEM(LabelBox, dv___8, SetLabel(t_("Android SDK setting")).HSizePosZ(0, 0).TopPosZ(128, 52))
 	ITEM(StaticText, dv___9, SetText(t_("Platform version:")).LeftPosZ(8, 88).TopPosZ(148, 19))
-	ITEM(DropList, platform, LeftPosZ(100, 100).TopPosZ(148, 19))
+	ITEM(DropList, sdk_platform_version, LeftPosZ(100, 100).TopPosZ(148, 19))
 	ITEM(StaticText, dv___11, SetText(t_("Build tools version:")).LeftPosZ(208, 100).TopPosZ(148, 19))
-	ITEM(DropList, buildTools, LeftPosZ(312, 100).TopPosZ(148, 19))
+	ITEM(DropList, sdk_build_tools_release, LeftPosZ(312, 100).TopPosZ(148, 19))
 END_LAYOUT
 
 LAYOUT(BuildMethodsDefaultBuilderSetupLayout, 628, 500)

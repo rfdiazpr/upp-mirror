@@ -186,8 +186,13 @@ private:
 
 class AndroidBuilder : public Builder {
 public:
-	static Index<String> GetBuildersNames();
+	AndroidSDK androidSDK;
+	AndroidNDK androidNDK;
+	Jdk jdk;
 	
+public:
+	static Index<String> GetBuildersNames();
+		
 public:
 	AndroidBuilder();
 	
@@ -199,16 +204,13 @@ public:
 	virtual bool Preprocess(const String& package, const String& file, const String& target, bool asmout);
 	virtual void CleanPackage(const String& package);
 	
-	void SetAndroidSDK(const String& androidSDKPath) { androidSDK.SetPath(androidSDKPath); }
-	void SetAndroidNDK(const String& androidNDKPath) { androidNDK.SetPath(androidNDKPath); }
-	void SetJDK(const String& jdkPath)               { jdk.SetPath(jdkPath); }
-	
 protected:
 	bool MovePackageFileToAndroidProject(const String& packagePath, const String& androidProjectPath); 
 	bool RealizePackageSourcesDirectory(const String& packageName);
 
 protected:
 	bool ValidateBuilderEnviorement();
+	void PutErrorOnConsole(const String& msg);
 	void GenerateApplicationMakeFile();
 	void GenerateMakeFile();
 	bool GenerateRFile();
@@ -231,11 +233,6 @@ protected:
 	
 	String GetAndroidProjectJniMakeFilePath() const;
 	String GetAndroidProjectJniApplicationMakeFilePath() const;
-	
-private:
-	AndroidSDK androidSDK;
-	AndroidNDK androidNDK;
-	Jdk jdk;
 };
 
 void DeletePCHFile(const String& pch_file);

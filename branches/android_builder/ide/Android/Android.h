@@ -8,14 +8,16 @@ NAMESPACE_UPP
 class AndroidSDK {
 public:
 	AndroidSDK();
-	AndroidSDK(const String& path);
-	AndroidSDK(const String& path, bool deducePaths);
+	AndroidSDK(const String& path, bool deduceValues = false);
 	virtual ~AndroidSDK();
 	
-	// FIXME: Method may be too high level, but for testing purpose it should be OK.
 	void DeducePathReleatedValues();
+	void DeducePlatform();
+	void DeduceBuildToolsRelease();
 	
 	bool Validate() const;
+	bool ValidatePlatform() const;
+	bool ValidateBuildTools() const;
 	
 	Vector<String> FindPlatforms() const;
 	Vector<String> FindBuildToolsReleases() const;

@@ -9,9 +9,11 @@ AndroidSDK::AndroidSDK()
 	
 }
 
-AndroidSDK::AndroidSDK(const String& path)
+AndroidSDK::AndroidSDK(const String& path, bool deduceValues)
 {
 	this->path = path;
+	if(deduceValues)
+		DeducePathReleatedValues();
 }
 
 AndroidSDK::~AndroidSDK()
@@ -21,7 +23,17 @@ AndroidSDK::~AndroidSDK()
 
 void AndroidSDK::DeducePathReleatedValues()
 {
+	DeducePlatform();
+	DeduceBuildToolsRelease();
+}
+
+void AndroidSDK::DeducePlatform()
+{
 	platform = FindDefaultPlatform();
+}
+
+void AndroidSDK::DeduceBuildToolsRelease()
+{
 	buildToolsRelease = FindDefaultBuildToolsRelease();
 }
 
@@ -31,6 +43,16 @@ bool AndroidSDK::Validate() const
 		return false;
 	
 	return true;
+}
+
+bool AndroidSDK::ValidatePlatform() const
+{
+	return DirectoryExists(ConcretePlatformDir());
+}
+
+bool AndroidSDK::ValidateBuildTools() const
+{
+	return DirectoryExists(ConcreteBuildToolsDir());
 }
 
 Vector<String> AndroidSDK::FindPlatforms() const

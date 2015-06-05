@@ -380,6 +380,9 @@ enum {
 
 String Join(const String& a, const String& b, const char *sep = " ");
 
+String GetExeExt();
+String NormalizeExePath(const String& exePath);
+
 struct Builder {
 	Host            *host;
 	Index<String>    config;

@@ -8,7 +8,6 @@
 
 #include "Android.h"
 #include "Java.h"
-
 #include "Build.h"
 
 void PutCompileTime(int time, int count);

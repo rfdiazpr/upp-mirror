@@ -39,8 +39,7 @@ void AndroidSDK::DeduceBuildToolsRelease()
 
 bool AndroidSDK::Validate() const
 {
-	if(!DirectoryExists(path) || !FileExists(AndroidPath()))
-		return false;
+	if(!DirectoryExists(path) || !FileExists(AndroidPath())) return false;
 	
 	return true;
 }
@@ -142,16 +141,6 @@ String AndroidSDK::PlatformToolsDir() const
 String AndroidSDK::ToolsDir() const
 {
 	return path + DIR_SEPS + "tools";
-}
-
-String AndroidSDK::ExecutableExt() const
-{
-// TODO: do we have any core function/method to do this???
-#if defined(PLATFORM_WIN32) || defined(PLATFORM_WIN64)
-	return ".exe";
-#else
-	return "";
-#endif
 }
 
 END_UPP_NAMESPACE

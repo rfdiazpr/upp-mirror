@@ -7,11 +7,13 @@ NAMESPACE_UPP
 
 class Java {
 public:
-	Java();
-	~Java();
-
 	static String GetDelimiter();
-	
+
+private:
+	Java();
+	Java(const Java&);
+	Java& operator=(const Java&);
+	virtual ~Java();
 };
 
 class Jdk {
@@ -25,10 +27,10 @@ public:
 public:
 	String GetBinDir() const        { return path + DIR_SEPS + "bin"; }
 	
-	String GetJavacPath() const     { return GetBinDir() + DIR_SEPS + "javac"; }
-	String GetJavahPath() const     { return GetBinDir() + DIR_SEPS + "javah"; }
-	String GetJarsignerPath() const { return GetBinDir() + DIR_SEPS + "jarsigner"; }
-	String GetKeytoolPath() const   { return GetBinDir() + DIR_SEPS + "keytool"; }
+	String GetJavacPath() const     { return GetBinDir() + DIR_SEPS + "javac" + GetExeExt(); }
+	String GetJavahPath() const     { return GetBinDir() + DIR_SEPS + "javah" + GetExeExt(); }
+	String GetJarsignerPath() const { return GetBinDir() + DIR_SEPS + "jarsigner" + GetExeExt(); }
+	String GetKeytoolPath() const   { return GetBinDir() + DIR_SEPS + "keytool" + GetExeExt(); }
 	
 	void SetPath(const String& path) { this->path = path; }
 	

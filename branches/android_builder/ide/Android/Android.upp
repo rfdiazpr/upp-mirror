@@ -1,8 +1,12 @@
 description "TheIDE - Android SDK uspport module\377B";
 
+uses
+	ide/Core;
+
 file
 	Android.h,
 	Android readonly separator,
+	Android.cpp,
 	AndroidSDK.cpp,
 	AndroidNDK.cpp,
 	Apk.cpp,

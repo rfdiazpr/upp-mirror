@@ -17,7 +17,7 @@ AndroidNDK::~AndroidNDK()
 	
 }
 
-bool AndroidNDK::CheckIntegrity() const
+bool AndroidNDK::Validate() const
 {
 	if(!DirectoryExists(path) || !FileExists(NdkBuildPath()))
 		return false;

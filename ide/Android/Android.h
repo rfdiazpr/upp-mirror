@@ -3,7 +3,20 @@
 
 #include <Core/Core.h>
 
+#include <ide/Core/Core.h>
+
 NAMESPACE_UPP
+
+class Android {
+public:
+	static String GetScriptExt();
+	
+private:
+	Android();
+	Android(const Android&);
+	Android& operator=(const Android&);
+	virtual ~Android();
+};
 
 class AndroidSDK {
 public:
@@ -33,13 +46,13 @@ public:
 	String PlatformToolsDir() const;
 	String ToolsDir() const;
 	
-	String AaptPath() const       { return ConcreteBuildToolsDir() + DIR_SEPS + "aapt" + ExecutableExt(); }
-	String DxPath() const         { return ConcreteBuildToolsDir() + DIR_SEPS + "dx" + ExecutableExt(); }
-	String ZipalignPath() const   { return ConcreteBuildToolsDir() + DIR_SEPS + "zipalign" + ExecutableExt(); }
+	String AaptPath() const       { return ConcreteBuildToolsDir() + DIR_SEPS + "aapt" + GetExeExt(); }
+	String DxPath() const         { return ConcreteBuildToolsDir() + DIR_SEPS + "dx" + Android::GetScriptExt(); }
+	String ZipalignPath() const   { return ConcreteBuildToolsDir() + DIR_SEPS + "zipalign" + GetExeExt(); }
 	String AndroidJarPath() const { return ConcretePlatformDir() + DIR_SEPS + "android.jar"; }
-	String AdbPath() const        { return PlatformToolsDir() + DIR_SEPS + "adb" + ExecutableExt(); }
-	String AndroidPath() const    { return ToolsDir() + DIR_SEPS + "android" + ExecutableExt(); }
-	String EmulatorPath() const   { return ToolsDir() + DIR_SEPS + "emulator" + ExecutableExt(); }
+	String AdbPath() const        { return PlatformToolsDir() + DIR_SEPS + "adb" + GetExeExt(); }
+	String AndroidPath() const    { return ToolsDir() + DIR_SEPS + "android" + Android::GetScriptExt(); }
+	String EmulatorPath() const   { return ToolsDir() + DIR_SEPS + "emulator" + GetExeExt(); }
 	
 public:
 	String GetPath() const              { return this->path; }
@@ -49,9 +62,6 @@ public:
 	void SetPath(const String& path)                           { this->path = path; }
 	void SetPlatform(const String& platform)                   { this->platform = platform; }
 	void SetBuildToolsRelease(const String& buildToolsRelease) { this->buildToolsRelease = buildToolsRelease; }
-	
-protected:
-	String ExecutableExt() const;
 	
 private:
 	String path;
@@ -65,7 +75,7 @@ public:
 	AndroidNDK(const String& path);
 	virtual ~AndroidNDK();
 	
-	bool CheckIntegrity() const;
+	bool Validate() const;
 	
 public:
 	// TODO: MS Windows exe.

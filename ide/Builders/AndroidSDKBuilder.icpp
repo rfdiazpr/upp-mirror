@@ -130,7 +130,7 @@ bool AndroidBuilder::BuildPackage(const String& package, Vector<String>& linkfil
 			return false;
 		
 		String compileCmd;
-		compileCmd << jdk.GetJavacPath();
+		compileCmd << NormalizeExePath(jdk.GetJavacPath());
 		compileCmd << (HasFlag("DEBUG") ? " -g" : " -g:none");
 		compileCmd << " -d "<< GetAndroidProjectClassesDir();
 		compileCmd << " -classpath " << androidSDK.AndroidJarPath() << Java::GetDelimiter() << GetAndroidProjectBuildDir();
@@ -183,16 +183,18 @@ bool AndroidBuilder::Link(const Vector<String>& linkfile, const String& linkopti
 	for(int i = 0; i < linkfile.GetCount(); i++) {
 		if(Execute(linkfile[i], ss) != 0) {
 			PutConsole(ss.GetResult());
-			error = true;
-			break;
+			return false;
 		}
 	}
-	if(error)
-		return false;
 	PutConsole("Java sources compiled in " + GetPrintTime(time) + ".");
 	
 	// Now, we are going to start compiling c/c++ sources
 	if(DirectoryExists(GetAndroidProjectJniSourcesDir())) {
+		if(!androidNDK.Validate()) {
+			PutErrorOnConsole("Android NDK was not detected");
+			return false;
+		}
+		
 		time = GetTickCount();
 		PutConsole("-----");
 		PutConsole("Compiling native sources...");
@@ -254,7 +256,7 @@ bool AndroidBuilder::Link(const Vector<String>& linkfile, const String& linkopti
 		if(!FileExists(debugKeystorePath)) { 
 			PutConsole("Generating debug key...");
 			String keytoolCmd;
-			keytoolCmd << jdk.GetKeytoolPath();
+			keytoolCmd << NormalizeExePath(jdk.GetKeytoolPath());
 			keytoolCmd << " -genkeypair -alias androiddebugkey -keypass android"; 
 			keytoolCmd << " -keystore " << debugKeystorePath;
 			keytoolCmd << " -storepass android -dname \"CN=Android Debug,O=Android,C=US\" -validity 10000";
@@ -268,7 +270,7 @@ bool AndroidBuilder::Link(const Vector<String>& linkfile, const String& linkopti
 		PutConsole("Signing apk file...");
 		DeleteFile(signedApkPath);
 		String jarsignerCmd;
-		jarsignerCmd << jdk.GetJarsignerPath();
+		jarsignerCmd << NormalizeExePath(jdk.GetJarsignerPath());
 		jarsignerCmd << " -keystore " + debugKeystorePath;
 		jarsignerCmd << " -storepass android";
 		jarsignerCmd << " -keypass android";
@@ -372,19 +374,19 @@ bool AndroidBuilder::AddSharedLibsToApk(const String& apkPath)
 bool AndroidBuilder::ValidateBuilderEnviorement()
 {
 	if(!androidSDK.Validate()) {
-		PutErrorOnConsole("Android SDK was not detected.");
+		PutErrorOnConsole("Android SDK was not detected");
 		return false;
 	}
 	if(!androidSDK.ValidateBuildTools()) {
-		PutErrorOnConsole("Android SDK build tools was not detected.");
+		PutErrorOnConsole("Android SDK build tools was not detected");
 		return false;
 	}
 	if(!androidSDK.ValidatePlatform()) {
-		PutErrorOnConsole("Android SDK platform was not detected.");
+		PutErrorOnConsole("Android SDK platform was not detected");
 		return false;
 	}
 	if(!jdk.Validate()) {
-		PutErrorOnConsole("JDK was not detected.");
+		PutErrorOnConsole("JDK was not detected");
 		return false;
 	}
 	
@@ -393,7 +395,7 @@ bool AndroidBuilder::ValidateBuilderEnviorement()
 
 void AndroidBuilder::PutErrorOnConsole(const String& msg)
 {
-	PutConsole("Error: " + msg);
+	PutConsole("Error: " + msg + ".");
 }
 
 void AndroidBuilder::GenerateApplicationMakeFile()
@@ -457,7 +459,7 @@ bool AndroidBuilder::PreprocessJava(const String& package, const String& file, c
 	RealizeDirectory(classesDir);
 	
 	String compileCmd;
-	compileCmd << jdk.GetJavacPath();
+	compileCmd << NormalizeExePath(jdk.GetJavacPath());
 	compileCmd << " -d "<< classesDir;
 	compileCmd << " -classpath " << androidSDK.AndroidJarPath() << Java::GetDelimiter() << GetAndroidProjectBuildDir();
 	compileCmd << " -sourcepath " << GetAndroidProjectJavaSourcesDir();
@@ -494,7 +496,7 @@ bool AndroidBuilder::PreprocessJava(const String& package, const String& file, c
 	className.Replace(DIR_SEPS, ".");
 	
 	String javahCmd;
-	javahCmd << jdk.GetJavahPath();
+	javahCmd << NormalizeExePath(jdk.GetJavahPath());
 	javahCmd << " -classpath " << classesDir << Java::GetDelimiter() << androidSDK.AndroidJarPath() << Java::GetDelimiter() << GetAndroidProjectBuildDir();
 	javahCmd << " -o " << target;
 	javahCmd << " " << className;

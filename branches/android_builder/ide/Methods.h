@@ -77,7 +77,7 @@ public:
 private:
 	void LoadPlatforms(const AndroidSDK& sdk);
 	void LoadBuildTools(const AndroidSDK& sdk);
-	void LoadDropList(DropList& dropList, Vector<String> values);
+	void LoadDropList(DropList& dropList, Vector<String> values, const String& defaultKey = "");
 };
 
 class BuilderSetup {

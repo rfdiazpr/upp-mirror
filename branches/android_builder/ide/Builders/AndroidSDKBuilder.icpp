@@ -410,7 +410,7 @@ void AndroidBuilder::GenerateMakeFile()
 {
 	Vector<String> modules;
 	for(FindFile ff(AppendFileName(GetAndroidProjectJniSourcesDir(), "*")); ff; ff.Next()) {
-		if(!ff.IsHidden() && !ff.IsSymLink() && ff.IsDirectory())
+		if(!ff.IsHidden() && !ff.IsSymLink() && ff.IsFolder())
 			modules.Add(ff.GetName());
 	}
 	
@@ -500,7 +500,7 @@ bool AndroidBuilder::PreprocessJava(const String& package, const String& file, c
 	javahCmd << " -classpath " << classesDir << Java::GetDelimiter() << androidSDK.AndroidJarPath() << Java::GetDelimiter() << GetAndroidProjectBuildDir();
 	javahCmd << " -o " << target;
 	javahCmd << " " << className;
-	PutConsole(javahCmd);
+	// PutConsole(javahCmd);
 	if(Execute(javahCmd, ss) != 0) {
 		PutConsole(ss.GetResult());
 		return false;

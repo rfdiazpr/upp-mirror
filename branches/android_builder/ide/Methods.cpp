@@ -136,24 +136,31 @@ void AndroidBuilderSetup::OnLoad()
 
 void AndroidBuilderSetup::LoadPlatforms(const AndroidSDK& sdk)
 {
-	LoadDropList(sdk_platform_version, sdk.FindPlatforms());
+	LoadDropList(sdk_platform_version,
+	             sdk.FindPlatforms(),
+	             sdk.FindDefaultPlatform());
 }
 
 void AndroidBuilderSetup::LoadBuildTools(const AndroidSDK& sdk)
 {
-	LoadDropList(sdk_build_tools_release, sdk.FindBuildToolsReleases());
+	LoadDropList(sdk_build_tools_release,
+	             sdk.FindBuildToolsReleases(),
+	             sdk.FindDefaultBuildToolsRelease());
 }
 
-void AndroidBuilderSetup::LoadDropList(DropList& dropList, Vector<String> values)
+void AndroidBuilderSetup::LoadDropList(DropList& dropList, Vector<String> values, const String& defaultKey)
 {
 	dropList.Clear();
 	
-	Sort(values);
-	for(int i = values.GetCount() - 1; i >= 0 ; i--)
+	Sort(values, StdGreater<String>());
+	for(int i = 0; i < values.GetCount(); i++)
 		dropList.Add(values[i]);
 	
-	if(dropList.GetCount())
-		dropList.SetIndex(0);
+	if(!defaultKey.IsEmpty() && dropList.GetCount()) {
+		int idx = dropList.Find(defaultKey);
+		if(idx >= 0)
+			dropList.SetIndex(idx);
+	}
 }
 
 DefaultBuilderSetup::DefaultBuilderSetup()

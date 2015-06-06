@@ -259,7 +259,7 @@ bool AndroidBuilder::Link(const Vector<String>& linkfile, const String& linkopti
 			keytoolCmd << NormalizeExePath(jdk.GetKeytoolPath());
 			keytoolCmd << " -genkeypair -alias androiddebugkey -keypass android"; 
 			keytoolCmd << " -keystore " << debugKeystorePath;
-			keytoolCmd << " -storepass android -dname \"CN=Android Debug,O=Android,C=US\" -validity 10000";
+			keytoolCmd << " -storepass android -dname \"CN=Android Debug,O=Android,C=US\" -validity 100000";
 			//PutConsole(keytoolCmd);
 			if(Execute(keytoolCmd, ss) != 0) {
 				PutConsole(ss.GetResult());
@@ -274,6 +274,9 @@ bool AndroidBuilder::Link(const Vector<String>& linkfile, const String& linkopti
 		jarsignerCmd << " -keystore " + debugKeystorePath;
 		jarsignerCmd << " -storepass android";
 		jarsignerCmd << " -keypass android";
+		// TODO: not sure about below line. But I think for debug purpose we shouldn't use tsa.
+		// http://en.wikipedia.org/wiki/Trusted_timestamping
+		//jarsignerCmd << " -tsa https://timestamp.geotrust.com/tsa";
 		jarsignerCmd << " -signedjar " << signedApkPath;
 		jarsignerCmd << " " << unsignedApkPath;
 		jarsignerCmd << " androiddebugkey";
@@ -288,7 +291,7 @@ bool AndroidBuilder::Link(const Vector<String>& linkfile, const String& linkopti
 	PutConsole("Aliging apk file...");
 	DeleteFile(target);
 	String zipalignCmd;
-	zipalignCmd << androidSDK.ZipalignPath() << " -v -f 4 ";
+	zipalignCmd << androidSDK.ZipalignPath() << " -f 4 ";
 	zipalignCmd << (HasFlag("DEBUG") ? signedApkPath : unsignedApkPath) << " ";
 	zipalignCmd << target;
 	//PutConsole(zipalignCmd);

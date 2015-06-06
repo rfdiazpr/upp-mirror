@@ -59,7 +59,7 @@ Vector<String> AndroidSDK::FindPlatforms() const
 	Vector<String> platforms;
 	
 	for(FindFile ff(AppendFileName(PlatformsDir(), "*")); ff; ff.Next()) {
-		if(!ff.IsHidden() && ff.IsDirectory())
+		if(!ff.IsHidden() && ff.IsFolder())
 			platforms.Add(ff.GetName());
 	}
 	
@@ -71,12 +71,8 @@ Vector<String> AndroidSDK::FindBuildToolsReleases() const
 	Vector<String> buildTools;
 	
 	for(FindFile ff(AppendFileName(BuildToolsDir(), "*")); ff; ff.Next()) {
-		if(!ff.IsHidden() && ff.IsDirectory()) {
-			String name = ff.GetName();
-			// We definitly want to list only main releases.
-			if(RegExp("^[1-9][0-9.]*$").Match(name))
-				buildTools.Add(ff.GetName());
-		}
+		if(!ff.IsHidden() && ff.IsFolder())
+			buildTools.Add(ff.GetName());
 	}
 	
 	return buildTools;
@@ -97,8 +93,15 @@ String AndroidSDK::FindDefaultPlatform() const
 {
 	Vector<String> platforms = FindPlatforms();
 	if(platforms.GetCount()) {
-		Sort(platforms);
-		return platforms[platforms.GetCount() - 1];
+		Sort(platforms, StdGreater<String>());
+		int idx = 0;
+		for(int i = 0; i < platforms.GetCount(); i++) {
+			if(RegExp("^android-[0-9]*$").Match(platforms[i])) {
+				idx = i;
+				break;
+			}
+		}
+		return platforms[idx];
 	}
 	return "";
 }
@@ -107,8 +110,15 @@ String AndroidSDK::FindDefaultBuildToolsRelease() const
 {
 	Vector<String> releases = FindBuildToolsReleases();
 	if(releases.GetCount()) {
-		Sort(releases);
-		return releases[releases.GetCount() - 1];
+		Sort(releases, StdGreater<String>());
+		int idx = 0;
+		for(int i = 0; i < releases.GetCount(); i++) {
+			if(RegExp("^[1-9][0-9.]*$").Match(releases[i])) {
+				idx = i;
+				break;
+			}
+		}
+		return releases[idx];
 	}
 	return "";
 }

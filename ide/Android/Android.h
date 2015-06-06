@@ -10,6 +10,7 @@ NAMESPACE_UPP
 class Android {
 public:
 	static String GetScriptExt();
+	static String GetCmdExt();
 	
 private:
 	Android();
@@ -78,8 +79,7 @@ public:
 	bool Validate() const;
 	
 public:
-	// TODO: MS Windows exe.
-	String NdkBuildPath() const { return path + DIR_SEPS + "ndk-build"; }
+	String NdkBuildPath() const { return path + DIR_SEPS + "ndk-build" + Android::GetCmdExt(); }
 	String GdbPath() const      { return path + DIR_SEPS + "ndk-gdb"; }
 	
 public:

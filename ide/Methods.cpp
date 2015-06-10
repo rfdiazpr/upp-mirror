@@ -118,6 +118,7 @@ void AndroidBuilderSetup::InitSetupCtrlsMap(VectorMap<Id, Ctrl*>& map)
 	map.Add("JDK_PATH",                &jdk_path);
 	map.Add("SDK_PLATFORM_VERSION",    &sdk_platform_version);
 	map.Add("SDK_BUILD_TOOLS_RELEASE", &sdk_build_tools_release);
+	map.Add("NDK_BLITZ",               &ndk_blitz);
 }
 
 void AndroidBuilderSetup::New(const String& builder)

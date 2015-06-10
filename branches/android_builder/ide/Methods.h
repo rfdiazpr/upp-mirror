@@ -63,6 +63,8 @@ public:
 
 class AndroidBuilderSetup : public WithBuildMethodsAndroidBuilderSetupLayout<BuilderSetupInterface> {
 public:
+	TextOption ndk_blitz;
+	
 	FrameRight<Button> ndkBrowse;
 	FrameRight<Button> jdkBrowse;
 	

@@ -571,18 +571,15 @@ String GetExeExt()
 #endif	
 }
 
-String NormalizeExePath(const String& exePath)
+String NormalizeExePath(String exePath)
 {
-	String path;
-	
 	if(exePath.Find(" ") >= 0) {
 	#if defined(PLATFORM_WIN32) || defined(PLATFORM_WIN64)
-		path = "\"" + exePath + "\"";
+		exePath = "\"" + exePath + "\"";
 	#else
-		path = exePath;
-		path.Replace(" ", "\ ");
+		exePath.Replace(" ", "\\ ");
 	#endif
 	}
 	
-	return path;
+	return exePath;
 }

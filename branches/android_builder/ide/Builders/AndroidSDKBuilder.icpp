@@ -9,7 +9,8 @@ Index<String> AndroidBuilder::GetBuildersNames()
 	return builders;
 }
 
-AndroidBuilder::AndroidBuilder()
+AndroidBuilder::AndroidBuilder() :
+	blitzComponent(this)
 {
 	androidSDK.SetPath(GetAndroidSDKPath());
 }
@@ -48,7 +49,12 @@ bool AndroidBuilder::BuildPackage(const String& package, Vector<String>& linkfil
 	Vector<String> nativeSourceFilesInPackage;
 	bool error = false;
 	String androidManifestPath;
+	
+	bool blitz = HasFlag("NDK_BLITZ");
+	
 	for(int i = 0; i < pkg.GetCount(); i++) {
+		if(blitz)
+			PutConsole("BLITZ");
 		if(!IdeIsBuilding())
 			return false;
 		if(pkg[i].separator)
@@ -87,8 +93,9 @@ bool AndroidBuilder::BuildPackage(const String& package, Vector<String>& linkfil
 			javaSourceFiles.Add(filePathInAndroidProject);
 		}
 		else
-		if(fileExt == ".cpp" || fileExt == ".cxx" || fileExt == ".c" ||
-		   fileExt == ".hpp" || fileExt == ".hxx" || fileExt == ".h") {
+		if(fileExt == ".icpp" || fileExt == ".cpp" || fileExt == ".cxx" ||
+		   fileExt == ".c"    ||
+		   fileExt == ".hpp"  || fileExt == ".hxx" || fileExt == ".h") {
 			String filePathInAndroidProject;
 			filePathInAndroidProject << GetAndroidProjectJniSourcesDir() << DIR_SEPS;
 			filePathInAndroidProject <<	packageFileDirectory << DIR_SEPS;
@@ -98,7 +105,8 @@ bool AndroidBuilder::BuildPackage(const String& package, Vector<String>& linkfil
 				error = true;
 				continue;
 			}
-			if(fileExt == ".cpp" || fileExt == ".cxx" || fileExt == "c") {
+			if(fileExt == ".icpp" || fileExt == ".cpp" || fileExt == ".cxx" ||
+			   fileExt == "c") {
 				nativeSourceFiles.Add(filePathInAndroidProject);
 				nativeSourceFilesInPackage.Add(packageFile);
 			}

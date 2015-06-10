@@ -381,7 +381,7 @@ enum {
 String Join(const String& a, const String& b, const char *sep = " ");
 
 String GetExeExt();
-String NormalizeExePath(const String& exePath);
+String NormalizeExePath(String exePath);
 
 struct Builder {
 	Host            *host;
@@ -428,10 +428,22 @@ struct Builder {
 	virtual ~Builder() {}
 	
 	// TODO: move other methods if needed
-	void ChDir(const String& path);
-	int  Execute(const char *cmdline);
-	int  Execute(const char *cl, Stream& out);
-	bool HasFlag(const char *f) const { return config.Find(f) >= 0; }
+	void                   ChDir(const String& path);
+	String                 GetHostPath(const String& path) const;
+	String                 GetHostPathShort(const String& path) const;
+	String                 GetHostPathQ(const String& path) const;
+	String                 GetHostPathShortQ(const String& path) const;
+	Vector<Host::FileInfo> GetFileInfo(const Vector<String>& path) const;
+	Host::FileInfo         GetFileInfo(const String& path) const;
+	Time                   GetFileTime(const String& path) const;
+	int                    Execute(const char *cmdline);
+	int                    Execute(const char *cl, Stream& out);
+	void                   DeleteFile(const Vector<String>& path);
+	void                   DeleteFile(const String& path);
+	bool                   FileExists(const String& path) const;
+	void                   SaveFile(const String& path, const String& data);
+	String                 LoadFile(const String& path);
+	bool                   HasFlag(const char *f) const { return config.Find(f) >= 0; }
 };
 
 VectorMap<String, Builder *(*)()>& BuilderMap();

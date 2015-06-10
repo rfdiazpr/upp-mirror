@@ -140,7 +140,6 @@ One<Builder> MakeBuild::CreateBuilder(Host *host)
 	b->script = bm.Get("SCRIPT", "");
 	if(AndroidBuilder::GetBuildersNames().Find(builder) > -1) {
 		AndroidBuilder* ab = dynamic_cast<AndroidBuilder*>(b);
-		
 		ab->androidNDK.SetPath((bm.Get("NDK_PATH", "")));
 		ab->jdk.SetPath((bm.Get("JDK_PATH", "")));
 		
@@ -149,12 +148,13 @@ One<Builder> MakeBuild::CreateBuilder(Host *host)
 			ab->androidSDK.SetPlatform(platformVersion);
 		else
 			ab->androidSDK.DeducePlatform();
-		
 		String buildToolsRelease = bm.Get("SDK_BUILD_TOOLS_RELEASE", "");
 		if(!buildToolsRelease.IsEmpty())
 			ab->androidSDK.SetBuildToolsRelease(buildToolsRelease);
 		else
 			ab->androidSDK.DeduceBuildToolsRelease();
+		
+		ab->ndk_blitz = bm.Get("NDK_BLITZ", "") == "1";
 		
 		b = ab;
 	}

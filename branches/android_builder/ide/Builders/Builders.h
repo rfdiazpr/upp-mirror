@@ -8,20 +8,10 @@
 
 #include "Android.h"
 #include "Java.h"
+#include "BuilderComponents.h"
 #include "Build.h"
 
 void PutCompileTime(int time, int count);
-
-struct Blitz {
-	bool   build;
-	int    count;
-	String path;
-	String object;
-	String info;
-};
-
-String BlitzBaseFile();
-void   ResetBlitz();
 
 String BrcToC(CParser& binscript, String basedir);
 
@@ -30,21 +20,11 @@ struct CppBuilder : Builder {
 
 	const Workspace& wspc;
 	Time             targettime;
-
+	
+	BlitzBuilderComponent blitzComponent;
+	
 	String                 GetSharedLibPath(const String& package) const;
-	String                 GetHostPath(const String& path) const;
-	String                 GetHostPathShort(const String& path) const;
-	String                 GetHostPathQ(const String& path) const;
-	String                 GetHostPathShortQ(const String& path) const;
 	String                 GetLocalPath(const String& path) const;
-	Vector<Host::FileInfo> GetFileInfo(const Vector<String>& path) const;
-	Host::FileInfo         GetFileInfo(const String& path) const;
-	Time                   GetFileTime(const String& path) const;
-	bool                   FileExists(const String& path) const;
-	void                   DeleteFile(const Vector<String>& path);
-	void                   DeleteFile(const String& path);
-	void                   SaveFile(const String& path, const String& data);
-	String                 LoadFile(const String& path);
 	int                    AllocSlot();
 	bool                   Run(const char *cmdline, int slot, String key, int blitz_count);
 	bool                   Run(const char *cmdline, Stream& out, int slot, String key, int blitz_count);
@@ -76,16 +56,11 @@ struct CppBuilder : Builder {
 
 	void                   ShowTime(int count, int start_time);
 
-	Blitz BlitzStep(Vector<String>& sfile, Vector<String>& soptions,
-	                Vector<String>& obj, Vector<String>& immfile,
-	                const char *objext, Vector<bool>& optimize,
-	                const Index<String>& noblitz);
-
 	virtual void           AddMakeFile(MakeFile& makefile, String package,
 		const Vector<String>& all_uses, const Vector<String>& all_libraries,
 		const Index<String>& common_config, bool exporting);
 
-	CppBuilder() : wspc(GetIdeWorkspace()) {}
+	CppBuilder() : wspc(GetIdeWorkspace()), blitzComponent(this) {}
 };
 
 struct GccBuilder : CppBuilder {
@@ -189,6 +164,8 @@ public:
 	AndroidNDK androidNDK;
 	Jdk jdk;
 	
+	bool ndk_blitz;
+	
 public:
 	static Index<String> GetBuildersNames();
 		
@@ -232,6 +209,10 @@ protected:
 	
 	String GetAndroidProjectJniMakeFilePath() const;
 	String GetAndroidProjectJniApplicationMakeFilePath() const;
+	
+private:
+	BlitzBuilderComponent blitzComponent;
+
 };
 
 void DeletePCHFile(const String& pch_file);

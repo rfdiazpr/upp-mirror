@@ -32,6 +32,9 @@ public:
 	String GetJarsignerPath() const { return GetBinDir() + DIR_SEPS + "jarsigner" + GetExeExt(); }
 	String GetKeytoolPath() const   { return GetBinDir() + DIR_SEPS + "keytool" + GetExeExt(); }
 	
+public:
+	String GetPath() { return this->path; }
+	
 	void SetPath(const String& path) { this->path = path; }
 	
 private:

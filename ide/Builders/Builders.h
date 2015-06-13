@@ -174,7 +174,7 @@ public:
 	
 	String GetTargetExt() const;
 	
-	virtual bool BuildPackage(const String& packageName, Vector<String>& linkfile, Vector<String>&, String& linkoptions,
+	virtual bool BuildPackage(const String& packageName, Vector<String>& linkfile, Vector<String>& immfile, String& linkoptions,
 		const Vector<String>& all_uses, const Vector<String>& all_libraries, int optimize);
 	virtual bool Link(const Vector<String>& linkfile, const String& linkoptions, bool createmap);
 	virtual bool Preprocess(const String& package, const String& file, const String& target, bool asmout);

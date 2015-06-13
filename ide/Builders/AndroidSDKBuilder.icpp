@@ -21,7 +21,7 @@ String AndroidBuilder::GetTargetExt() const
 }
 
 bool AndroidBuilder::BuildPackage(const String& package, Vector<String>& linkfile,
-	                              Vector<String>&, String& linkoptions,
+	                              Vector<String>& immfile, String& linkoptions,
 	                              const Vector<String>& all_uses,
 	                              const Vector<String>& all_libraries,
 	                              int)
@@ -47,18 +47,24 @@ bool AndroidBuilder::BuildPackage(const String& package, Vector<String>& linkfil
 	Vector<String> javaSourceFiles;
 	Vector<String> nativeSourceFiles;
 	Vector<String> nativeSourceFilesInPackage;
+	Vector<String> nativeSourceFilesOptions;
+	Vector<bool>   optimizeNativeSourceFiles;
+	
+	Index<String> noBlitzNativeSourceFiles;
+	
 	bool error = false;
 	String androidManifestPath;
 	
-	bool blitz = HasFlag("NDK_BLITZ");
+	// TODO: switche in inferface
+	bool isBlitz = HasFlag("BLITZ") || ndk_blitz;
 	
 	for(int i = 0; i < pkg.GetCount(); i++) {
-		if(blitz)
-			PutConsole("BLITZ");
 		if(!IdeIsBuilding())
 			return false;
 		if(pkg[i].separator)
 			continue;
+		
+		String globalOptions = Gather(pkg[i].option, config.GetKeys());
 		
 		String filePath = SourcePath(package, pkg[i]);
 		String fileExt = ToLower(GetFileExt(filePath));
@@ -100,7 +106,13 @@ bool AndroidBuilder::BuildPackage(const String& package, Vector<String>& linkfil
 			filePathInAndroidProject << GetAndroidProjectJniSourcesDir() << DIR_SEPS;
 			filePathInAndroidProject <<	packageFileDirectory << DIR_SEPS;
 			filePathInAndroidProject <<	fileName;
-				
+			
+			nativeSourceFilesOptions.Add(globalOptions);			
+			if(pkg[i].noblitz)
+				noBlitzNativeSourceFiles.Add(filePathInAndroidProject);
+			optimizeNativeSourceFiles.Add(pkg[i].optimize_speed); // TODO: add more optimalization variables.
+			
+			
 			if(!MovePackageFileToAndroidProject(filePath, filePathInAndroidProject)) {
 				error = true;
 				continue;
@@ -153,6 +165,31 @@ bool AndroidBuilder::BuildPackage(const String& package, Vector<String>& linkfil
 	}
 
 	if(!isResourcesPackage && !error && !nativeSourceFiles.IsEmpty()) {
+		Blitz blitz;
+		if(isBlitz) {
+			Vector<String> a, b;
+			
+			blitz = blitzComponent.MakeBlitzStep(nativeSourceFilesInPackage, nativeSourceFilesOptions, b, immfile,
+			                                     ".o", optimizeNativeSourceFiles, noBlitzNativeSourceFiles);
+			
+			String blitzDestinationFileInPackage;
+			blitzDestinationFileInPackage << package << DIR_SEPS;
+			blitzDestinationFileInPackage << GetFileName(blitz.path);
+			// TODO: For some reson makefile dosen't accept '$' in path even with escaping sequence '$$'.
+			blitzDestinationFileInPackage.Replace("$", "");
+			
+			String blitzDestinationFile;
+			blitzDestinationFile << GetAndroidProjectJniSourcesDir() << DIR_SEPS;
+			blitzDestinationFile << blitzDestinationFileInPackage;
+			
+			if(FileExists(blitz.path)) {
+				CopyFile(blitzDestinationFile, blitz.path);
+			
+				nativeSourceFilesInPackage.Clear();
+				nativeSourceFilesInPackage.Add(blitzDestinationFileInPackage);
+			}
+		}
+		
 		AndroidModuleMakeFile pkgMakeFile(package);
 		// TODO: refactor to achieve better code readability.
 		for(int i = 0; i < nativeSourceFilesInPackage.GetCount(); i++)

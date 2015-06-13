@@ -54,7 +54,8 @@ protected:
 	void AppendStringVector(String& makeFile,
 	                        const Vector<String>& vec,
 	                        const String& variableName,
-	                        const String& variablePrefix = "") const;
+	                        const String& variablePrefix = "",
+	                        const String& variableSuffix = "") const;
 	
 private:
 	String name;

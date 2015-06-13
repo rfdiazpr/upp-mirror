@@ -210,6 +210,10 @@ protected:
 	String GetAndroidProjectJniMakeFilePath() const;
 	String GetAndroidProjectJniApplicationMakeFilePath() const;
 	
+	String GetFilePathInAndroidProject(const String& nestDir,
+	                                   const String& packageName,
+	                                   const String& fileName) const;
+	
 private:
 	BlitzBuilderComponent blitzComponent;
 

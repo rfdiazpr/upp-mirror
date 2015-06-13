@@ -112,12 +112,13 @@ void AndroidModuleMakeFile::AppendSharedLibraries(String& makeFile) const
 void AndroidModuleMakeFile::AppendStringVector(String& makeFile,
                                                const Vector<String>& vec, 
                                                const String& variableName,
-                                               const String& variablePrefix) const
+                                               const String& variablePrefix,
+                                               const String& variableSuffix) const
 {
 	if(!vec.IsEmpty()) {
 		makeFile << variableName << " := ";
 		for(int i = 0; i < vec.GetCount(); i++) {
-			makeFile << variablePrefix << vec[i];
+			makeFile << variablePrefix << vec[i] << variableSuffix;
 			if(i + 1 < vec.GetCount())
 				makeFile << " ";
 		}

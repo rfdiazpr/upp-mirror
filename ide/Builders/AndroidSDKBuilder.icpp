@@ -163,15 +163,14 @@ bool AndroidBuilder::BuildPackage(const String& package, Vector<String>& linkfil
 	}
 
 	if(!isResourcesPackage && !error && !nativeSourceFiles.IsEmpty()) {
-		Blitz blitz;
 		if(isBlitz) {
-			blitz = blitzComponent.MakeBlitzStep(nativeSourceFilesInPackage,
-			                                     nativeSourceFilesOptions,
-			                                     nativeObjects,
-			                                     immfile,
-			                                     ".o",
-			                                     optimizeNativeSourceFiles,
-			                                     noBlitzNativeSourceFiles);
+			Blitz blitz = blitzComponent.MakeBlitzStep(nativeSourceFilesInPackage,
+			                                           nativeSourceFilesOptions,
+			                                           nativeObjects,
+			                                           immfile,
+			                                           ".o",
+			                                           optimizeNativeSourceFiles,
+			                                           noBlitzNativeSourceFiles);
 			
 			String blitzDestinationFileInPackage;
 			blitzDestinationFileInPackage << package << DIR_SEPS;

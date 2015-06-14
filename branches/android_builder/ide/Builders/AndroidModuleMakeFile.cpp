@@ -75,7 +75,7 @@ void AndroidModuleMakeFile::AppendName(String& makeFile) const
 
 void AndroidModuleMakeFile::AppendSourceFiles(String& makeFile) const
 {
-	AppendStringVector(makeFile, sourceFiles, "LOCAL_SRC_FILES");
+	AppendStringVector(makeFile, sourceFiles, "LOCAL_SRC_FILES", "`", "`");
 }
 
 void AndroidModuleMakeFile::AppendCppFlags(String& makeFile) const

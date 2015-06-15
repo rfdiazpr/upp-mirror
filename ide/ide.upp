@@ -73,6 +73,8 @@ file
 	Json.cpp,
 	Update.cpp,
 	Compile readonly separator,
+	MethodsCtrls.h,
+	MethodsCtrls.cpp,
 	Methods.h,
 	Methods.cpp,
 	AutoSetup.cpp,
@@ -84,6 +86,7 @@ file
 	Resources readonly separator,
 	ide.lay,
 	ide.iml,
+	ide.usc,
 	app.tpp,
 	ide.rc
 		depends() xide.ico

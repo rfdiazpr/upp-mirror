@@ -3,12 +3,6 @@
 
 #include "ide.h"
 
-class TextOption : public Option {
-public:
-	virtual void   SetData(const Value& data);
-	virtual Value  GetData() const;
-};
-
 class TextSwitch : public Switch {
 public:
 	virtual void   SetData(const Value& data);
@@ -63,8 +57,6 @@ public:
 
 class AndroidBuilderSetup : public WithBuildMethodsAndroidBuilderSetupLayout<BuilderSetupInterface> {
 public:
-	TextOption ndk_blitz;
-	
 	FrameRight<Button> ndkBrowse;
 	FrameRight<Button> jdkBrowse;
 	

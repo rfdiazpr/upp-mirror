@@ -155,6 +155,20 @@ One<Builder> MakeBuild::CreateBuilder(Host *host)
 			ab->androidSDK.DeduceBuildToolsRelease();
 		
 		ab->ndk_blitz = bm.Get("NDK_BLITZ", "") == "1";
+		if(bm.Get("NDK_ARCH_ARMEABI", "") == "1")
+			ab->ndkArchitectures.Add("armeabi");
+		if(bm.Get("NDK_ARCH_ARMEABI_V7A", "") == "1")
+			ab->ndkArchitectures.Add("armeabi-v7a");
+		if(bm.Get("NDK_ARCH_ARM64_V8A", "") == "1")
+			ab->ndkArchitectures.Add("arm64-v8a");
+		if(bm.Get("NDK_ARCH_X86", "") == "1")
+			ab->ndkArchitectures.Add("x86");
+		if(bm.Get("NDK_ARCH_X86_64", "") == "1")
+			ab->ndkArchitectures.Add("x86_64");
+		if(bm.Get("NDK_ARCH_MIPS", "") == "1")
+			ab->ndkArchitectures.Add("mips");
+		if(bm.Get("NDK_ARCH_MIPS64", "") == "1")
+			ab->ndkArchitectures.Add("mips64");
 		
 		b = ab;
 	}

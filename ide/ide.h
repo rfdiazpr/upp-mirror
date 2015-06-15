@@ -16,6 +16,8 @@
 #include <ide/Designers/Designers.h>
 #include <ide/Android/Android.h>
 
+#include "MethodsCtrls.h"
+
 #define LAYOUTFILE <ide/ide.lay>
 #include <CtrlCore/lay.h>
 

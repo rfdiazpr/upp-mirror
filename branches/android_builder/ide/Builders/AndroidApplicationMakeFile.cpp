@@ -27,6 +27,11 @@ void AndroidApplicationMakeFile::SetPlatform(const String& platform)
 	this->platform = platform;
 }
 
+void AndroidApplicationMakeFile::SetArchitectures(const Index<String>& architectures)
+{
+	this->architectures = clone(architectures);
+}
+
 void AndroidApplicationMakeFile::AddArchitecture(const String& architecture)
 {
 	architectures.Add(architecture);
@@ -40,15 +45,14 @@ void AndroidApplicationMakeFile::AppendPlatform(String& makeFile) const
 
 void AndroidApplicationMakeFile::AppendArchitectures(String& makeFile) const
 {
-	makeFile << "APP_ABI := ";
 	if(architectures.IsEmpty())
-		makeFile << "all";
-	else {
-		for(int i = 0; i < architectures.GetCount(); i++) {
-			makeFile << architectures[i];
-			if(i + 1 < architectures.GetCount())
-				makeFile << " ";
-		}
+		return;
+	
+	makeFile << "APP_ABI := ";
+	for(int i = 0; i < architectures.GetCount(); i++) {
+		makeFile << architectures[i];
+		if(i + 1 < architectures.GetCount())
+			makeFile << " ";
 	}
 	makeFile << "\n";
 }

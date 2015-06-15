@@ -13,6 +13,7 @@ public:
 	String ToString() const;
 public:
 	void SetPlatform(const String& platform);
+	void SetArchitectures(const Index<String>& architectures);
 	void AddArchitecture(const String& architecture);
 	
 protected:
@@ -20,7 +21,7 @@ protected:
 	void AppendArchitectures(String& makeFile) const;
 	
 private:
-	Vector<String> architectures;
+	Index<String> architectures;
 	String platform;
 };
 

@@ -165,6 +165,7 @@ public:
 	Jdk jdk;
 	
 	bool ndk_blitz;
+	Index<String> ndkArchitectures;
 	
 public:
 	static Index<String> GetBuildersNames();

@@ -172,9 +172,13 @@ bool AndroidBuilder::BuildPackage(const String& package, Vector<String>& linkfil
 			                                           optimizeNativeSourceFiles,
 			                                           noBlitzNativeSourceFiles);
 			
+			// FIXME: seems android makefile system dosen't accept "$" in path even with escape symbol.
+			String destinationFileName = GetFileName(blitz.path);
+			destinationFileName.Replace("$", "@");
+			
 			String blitzDestinationFileInPackage;
 			blitzDestinationFileInPackage << package << DIR_SEPS;
-			blitzDestinationFileInPackage << GetFileName(blitz.path);
+			blitzDestinationFileInPackage << destinationFileName;
 			
 			if(FileExists(blitz.path)) {
 				String blitzDestinationFile;
@@ -448,6 +452,7 @@ void AndroidBuilder::GenerateApplicationMakeFile()
 {
 	AndroidApplicationMakeFile makeFile;
 	makeFile.SetPlatform(androidSDK.GetPlatform());
+	makeFile.SetArchitectures(ndkArchitectures);
 	
 	SaveFile(GetAndroidProjectJniApplicationMakeFilePath(), makeFile.ToString());
 }

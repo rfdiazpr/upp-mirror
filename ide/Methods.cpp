@@ -115,6 +115,9 @@ void AndroidBuilderSetup::InitSetupCtrlsMap(VectorMap<Id, Ctrl*>& map)
 	map.Add("NDK_ARCH_X86_64",         &ndk_arch_x86_64);
 	map.Add("NDK_ARCH_MIPS",           &ndk_arch_mips);
 	map.Add("NDK_ARCH_MIPS64",         &ndk_arch_mips64);
+	map.Add("NDK_CPP_RUNTIME",         &ndk_cpp_runtime);
+	map.Add("NDK_COMMON_CPP_OPTIONS",  &ndk_common_cpp_options);
+	map.Add("NDK_COMMON_C_OPTIONS",    &ndk_common_c_options);
 }
 
 void AndroidBuilderSetup::New(const String& builder)
@@ -124,6 +127,7 @@ void AndroidBuilderSetup::New(const String& builder)
 	ndk_arch_armeabi.Set(1);
 	ndk_arch_armeabi_v7a.Set(1);
 	ndk_arch_arm64_v8a.Set(1);
+	ndk_common_cpp_options.SetData("-fexceptions -frtti");
 }
 
 void AndroidBuilderSetup::OnLoad()
@@ -133,27 +137,49 @@ void AndroidBuilderSetup::OnLoad()
 	sdk_path.SetData(sdk.GetPath());
 	LoadPlatforms(sdk);
 	LoadBuildTools(sdk);
+	LoadCppRuntimes();
 }
 
 void AndroidBuilderSetup::LoadPlatforms(const AndroidSDK& sdk)
 {
+	Vector<String> platforms = sdk.FindPlatforms();
+	Sort(platforms, StdGreater<String>());
+	
 	LoadDropList(sdk_platform_version,
-	             sdk.FindPlatforms(),
+	             platforms,
 	             sdk.FindDefaultPlatform());
 }
 
 void AndroidBuilderSetup::LoadBuildTools(const AndroidSDK& sdk)
 {
+	Vector<String> releases = sdk.FindBuildToolsReleases();
+	Sort(releases, StdGreater<String>());
+	
 	LoadDropList(sdk_build_tools_release,
-	             sdk.FindBuildToolsReleases(),
+	             releases,
 	             sdk.FindDefaultBuildToolsRelease());
+}
+
+void AndroidBuilderSetup::LoadCppRuntimes()
+{
+	Vector<String> runtimes;
+	runtimes.Add("system");
+	runtimes.Add("gabi++_static");
+	runtimes.Add("gabi++_shared");
+	runtimes.Add("stlport_static");
+	runtimes.Add("stlport_shared");
+	runtimes.Add("gnustl_static");
+	runtimes.Add("gnustl_shared");
+	runtimes.Add("c++_static");
+	runtimes.Add("c++_shared");
+	
+	LoadDropList(ndk_cpp_runtime, runtimes, "gabi++_static");
 }
 
 void AndroidBuilderSetup::LoadDropList(DropList& dropList, Vector<String> values, const String& defaultKey)
 {
 	dropList.Clear();
 	
-	Sort(values, StdGreater<String>());
 	for(int i = 0; i < values.GetCount(); i++)
 		dropList.Add(values[i]);
 	

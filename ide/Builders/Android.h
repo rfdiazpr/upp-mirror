@@ -13,16 +13,25 @@ public:
 	String ToString() const;
 public:
 	void SetPlatform(const String& platform);
-	void SetArchitectures(const Index<String>& architectures);
+	void SetArchitectures(const Vector<String>& architectures);
 	void AddArchitecture(const String& architecture);
+	void SetCppRuntime(const String& cppRuntime);
+	void SetCppFlags(const String& cppFlags);
+	void SetCFlags(const String& cFlags);
 	
 protected:
 	void AppendPlatform(String& makeFile) const;
 	void AppendArchitectures(String& makeFile) const;
+	void AppendCppRuntime(String& makeFile) const;
+	void AppendCppFlags(String& makeFile) const;
+	void AppendCFlags(String& makeFile) const;
 	
 private:
-	Index<String> architectures;
-	String platform;
+	String         platform;
+	Vector<String> architectures;
+	String         cppRuntime;
+	String         cppFlags;
+	String         cFlags;
 };
 
 class AndroidModuleMakeFile : public Moveable<AndroidModuleMakeFile> {
@@ -52,12 +61,6 @@ protected:
 	void AppendStaticLibraries(String& makeFile) const;
 	void AppendSharedLibraries(String& makeFile) const;
 	
-	void AppendStringVector(String& makeFile,
-	                        const Vector<String>& vec,
-	                        const String& variableName,
-	                        const String& variablePrefix = "",
-	                        const String& variableSuffix = "") const;
-	
 private:
 	String name;
 	Vector<String> sourceFiles;
@@ -68,6 +71,16 @@ private:
 };
 
 class AndroidMakeFile {
+public:
+	static void AppendString(String& makeFile,
+	                         const String& variable,
+	                         const String& variableName);
+	static void AppendStringVector(String& makeFile,
+	                               const Vector<String>& vec,
+	                               const String& variableName,
+	                               const String& variablePrefix = "",
+	                               const String& variableSuffix = "");
+	
 public:
 	AndroidMakeFile();
 	virtual ~AndroidMakeFile();

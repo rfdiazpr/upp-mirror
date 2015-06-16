@@ -164,8 +164,11 @@ public:
 	AndroidNDK androidNDK;
 	Jdk jdk;
 	
-	bool ndk_blitz;
-	Index<String> ndkArchitectures;
+	bool           ndk_blitz;
+	Vector<String> ndkArchitectures;
+	String         ndkCppRuntime;
+	String         ndkCppFlags;
+	String         ndkCFlags; 
 	
 public:
 	static Index<String> GetBuildersNames();

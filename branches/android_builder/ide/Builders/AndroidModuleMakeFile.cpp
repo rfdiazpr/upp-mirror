@@ -75,7 +75,7 @@ void AndroidModuleMakeFile::AppendName(String& makeFile) const
 
 void AndroidModuleMakeFile::AppendSourceFiles(String& makeFile) const
 {
-	AppendStringVector(makeFile, sourceFiles, "LOCAL_SRC_FILES");
+	AndroidMakeFile::AppendStringVector(makeFile, sourceFiles, "LOCAL_SRC_FILES");
 }
 
 void AndroidModuleMakeFile::AppendCppFlags(String& makeFile) const
@@ -96,34 +96,17 @@ void AndroidModuleMakeFile::AppendCppFlags(String& makeFile) const
 
 void AndroidModuleMakeFile::AppendLdLibraries(String& makeFile) const
 {
-	AppendStringVector(makeFile, ldLibraries, "LOCAL_LDLIBS", "-l");
+	AndroidMakeFile::AppendStringVector(makeFile, ldLibraries, "LOCAL_LDLIBS", "-l");
 }
 
 void AndroidModuleMakeFile::AppendStaticLibraries(String& makeFile) const
 {
-	AppendStringVector(makeFile, staticLibraries, "LOCAL_STATIC_LIBRARIES");
+	AndroidMakeFile::AppendStringVector(makeFile, staticLibraries, "LOCAL_STATIC_LIBRARIES");
 }
 
 void AndroidModuleMakeFile::AppendSharedLibraries(String& makeFile) const
 {
-	AppendStringVector(makeFile, sharedLibraries, "LOCAL_SHARED_LIBRARIES");
-}
-
-void AndroidModuleMakeFile::AppendStringVector(String& makeFile,
-                                               const Vector<String>& vec, 
-                                               const String& variableName,
-                                               const String& variablePrefix,
-                                               const String& variableSuffix) const
-{
-	if(!vec.IsEmpty()) {
-		makeFile << variableName << " := ";
-		for(int i = 0; i < vec.GetCount(); i++) {
-			makeFile << variablePrefix << vec[i] << variableSuffix;
-			if(i + 1 < vec.GetCount())
-				makeFile << " ";
-		}
-		makeFile << "\n";
-	}
+	AndroidMakeFile::AppendStringVector(makeFile, sharedLibraries, "LOCAL_SHARED_LIBRARIES");
 }
 
 END_UPP_NAMESPACE

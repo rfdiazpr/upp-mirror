@@ -204,7 +204,7 @@ bool AndroidBuilder::BuildPackage(const String& package, Vector<String>& linkfil
 			pkgMakeFile.AddSharedLibrary(pkg.uses[i].text);
 		
 		String pkgMakeFilePath = GetAndroidProjectJniSourcesDir() + DIR_SEPS + package + DIR_SEPS + "Android.mk";
-		SaveFile(pkgMakeFilePath, pkgMakeFile.ToString());
+		UpdateFile(pkgMakeFilePath, pkgMakeFile.ToString());
 	}
 
 	return !error;
@@ -253,10 +253,12 @@ bool AndroidBuilder::Link(const Vector<String>& linkfile, const String& linkopti
 		ndkBuildCmd << androidNDK.NdkBuildPath();
 		ndkBuildCmd << " -j " << GetHydraThreads();
 		ndkBuildCmd << " -C " << GetAndroidProjectDir();
+		PutConsole(ndkBuildCmd);
 		if(Execute(ndkBuildCmd, ss) != 0 ) {
 			PutConsole(ss.GetResult());
 			return false;
 		}
+		PutConsole(ss.GetResult());
 		PutConsole("Native sources compiled in " + GetPrintTime(time) + ".");
 	}
 	
@@ -365,11 +367,17 @@ void AndroidBuilder::CleanPackage(const String& package)
 		DeleteFolderDeep(sandboxDir);
 }
 
-bool AndroidBuilder::MovePackageFileToAndroidProject(const String& packagePath, const String& androidProjectPath)
+bool AndroidBuilder::MovePackageFileToAndroidProject(const String& src, const String& dest)
 {
-	if(!RealizeDirectory(GetFileDirectory(androidProjectPath)))
+	if(!RealizeDirectory(GetFileDirectory(dest)))
 		return false;
-	return FileCopy(packagePath, androidProjectPath);
+	
+	if(FileExists(dest)) {
+		if(GetFileTime(src).Get() <= GetFileTime(dest).Get())
+			return true;
+	}
+	
+	return FileCopy(src, dest);
 }
 
 bool AndroidBuilder::RealizePackageSourcesDirectory(const String& packageName)
@@ -448,6 +456,19 @@ void AndroidBuilder::PutErrorOnConsole(const String& msg)
 	PutConsole("Error: " + msg + ".");
 }
 
+bool AndroidBuilder::FileNeedsUpdate(const String& path, const String& data)
+{
+	return !(FileExists(path) && LoadFile(path).Compare(data) == 0);
+}
+
+void AndroidBuilder::UpdateFile(const String& path, const String& data)
+{
+	if(!FileNeedsUpdate(path, data))
+		return;
+	
+	SaveFile(path, data);
+}
+
 void AndroidBuilder::GenerateApplicationMakeFile()
 {
 	AndroidApplicationMakeFile makeFile;
@@ -457,7 +478,7 @@ void AndroidBuilder::GenerateApplicationMakeFile()
 	makeFile.SetCppFlags(ndkCppFlags);
 	makeFile.SetCFlags(ndkCFlags);
 	
-	SaveFile(GetAndroidProjectJniApplicationMakeFilePath(), makeFile.ToString());
+	UpdateFile(GetAndroidProjectJniApplicationMakeFilePath(), makeFile.ToString());
 }
 
 void AndroidBuilder::GenerateMakeFile()
@@ -472,7 +493,8 @@ void AndroidBuilder::GenerateMakeFile()
 	makeFile.AddHeader();
 	for(int i = 0; i < modules.GetCount(); i++)
 		makeFile.AddInclusion(modules[i] + DIR_SEPS + "Android.mk");
-	SaveFile(GetAndroidProjectJniMakeFilePath(), makeFile.ToString());
+	
+	UpdateFile(GetAndroidProjectJniMakeFilePath(), makeFile.ToString());
 }
 
 bool AndroidBuilder::GenerateRFile()

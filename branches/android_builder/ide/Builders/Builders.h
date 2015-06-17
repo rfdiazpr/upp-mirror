@@ -185,12 +185,14 @@ public:
 	virtual void CleanPackage(const String& package);
 	
 protected:
-	bool MovePackageFileToAndroidProject(const String& packagePath, const String& androidProjectPath); 
+	bool MovePackageFileToAndroidProject(const String& src, const String& dest); 
 	bool RealizePackageSourcesDirectory(const String& packageName);
 
 protected:
 	bool ValidateBuilderEnviorement();
 	void PutErrorOnConsole(const String& msg);
+	bool FileNeedsUpdate(const String& path, const String& data);
+	void UpdateFile(const String& path, const String& data);
 	void GenerateApplicationMakeFile();
 	void GenerateMakeFile();
 	bool GenerateRFile();

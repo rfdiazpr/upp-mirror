@@ -173,7 +173,7 @@ void AndroidBuilderSetup::LoadCppRuntimes()
 	runtimes.Add("c++_static");
 	runtimes.Add("c++_shared");
 	
-	LoadDropList(ndk_cpp_runtime, runtimes, "gabi++_static");
+	LoadDropList(ndk_cpp_runtime, runtimes, "gnustl_shared");
 }
 
 void AndroidBuilderSetup::LoadDropList(DropList& dropList, Vector<String> values, const String& defaultKey)

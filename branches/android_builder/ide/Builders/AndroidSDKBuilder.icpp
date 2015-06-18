@@ -101,8 +101,8 @@ bool AndroidBuilder::BuildPackage(const String& package, Vector<String>& linkfil
 			
 			nativeSourceFilesOptions.Add(globalOptions);			
 			if(pkg[i].noblitz)
-				noBlitzNativeSourceFiles.Add(filePathInAndroidProject);
-			optimizeNativeSourceFiles.Add(pkg[i].optimize_speed); // TODO: add more optimalization variables.
+				noBlitzNativeSourceFiles.Add(packageFile);
+			optimizeNativeSourceFiles.Add(pkg[i].optimize_speed); // TODO: seems android makefile dosen't support this
 			
 			if(!MovePackageFileToAndroidProject(filePath, filePathInAndroidProject))
 				return false;
@@ -172,7 +172,6 @@ bool AndroidBuilder::BuildPackage(const String& package, Vector<String>& linkfil
 			                                           optimizeNativeSourceFiles,
 			                                           noBlitzNativeSourceFiles);
 			
-			// FIXME: seems android makefile system dosen't accept "$" in path even with escape symbol.
 			String destinationFileName = GetFileName(blitz.path);
 			destinationFileName.Replace("$blitz.cpp", "@blitz.cpp");
 			
@@ -189,11 +188,14 @@ bool AndroidBuilder::BuildPackage(const String& package, Vector<String>& linkfil
 			
 				nativeSourceFilesInPackage.Clear();
 				nativeSourceFilesInPackage.Add(blitzDestinationFileInPackage);
+				for(int i = 0; i < noBlitzNativeSourceFiles.GetCount(); i++)
+					nativeSourceFilesInPackage.Add(noBlitzNativeSourceFiles[i]);
 			}
 		}
 		
 		AndroidModuleMakeFile pkgMakeFile(package);
-		// TODO: refactor to achieve better code readability.
+	
+		// TODO: improve sieve mechanisme
 		for(int i = 0; i < nativeSourceFilesInPackage.GetCount(); i++)
 			pkgMakeFile.AddSourceFile(nativeSourceFilesInPackage[i]);
 		for(int i = 0; i < pkg.flag.GetCount(); i++)
@@ -253,12 +255,11 @@ bool AndroidBuilder::Link(const Vector<String>& linkfile, const String& linkopti
 		ndkBuildCmd << androidNDK.NdkBuildPath();
 		ndkBuildCmd << " -j " << GetHydraThreads();
 		ndkBuildCmd << " -C " << GetAndroidProjectDir();
-		PutConsole(ndkBuildCmd);
+		//PutConsole(ndkBuildCmd);
 		if(Execute(ndkBuildCmd, ss) != 0 ) {
 			PutConsole(ss.GetResult());
 			return false;
 		}
-		PutConsole(ss.GetResult());
 		PutConsole("Native sources compiled in " + GetPrintTime(time) + ".");
 	}
 	

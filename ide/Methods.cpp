@@ -92,7 +92,12 @@ AndroidBuilderSetup::AndroidBuilderSetup()
 {
 	CtrlLayout(*this);
 	
-	ndk_path.WhenAction = THISBACK(OnNdkPathChange);
+	ndk_path <<= THISBACK(OnNdkPathChange);
+	
+	ndkDownload.SetImage(IdeImg::DownloadBlack());
+	ndkDownload.Tip("Download");
+	ndkDownload <<= THISBACK(OnNdkDownload);
+	ndk_path.AddFrame(ndkDownload);
 	
 	ndkBrowse.SetImage(CtrlImg::right_arrow());
 	ndkBrowse <<= callback1(InsertPath, &ndk_path);
@@ -165,6 +170,11 @@ void AndroidBuilderSetup::OnNdkPathChange0(const String& ndkPath)
 	AndroidNDK ndk(ndkPath);
 	if(ndk.Validate())
 		LoadToolchains(ndk);
+}
+
+void AndroidBuilderSetup::OnNdkDownload()
+{
+	LaunchWebBrowser(AndroidNDK::GetDownloadUrl());
 }
 
 void AndroidBuilderSetup::LoadPlatforms(const AndroidSDK& sdk)

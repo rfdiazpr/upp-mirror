@@ -11,6 +11,7 @@ public:
 	virtual ~AndroidApplicationMakeFile();
 	
 	String ToString() const;
+	
 public:
 	void SetPlatform(const String& platform);
 	void SetArchitectures(const Vector<String>& architectures);
@@ -18,6 +19,7 @@ public:
 	void SetCppRuntime(const String& cppRuntime);
 	void SetCppFlags(const String& cppFlags);
 	void SetCFlags(const String& cFlags);
+	void SetOptim(const String& optim);
 	void SetToolchain(const String& toolchain);
 	
 protected:
@@ -26,6 +28,7 @@ protected:
 	void AppendCppRuntime(String& makeFile) const;
 	void AppendCppFlags(String& makeFile) const;
 	void AppendCFlags(String& makeFile) const;
+	void AppendOptim(String& makeFile) const;
 	void AppendToolchain(String& makeFile) const;
 	
 private:
@@ -35,6 +38,7 @@ private:
 	String         cppFlags;
 	String         cFlags;
 	String         toolchain;
+	String         optim;
 };
 
 class AndroidModuleMakeFile : public Moveable<AndroidModuleMakeFile> {

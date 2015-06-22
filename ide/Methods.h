@@ -61,6 +61,7 @@ class AndroidBuilderSetup : public WithBuildMethodsAndroidBuilderSetupLayout<Bui
 	
 public:
 	FrameRight<Button> ndkBrowse;
+	FrameRight<Button> ndkDownload;
 	FrameRight<Button> jdkBrowse;
 	
 public:
@@ -75,6 +76,7 @@ public:
 private:
 	void OnNdkPathChange();
 	void OnNdkPathChange0(const String& ndkPath);
+	void OnNdkDownload();
 
 private:
 	void LoadPlatforms(const AndroidSDK& sdk);

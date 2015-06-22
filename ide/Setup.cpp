@@ -500,6 +500,12 @@ void Ide::SetupFormat() {
 	ide.uscpath.AddFrame(uscBrowse);
 	ide.uscpath <<= LoadFile(GetHomeDirFile("usc.path"));
 	
+	FrameRight<Button> androidSDKDownload;
+	androidSDKDownload.SetImage(IdeImg::DownloadBlack());
+	androidSDKDownload.Tip("Download");
+	androidSDKDownload <<= callback1(LaunchWebBrowser, AndroidSDK::GetDownloadUrl());
+	mobile.AndroidSDKPath.AddFrame(androidSDKDownload);
+	
 	FrameRight<Button> androidSDKBrowse;
 	androidSDKBrowse.SetImage(CtrlImg::right_arrow());
 	androidSDKBrowse <<= callback1(AddPath, &mobile.AndroidSDKPath);

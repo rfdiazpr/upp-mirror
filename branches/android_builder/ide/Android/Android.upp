@@ -10,5 +10,8 @@ file
 	AndroidSDK.cpp,
 	AndroidNDK.cpp,
 	Apk.cpp,
-	AndroidManifest.cpp;
+	AndroidManifest.cpp,
+	Executable readonly separator,
+	Executables.h,
+	NDKBuild.cpp;
 

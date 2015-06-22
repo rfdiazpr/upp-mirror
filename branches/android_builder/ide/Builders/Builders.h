@@ -166,6 +166,7 @@ public:
 	
 	bool           ndk_blitz;
 	Vector<String> ndkArchitectures;
+	String         ndkToolchain;
 	String         ndkCppRuntime;
 	String         ndkCppFlags;
 	String         ndkCFlags; 

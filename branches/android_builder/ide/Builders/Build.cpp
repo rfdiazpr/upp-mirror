@@ -169,6 +169,7 @@ One<Builder> MakeBuild::CreateBuilder(Host *host)
 			ab->ndkArchitectures.Add("mips");
 		if(bm.Get("NDK_ARCH_MIPS64", "") == "1")
 			ab->ndkArchitectures.Add("mips64");
+		ab->ndkToolchain = bm.Get("NDK_TOOLCHAIN", "");
 		ab->ndkCppRuntime = bm.Get("NDK_CPP_RUNTIME", "");
 		ab->ndkCppFlags = bm.Get("NDK_COMMON_CPP_OPTIONS", "");
 		ab->ndkCFlags = bm.Get("NDK_COMMON_C_OPTIONS", "");

@@ -18,6 +18,7 @@ public:
 	void SetCppRuntime(const String& cppRuntime);
 	void SetCppFlags(const String& cppFlags);
 	void SetCFlags(const String& cFlags);
+	void SetToolchain(const String& toolchain);
 	
 protected:
 	void AppendPlatform(String& makeFile) const;
@@ -25,6 +26,7 @@ protected:
 	void AppendCppRuntime(String& makeFile) const;
 	void AppendCppFlags(String& makeFile) const;
 	void AppendCFlags(String& makeFile) const;
+	void AppendToolchain(String& makeFile) const;
 	
 private:
 	String         platform;
@@ -32,6 +34,7 @@ private:
 	String         cppRuntime;
 	String         cppFlags;
 	String         cFlags;
+	String         toolchain;
 };
 
 class AndroidModuleMakeFile : public Moveable<AndroidModuleMakeFile> {

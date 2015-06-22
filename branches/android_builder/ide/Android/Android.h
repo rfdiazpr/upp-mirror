@@ -2,8 +2,9 @@
 #define _Android_Android_h_
 
 #include <Core/Core.h>
-
 #include <ide/Core/Core.h>
+
+#include "Executables.h"
 
 NAMESPACE_UPP
 
@@ -78,9 +79,14 @@ public:
 	
 	bool Validate() const;
 	
+	String FindDefaultToolchain() const;
+	
+	Vector<String> FindToolchains() const;
+	
 public:
-	String NdkBuildPath() const { return path + DIR_SEPS + "ndk-build" + Android::GetCmdExt(); }
-	String GdbPath() const      { return path + DIR_SEPS + "ndk-gdb"; }
+	String GetNdkBuildPath() const  { return path + DIR_SEPS + "ndk-build" + Android::GetCmdExt(); }
+	String GetGdbPath() const       { return path + DIR_SEPS + "ndk-gdb"; }
+	String GetToolchainsDir() const { return path + DIR_SEPS + "toolchains"; }
 	
 public:
 	String GetPath() const { return this->path; }

@@ -92,6 +92,8 @@ AndroidBuilderSetup::AndroidBuilderSetup()
 {
 	CtrlLayout(*this);
 	
+	ndk_path.WhenAction = THISBACK(OnNdkPathChange);
+	
 	ndkBrowse.SetImage(CtrlImg::right_arrow());
 	ndkBrowse <<= callback1(InsertPath, &ndk_path);
 	ndk_path.AddFrame(ndkBrowse);
@@ -115,6 +117,7 @@ void AndroidBuilderSetup::InitSetupCtrlsMap(VectorMap<Id, Ctrl*>& map)
 	map.Add("NDK_ARCH_X86_64",         &ndk_arch_x86_64);
 	map.Add("NDK_ARCH_MIPS",           &ndk_arch_mips);
 	map.Add("NDK_ARCH_MIPS64",         &ndk_arch_mips64);
+	map.Add("NDK_TOOLCHAIN",           &ndk_toolchain);
 	map.Add("NDK_CPP_RUNTIME",         &ndk_cpp_runtime);
 	map.Add("NDK_COMMON_CPP_OPTIONS",  &ndk_common_cpp_options);
 	map.Add("NDK_COMMON_C_OPTIONS",    &ndk_common_c_options);
@@ -140,6 +143,30 @@ void AndroidBuilderSetup::OnLoad()
 	LoadCppRuntimes();
 }
 
+void AndroidBuilderSetup::OnCtrlLoad(const String& ctrlKey, const String& value)
+{
+	VectorMap<Id, Ctrl*> map;
+	InitSetupCtrlsMap(map);
+	
+	if(map.Find(ctrlKey) > -1) {
+		Ctrl* ctrl = map.Get(ctrlKey);
+		if(ctrl == &ndk_path)
+			OnNdkPathChange0(value);
+	}
+}
+
+void AndroidBuilderSetup::OnNdkPathChange()
+{
+	OnNdkPathChange0(ndk_path.GetData());
+}
+
+void AndroidBuilderSetup::OnNdkPathChange0(const String& ndkPath)
+{
+	AndroidNDK ndk(ndkPath);
+	if(ndk.Validate())
+		LoadToolchains(ndk);
+}
+
 void AndroidBuilderSetup::LoadPlatforms(const AndroidSDK& sdk)
 {
 	Vector<String> platforms = sdk.FindPlatforms();
@@ -160,6 +187,14 @@ void AndroidBuilderSetup::LoadBuildTools(const AndroidSDK& sdk)
 	             sdk.FindDefaultBuildToolsRelease());
 }
 
+void AndroidBuilderSetup::LoadToolchains(const AndroidNDK& ndk)
+{
+	Vector<String> toolchains = ndk.FindToolchains();
+	Sort(toolchains, StdGreater<String>());
+	
+	LoadDropList(ndk_toolchain, toolchains, ndk.FindDefaultToolchain());
+}
+
 void AndroidBuilderSetup::LoadCppRuntimes()
 {
 	Vector<String> runtimes;
@@ -176,7 +211,9 @@ void AndroidBuilderSetup::LoadCppRuntimes()
 	LoadDropList(ndk_cpp_runtime, runtimes, "gnustl_shared");
 }
 
-void AndroidBuilderSetup::LoadDropList(DropList& dropList, Vector<String> values, const String& defaultKey)
+void AndroidBuilderSetup::LoadDropList(DropList& dropList,
+                                       Vector<String> values,
+                                       const String& defaultKey)
 {
 	dropList.Clear();
 	
@@ -385,17 +422,34 @@ void BuildMethods::Load()
 		if(LoadVarFile(fn, map)) {
 			String builderName = map.Get("BUILDER");
 			
+			int setupIdx = -1;
+			String prefix;
 			for(int i = 0; i < setups.GetCount(); i++) {
 				Index<String> currentBuilders = StringToBuilders(setups.GetKey(i));
-				if(currentBuilders.Find(builderName) > -1)
-					setups[i].setupCtrl->OnLoad();
+				prefix = GetSetupPrefix(currentBuilders);
+				if(currentBuilders.Find(builderName) > -1) {
+					setupIdx = i;
+					break;
+				}
 			}
+			
+			if(setupIdx > -1)
+				setups[setupIdx].setupCtrl->OnLoad();
 			
 			map = MapBuilderVars(map);
 			origfile.Add(fn);
 			method.Add(GetFileTitle(fn));
-			for(int j = 1; j < method.GetIndexCount(); j++)
-				method.Set(method.GetCount() - 1, j, map.Get(method.GetId(j).ToString(), Null));
+			for(int j = 1; j < method.GetIndexCount(); j++) {
+				String val = map.Get(method.GetId(j).ToString(), Null);
+				if(setupIdx > -1) {
+					String key = method.GetId(j).ToString();
+					if(key.GetCount() >= prefix.GetCount())
+						key.Remove(0, prefix.GetCount());
+					setups[setupIdx].setupCtrl->OnCtrlLoad(key, val);
+				}
+				method.Set(method.GetCount() - 1, j, val);
+			}
+
 		}
 		ff.Next();
 	}
@@ -467,6 +521,11 @@ void BuildMethods::SetDefault()
 String BuildMethods::GetSetupPrefix(const String& setupKey) const
 {
 	return setupKey + "_";
+}
+
+String BuildMethods::GetSetupPrefix(const Index<String>& buildersGroup) const
+{
+	return buildersGroup.GetCount() ? GetSetupPrefix(buildersGroup[0]) : "";
 }
 
 void BuildMethods::InitSetups()

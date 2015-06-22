@@ -1,4 +1,4 @@
-description "TheIDE - Android SDK uspport module\377B";
+description "TheIDE - Android SDK/NDK uspport module\377B";
 
 uses
 	ide/Core;

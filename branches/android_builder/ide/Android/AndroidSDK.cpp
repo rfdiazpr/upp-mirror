@@ -4,6 +4,11 @@
 
 NAMESPACE_UPP
 
+String AndroidSDK::GetDownloadUrl()
+{
+	return "https://developer.android.com/sdk/index.html";
+}
+
 AndroidSDK::AndroidSDK()
 {
 	

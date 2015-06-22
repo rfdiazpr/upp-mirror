@@ -22,6 +22,9 @@ private:
 
 class AndroidSDK {
 public:
+	static String GetDownloadUrl();
+	
+public:
 	AndroidSDK();
 	AndroidSDK(const String& path, bool deduceValues = false);
 	virtual ~AndroidSDK();
@@ -72,6 +75,9 @@ private:
 };
 
 class AndroidNDK {
+public:
+	static String GetDownloadUrl();
+	
 public:
 	AndroidNDK();
 	AndroidNDK(const String& path);

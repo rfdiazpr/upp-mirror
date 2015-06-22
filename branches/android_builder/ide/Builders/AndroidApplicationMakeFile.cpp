@@ -56,6 +56,11 @@ void AndroidApplicationMakeFile::SetCFlags(const String& cFlags)
 	this->cFlags = cFlags;
 }
 
+void AndroidApplicationMakeFile::SetOptim(const String& optim)
+{
+	this->optim = optim;
+}
+
 void AndroidApplicationMakeFile::SetToolchain(const String& toolchain)
 {
 	this->toolchain = toolchain;
@@ -84,6 +89,11 @@ void AndroidApplicationMakeFile::AppendCppFlags(String& makeFile) const
 void AndroidApplicationMakeFile::AppendCFlags(String& makeFile) const
 {
 	AndroidMakeFile::AppendString(makeFile, cFlags, "APP_CFLAGS");
+}
+
+void AndroidApplicationMakeFile::AppendOptim(String& makeFile) const
+{
+	AndroidMakeFile::AppendString(makeFile, optim, "APP_OPTIM");
 }
 
 void AndroidApplicationMakeFile::AppendToolchain(String& makeFile) const

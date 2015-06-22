@@ -18,6 +18,7 @@ String AndroidApplicationMakeFile::ToString() const
 	
 	AppendPlatform(makeFile);
 	AppendArchitectures(makeFile);
+	AppendToolchain(makeFile);
 	AppendCppRuntime(makeFile);
 	AppendCppFlags(makeFile);
 	AppendCFlags(makeFile);
@@ -55,6 +56,11 @@ void AndroidApplicationMakeFile::SetCFlags(const String& cFlags)
 	this->cFlags = cFlags;
 }
 
+void AndroidApplicationMakeFile::SetToolchain(const String& toolchain)
+{
+	this->toolchain = toolchain;
+}
+
 void AndroidApplicationMakeFile::AppendPlatform(String& makeFile) const
 {
 	AndroidMakeFile::AppendString(makeFile, platform, "APP_PLATFORM");
@@ -78,6 +84,11 @@ void AndroidApplicationMakeFile::AppendCppFlags(String& makeFile) const
 void AndroidApplicationMakeFile::AppendCFlags(String& makeFile) const
 {
 	AndroidMakeFile::AppendString(makeFile, cFlags, "APP_CFLAGS");
+}
+
+void AndroidApplicationMakeFile::AppendToolchain(String& makeFile) const
+{
+	AndroidMakeFile::AppendString(makeFile, toolchain, "NDK_TOOLCHAIN_VERSION");
 }
 
 END_UPP_NAMESPACE

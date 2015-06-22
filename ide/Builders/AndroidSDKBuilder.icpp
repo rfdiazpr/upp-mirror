@@ -251,12 +251,10 @@ bool AndroidBuilder::Link(const Vector<String>& linkfile, const String& linkopti
 		GenerateApplicationMakeFile();
 		GenerateMakeFile();
 		
-		String ndkBuildCmd;
-		ndkBuildCmd << androidNDK.NdkBuildPath();
-		ndkBuildCmd << " -j " << GetHydraThreads();
-		ndkBuildCmd << " -C " << GetAndroidProjectDir();
-		//PutConsole(ndkBuildCmd);
-		if(Execute(ndkBuildCmd, ss) != 0 ) {
+		NDKBuild ndkBuild(androidNDK.GetNdkBuildPath());
+		ndkBuild.SetWorkingDir(GetAndroidProjectDir());
+		ndkBuild.SetJobs(GetHydraThreads());
+		if(Execute(ndkBuild.ToString(), ss) != 0 ) {
 			PutConsole(ss.GetResult());
 			return false;
 		}
@@ -475,6 +473,7 @@ void AndroidBuilder::GenerateApplicationMakeFile()
 	AndroidApplicationMakeFile makeFile;
 	makeFile.SetPlatform(androidSDK.GetPlatform());
 	makeFile.SetArchitectures(ndkArchitectures);
+	makeFile.SetToolchain(ndkToolchain);
 	makeFile.SetCppRuntime(ndkCppRuntime);
 	makeFile.SetCppFlags(ndkCppFlags);
 	makeFile.SetCFlags(ndkCFlags);

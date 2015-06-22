@@ -50,12 +50,15 @@ public:
 
 	virtual void New(const String& builder) = 0;
 	virtual void OnLoad() = 0;
+	virtual void OnCtrlLoad(const String& ctrlKey, const String& value) = 0;
 	virtual void InitSetupCtrlsMap(VectorMap<Id, Ctrl*>& map) = 0;
 	
 	virtual void InitBuilderSetup(BuilderSetup& bs);
 };
 
 class AndroidBuilderSetup : public WithBuildMethodsAndroidBuilderSetupLayout<BuilderSetupInterface> {
+	typedef AndroidBuilderSetup CLASSNAME;
+	
 public:
 	FrameRight<Button> ndkBrowse;
 	FrameRight<Button> jdkBrowse;
@@ -65,12 +68,18 @@ public:
 	
 	virtual void New(const String& builder);
 	virtual void OnLoad();
+	virtual void OnCtrlLoad(const String& ctrlKey, const String& value);
 	
 	virtual void InitSetupCtrlsMap(VectorMap<Id, Ctrl*>& map);
 
 private:
+	void OnNdkPathChange();
+	void OnNdkPathChange0(const String& ndkPath);
+
+private:
 	void LoadPlatforms(const AndroidSDK& sdk);
 	void LoadBuildTools(const AndroidSDK& sdk);
+	void LoadToolchains(const AndroidNDK& ndk);
 	void LoadCppRuntimes();
 	void LoadDropList(DropList& dropList, Vector<String> values, const String& defaultKey = "");
 };
@@ -97,6 +106,7 @@ public:
 	
 	virtual void New(const String& builder);
 	virtual void OnLoad();
+	virtual void OnCtrlLoad(const String& ctrlKey, const String& value) {}
 	
 	virtual void InitSetupCtrlsMap(VectorMap<Id, Ctrl*>& map);
 };
@@ -127,6 +137,7 @@ public:
 	void MethodMenu(Bar& bar);
 	
 	String GetSetupPrefix(const String& setupKey) const;
+	String GetSetupPrefix(const Index<String>& buildersGroup) const;
 	void   InitSetups();
 	void   SwitchSetupView();
 	VectorMap<String, String> SieveBuilderVars(const VectorMap<String, String>& map);

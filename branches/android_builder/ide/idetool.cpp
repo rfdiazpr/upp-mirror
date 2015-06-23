@@ -457,3 +457,10 @@ void Ide::DoDirDiff()
 		dlg.SetFocus();
 }
 
+void Ide::LauchAndroidSDKManager()
+{
+	AndroidSDK sdk(androidSDKPath);
+	
+	One<Host> host = CreateHost(false);
+	IGNORE_RESULT(host->Execute(sdk.GetLauchSDKManagerCmd()));
+}

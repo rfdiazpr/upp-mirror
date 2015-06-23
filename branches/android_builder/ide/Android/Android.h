@@ -60,6 +60,10 @@ public:
 	String EmulatorPath() const   { return ToolsDir() + DIR_SEPS + "emulator" + GetExeExt(); }
 	
 public:
+	String GetLauchSDKManagerCmd() const;
+	String GetLauchAVDManagerCmd() const;
+	
+public:
 	String GetPath() const              { return this->path; }
 	String GetPlatform() const          { return this->platform; }
 	String GetBuildToolsRelease() const { return this->buildToolsRelease; }
@@ -86,8 +90,10 @@ public:
 	bool Validate() const;
 	
 	String FindDefaultToolchain() const;
+	String FindDefaultCppRuntime() const;
 	
 	Vector<String> FindToolchains() const;
+	Vector<String> FindCppRuntimes() const;
 	
 public:
 	String GetNdkBuildPath() const  { return path + DIR_SEPS + "ndk-build" + Android::GetCmdExt(); }

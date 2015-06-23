@@ -32,10 +32,15 @@ bool AndroidNDK::Validate() const
 
 String AndroidNDK::FindDefaultToolchain() const
 {
-	Vector<String> toolchains = FindToolchains();
+	Vector<String> toolchains = pick(FindToolchains());
 	Sort(toolchains, StdGreater<String>());
 	
 	return toolchains.GetCount() ? toolchains[toolchains.GetCount() - 1] : "";
+}
+
+String AndroidNDK::FindDefaultCppRuntime() const
+{
+	return "gnustl_shared";
 }
 
 Vector<String> AndroidNDK::FindToolchains() const
@@ -58,6 +63,24 @@ Vector<String> AndroidNDK::FindToolchains() const
 	}
 
 	return toolchains;
+}
+
+Vector<String> AndroidNDK::FindCppRuntimes() const
+{
+	Vector<String> runtimes;
+	
+	// Values from ndk documentation
+	runtimes.Add("system");
+	runtimes.Add("gabi++_static");
+	runtimes.Add("gabi++_shared");
+	runtimes.Add("stlport_static");
+	runtimes.Add("stlport_shared");
+	runtimes.Add("gnustl_static");
+	runtimes.Add("gnustl_shared");
+	runtimes.Add("c++_static");
+	runtimes.Add("c++_shared");
+	
+	return runtimes;
 }
 
 END_UPP_NAMESPACE

@@ -82,7 +82,7 @@ private:
 	void LoadPlatforms(const AndroidSDK& sdk);
 	void LoadBuildTools(const AndroidSDK& sdk);
 	void LoadToolchains(const AndroidNDK& ndk);
-	void LoadCppRuntimes();
+	void LoadCppRuntimes(const AndroidNDK& ndk);
 	void LoadDropList(DropList& dropList, Vector<String> values, const String& defaultKey = "");
 };
 

@@ -158,4 +158,26 @@ String AndroidSDK::ToolsDir() const
 	return path + DIR_SEPS + "tools";
 }
 
+String AndroidSDK::GetLauchSDKManagerCmd() const
+{
+	String cmd;
+#if defined(PLATFORM_WIN32) || defined(PLATFORM_WIN64)
+
+#else
+	cmd = AndroidPath() + " sdk";
+#endif
+	return cmd;
+}
+
+String AndroidSDK::GetLauchAVDManagerCmd() const
+{
+	String cmd;
+#if defined(PLATFORM_WIN32) || defined(PLATFORM_WIN64)
+
+#else
+	cmd = AndroidPath() + " avd";
+#endif
+	return cmd;
+}
+
 END_UPP_NAMESPACE

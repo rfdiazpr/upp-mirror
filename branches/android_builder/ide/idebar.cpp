@@ -353,8 +353,12 @@ void Ide::Setup(Bar& menu)
 #ifdef PLATFORM_POSIX
 	menu.Add("Source managment..", THISBACK(AutoSetup))
 	    .Help("Source code updater settings..");
-	menu.Separator();
+#endif
+	if(menu.IsMenuBar())
+		SetupMobilePlatforms(menu);
+#ifdef PLATFORM_POSIX
 	if(UpdaterCfg().method%2==0) { //local copy or svn
+		menu.Separator();
 		if(UpdaterCfg().available)
 			menu.Add("Install updates..", IdeImg::install_updates(), THISBACK(CheckUpdatesManual))
 			    .Help("Install newer version of source codes..");
@@ -363,6 +367,22 @@ void Ide::Setup(Bar& menu)
 			    .Help("Check for availability of newer source codes..");
 	}
 #endif
+}
+
+void Ide::SetupMobilePlatforms(Bar& menu)
+{
+	AndroidSDK androidSDK(androidSDKPath);
+	
+	if(androidSDK.Validate()) {
+		menu.Separator();
+		menu.Add("Android", THISBACK(SetupAndroidMobilePlatform));
+	}
+	
+}
+
+void Ide::SetupAndroidMobilePlatform(Bar& menu)
+{
+	menu.Add("SDK Manager", THISBACK(LauchAndroidSDKManager));
 }
 
 void Ide::ProjectSvn(Bar& menu)

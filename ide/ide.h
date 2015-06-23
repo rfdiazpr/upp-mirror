@@ -873,7 +873,11 @@ public:
 		void  CheckUpdatesManual();
 		void  SetUpdateTimer(int period);
 		void  Abbreviations();
-
+	
+	void      SetupMobilePlatforms(Bar& bar);
+		void  SetupAndroidMobilePlatform(Bar& bar);
+		void  LauchAndroidSDKManager();
+	
 	void      BrowseMenu(Bar& menu);
 		void  RescanCode();
 		void  QueryId();

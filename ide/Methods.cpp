@@ -145,7 +145,6 @@ void AndroidBuilderSetup::OnLoad()
 	sdk_path.SetData(sdk.GetPath());
 	LoadPlatforms(sdk);
 	LoadBuildTools(sdk);
-	LoadCppRuntimes();
 }
 
 void AndroidBuilderSetup::OnCtrlLoad(const String& ctrlKey, const String& value)
@@ -168,8 +167,10 @@ void AndroidBuilderSetup::OnNdkPathChange()
 void AndroidBuilderSetup::OnNdkPathChange0(const String& ndkPath)
 {
 	AndroidNDK ndk(ndkPath);
-	if(ndk.Validate())
+	if(ndk.Validate()) {
 		LoadToolchains(ndk);
+		LoadCppRuntimes(ndk);
+	}
 }
 
 void AndroidBuilderSetup::OnNdkDownload()
@@ -179,7 +180,7 @@ void AndroidBuilderSetup::OnNdkDownload()
 
 void AndroidBuilderSetup::LoadPlatforms(const AndroidSDK& sdk)
 {
-	Vector<String> platforms = sdk.FindPlatforms();
+	Vector<String> platforms = pick(sdk.FindPlatforms());
 	Sort(platforms, StdGreater<String>());
 	
 	LoadDropList(sdk_platform_version,
@@ -189,7 +190,7 @@ void AndroidBuilderSetup::LoadPlatforms(const AndroidSDK& sdk)
 
 void AndroidBuilderSetup::LoadBuildTools(const AndroidSDK& sdk)
 {
-	Vector<String> releases = sdk.FindBuildToolsReleases();
+	Vector<String> releases = pick(sdk.FindBuildToolsReleases());
 	Sort(releases, StdGreater<String>());
 	
 	LoadDropList(sdk_build_tools_release,
@@ -199,26 +200,17 @@ void AndroidBuilderSetup::LoadBuildTools(const AndroidSDK& sdk)
 
 void AndroidBuilderSetup::LoadToolchains(const AndroidNDK& ndk)
 {
-	Vector<String> toolchains = ndk.FindToolchains();
+	Vector<String> toolchains = pick(ndk.FindToolchains());
 	Sort(toolchains, StdGreater<String>());
 	
 	LoadDropList(ndk_toolchain, toolchains, ndk.FindDefaultToolchain());
 }
 
-void AndroidBuilderSetup::LoadCppRuntimes()
+void AndroidBuilderSetup::LoadCppRuntimes(const AndroidNDK& ndk)
 {
-	Vector<String> runtimes;
-	runtimes.Add("system");
-	runtimes.Add("gabi++_static");
-	runtimes.Add("gabi++_shared");
-	runtimes.Add("stlport_static");
-	runtimes.Add("stlport_shared");
-	runtimes.Add("gnustl_static");
-	runtimes.Add("gnustl_shared");
-	runtimes.Add("c++_static");
-	runtimes.Add("c++_shared");
+	Vector<String> runtimes = pick(ndk.FindCppRuntimes());
 	
-	LoadDropList(ndk_cpp_runtime, runtimes, "gnustl_shared");
+	LoadDropList(ndk_cpp_runtime, runtimes, ndk.FindDefaultCppRuntime());
 }
 
 void AndroidBuilderSetup::LoadDropList(DropList& dropList,

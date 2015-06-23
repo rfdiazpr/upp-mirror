@@ -214,7 +214,7 @@ void ShellOpenFolder(const String& dir)
 		tempDir.Replace(" ", "\\ ");
 
 		IGNORE_RESULT(
-			system("open " + dir + " &")
+			system("open " + tempDir + " &")
 		);
 	#else
 		String tempDir = dir;

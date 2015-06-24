@@ -96,7 +96,7 @@ Vector<String> AndroidSDK::FindAVDNames() const
 
 String AndroidSDK::FindDefaultPlatform() const
 {
-	Vector<String> platforms = FindPlatforms();
+	Vector<String> platforms = pick(FindPlatforms());
 	if(platforms.GetCount()) {
 		Sort(platforms, StdGreater<String>());
 		int idx = 0;
@@ -113,7 +113,7 @@ String AndroidSDK::FindDefaultPlatform() const
 
 String AndroidSDK::FindDefaultBuildToolsRelease() const
 {
-	Vector<String> releases = FindBuildToolsReleases();
+	Vector<String> releases = pick(FindBuildToolsReleases());
 	if(releases.GetCount()) {
 		Sort(releases, StdGreater<String>());
 		int idx = 0;

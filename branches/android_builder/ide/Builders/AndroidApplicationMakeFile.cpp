@@ -18,10 +18,11 @@ String AndroidApplicationMakeFile::ToString() const
 	
 	AppendPlatform(makeFile);
 	AppendArchitectures(makeFile);
-	AppendToolchain(makeFile);
 	AppendCppRuntime(makeFile);
 	AppendCppFlags(makeFile);
 	AppendCFlags(makeFile);
+	AppendOptim(makeFile);
+	AppendToolchain(makeFile);
 	
 	return makeFile;
 }

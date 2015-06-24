@@ -473,10 +473,11 @@ void AndroidBuilder::GenerateApplicationMakeFile()
 	AndroidApplicationMakeFile makeFile;
 	makeFile.SetPlatform(androidSDK.GetPlatform());
 	makeFile.SetArchitectures(ndkArchitectures);
-	makeFile.SetToolchain(ndkToolchain);
 	makeFile.SetCppRuntime(ndkCppRuntime);
 	makeFile.SetCppFlags(ndkCppFlags);
 	makeFile.SetCFlags(ndkCFlags);
+	makeFile.SetOptim(HasFlag("DEBUG") ? "debug" : "release");
+	makeFile.SetToolchain(ndkToolchain);
 	
 	UpdateFile(GetAndroidProjectJniApplicationMakeFilePath(), makeFile.ToString());
 }

@@ -875,8 +875,8 @@ public:
 		void  Abbreviations();
 	
 	void      SetupMobilePlatforms(Bar& bar);
-		void  SetupAndroidMobilePlatform(Bar& bar);
-		void  LauchAndroidSDKManager();
+		void  SetupAndroidMobilePlatform(Bar& bar, const AndroidSDK& androidSDK);
+		void  LauchAndroidSDKManager(const AndroidSDK& androidSDK);
 	
 	void      BrowseMenu(Bar& menu);
 		void  RescanCode();

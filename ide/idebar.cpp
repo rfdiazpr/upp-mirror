@@ -375,14 +375,14 @@ void Ide::SetupMobilePlatforms(Bar& menu)
 	
 	if(androidSDK.Validate()) {
 		menu.Separator();
-		menu.Add("Android", THISBACK(SetupAndroidMobilePlatform));
+		menu.Add("Android", THISBACK1(SetupAndroidMobilePlatform, androidSDK));
 	}
 	
 }
 
-void Ide::SetupAndroidMobilePlatform(Bar& menu)
+void Ide::SetupAndroidMobilePlatform(Bar& menu, const AndroidSDK& androidSDK)
 {
-	menu.Add("SDK Manager", THISBACK(LauchAndroidSDKManager));
+	menu.Add("SDK Manager", THISBACK1(LauchAndroidSDKManager, androidSDK));
 }
 
 void Ide::ProjectSvn(Bar& menu)

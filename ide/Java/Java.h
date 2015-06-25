@@ -1,7 +1,9 @@
-#ifndef _ide_Builders_Java_h_
-#define _ide_Builders_Java_h_
+#ifndef JAVA_H
+#define JAVA_H
 
 #include <Core/Core.h>
+
+#include <ide/Core/Core.h>
 
 NAMESPACE_UPP
 

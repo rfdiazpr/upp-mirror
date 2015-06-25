@@ -3,11 +3,11 @@
 
 #include <ide/Core/Core.h>
 #include <ide/Android/Android.h>
+#include <ide/Java/Java.h>
 //#include <coff/binobj/binobj.h>
 #include <plugin/bz2/bz2.h>
 
 #include "Android.h"
-#include "Java.h"
 #include "BuilderComponents.h"
 #include "Build.h"
 

@@ -105,8 +105,7 @@ AndroidBuilderSetup::AndroidBuilderSetup()
 	
 	jdkDownload.SetImage(IdeImg::DownloadBlack());
 	jdkDownload.Tip("Download");
-	// TODO: Move java from Builder to separate package.
-	jdkDownload <<= callback1(LaunchWebBrowser, "http://www.oracle.com/technetwork/java/javase/downloads/index.html");
+	jdkDownload <<= callback1(LaunchWebBrowser, Jdk::GetDownloadUrl());
 	jdk_path.AddFrame(jdkDownload);
 	
 	jdkBrowse.SetImage(CtrlImg::right_arrow());

@@ -10,6 +10,7 @@
 #include <CodeEditor/CodeEditor.h>
 #include <usvn/usvn.h>
 #include <ide/IconDes/IconDes.h>
+#include <ide/Java/Java.h>
 #include <ide/LayDes/LayDes.h>
 #include <ide/Debuggers/Debuggers.h>
 #include <TextDiffCtrl/TextDiffCtrl.h>   

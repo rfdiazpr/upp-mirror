@@ -18,7 +18,8 @@ uses
 	TextDiffCtrl,
 	TabBar,
 	ide/Designers,
-	ide/Android;
+	ide/Android,
+	ide/Java;
 
 uses(POSIX) ide\SrcUpdater;
 

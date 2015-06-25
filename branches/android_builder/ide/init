@@ -18,5 +18,6 @@
 #include "TabBar/init"
 #include "ide/Designers/init"
 #include "ide/Android/init"
+#include "ide/Java/init"
 #include "ide\SrcUpdater/init"
 #endif

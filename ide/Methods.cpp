@@ -100,6 +100,7 @@ AndroidBuilderSetup::AndroidBuilderSetup()
 	ndk_path.AddFrame(ndkDownload);
 	
 	ndkBrowse.SetImage(CtrlImg::right_arrow());
+	ndkBrowse.Tip("Select directory");
 	ndkBrowse <<= THISBACK(OnNdkPathInsert);
 	ndk_path.AddFrame(ndkBrowse);
 	
@@ -109,6 +110,7 @@ AndroidBuilderSetup::AndroidBuilderSetup()
 	jdk_path.AddFrame(jdkDownload);
 	
 	jdkBrowse.SetImage(CtrlImg::right_arrow());
+	jdkBrowse.Tip("Select directory");
 	jdkBrowse <<= callback1(InsertPath, &jdk_path);
 	jdk_path.AddFrame(jdkBrowse);
 }

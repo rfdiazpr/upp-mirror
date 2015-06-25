@@ -508,6 +508,7 @@ void Ide::SetupFormat() {
 	
 	FrameRight<Button> androidSDKBrowse;
 	androidSDKBrowse.SetImage(CtrlImg::right_arrow());
+	androidSDKBrowse.Tip("Select directory");
 	androidSDKBrowse <<= callback1(InsertPath, &mobile.AndroidSDKPath);
 	mobile.AndroidSDKPath.AddFrame(androidSDKBrowse);
 	mobile.AndroidSDKPath <<= androidSDKPath;

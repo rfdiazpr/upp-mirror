@@ -9,8 +9,7 @@ Index<String> AndroidBuilder::GetBuildersNames()
 	return builders;
 }
 
-AndroidBuilder::AndroidBuilder() :
-	blitzComponent(this)
+AndroidBuilder::AndroidBuilder()
 {
 	androidSDK.SetPath(GetAndroidSDKPath());
 }
@@ -151,8 +150,11 @@ bool AndroidBuilder::BuildPackage(const String& package, Vector<String>& linkfil
 		compileCmd << NormalizeExePath(jdk.GetJavacPath());
 		compileCmd << (HasFlag("DEBUG") ? " -g" : " -g:none");
 		compileCmd << " -d "<< GetAndroidProjectClassesDir();
-		compileCmd << " -classpath " << androidSDK.AndroidJarPath() << Java::GetDelimiter() << GetAndroidProjectBuildDir();
-		compileCmd << " -sourcepath " << GetAndroidProjectJavaSourcesDir() << " ";
+		compileCmd << " -classpath ";
+		compileCmd << NormalizeExePath(androidSDK.AndroidJarPath()) << Java::GetDelimiter();
+		compileCmd << GetAndroidProjectBuildDir();
+		compileCmd << " -sourcepath ";
+		compileCmd << GetAndroidProjectJavaSourcesDir() << " ";
 		for(int i = 0; i < javaSourceFiles.GetCount(); i++) {
 			compileCmd << javaSourceFiles[i];
 			if(i < javaSourceFiles.GetCount() - 1)
@@ -164,13 +166,14 @@ bool AndroidBuilder::BuildPackage(const String& package, Vector<String>& linkfil
 
 	if(!isResourcesPackage && !error && !nativeSourceFiles.IsEmpty()) {
 		if(isBlitz) {
-			Blitz blitz = blitzComponent.MakeBlitzStep(nativeSourceFilesInPackage,
-			                                           nativeSourceFilesOptions,
-			                                           nativeObjects,
-			                                           immfile,
-			                                           ".o",
-			                                           optimizeNativeSourceFiles,
-			                                           noBlitzNativeSourceFiles);
+			BlitzBuilderComponent bc(this);
+			Blitz blitz = bc.MakeBlitzStep(nativeSourceFilesInPackage,
+			                               nativeSourceFilesOptions,
+			                               nativeObjects,
+			                               immfile,
+			                               ".o",
+			                               optimizeNativeSourceFiles,
+			                               noBlitzNativeSourceFiles);
 			
 			String destinationFileName = GetFileName(blitz.path);
 			destinationFileName.Replace("$blitz.cpp", "@blitz.cpp");
@@ -265,7 +268,8 @@ bool AndroidBuilder::Link(const Vector<String>& linkfile, const String& linkopti
 	PutConsole("Creating dex file...");
 	RealizeDirectory(GetAndroidProjectBinDir());
 	String dxCmd;
-	dxCmd << androidSDK.DxPath() << " --dex ";
+	dxCmd << NormalizeExePath(androidSDK.DxPath());
+	dxCmd << " --dex ";
 	dxCmd << "--output=" << GetAndroidProjectBinDir() << DIR_SEPS << "classes.dex ";
 	dxCmd << GetAndroidProjectClassesDir();
 	// PutConsole(dxCmd);
@@ -279,11 +283,12 @@ bool AndroidBuilder::Link(const Vector<String>& linkfile, const String& linkopti
 	String signedApkPath = GetSandboxDir() + DIR_SEPS + GetFileTitle(target) + ".signed.apk";
 	DeleteFile(unsignedApkPath);
 	String apkCmd;
-	apkCmd << androidSDK.AaptPath() << " package -v -f";
+	apkCmd << NormalizeExePath(androidSDK.AaptPath());
+	apkCmd << " package -v -f";
 	if(DirectoryExists(GetAndroidProjectResourcesDir()))
 		apkCmd << " -S " << GetAndroidProjectResourcesDir();
 	apkCmd << " -M " << GetAndroidProjectDir() << DIR_SEPS << "AndroidManifest.xml";
-	apkCmd << " -I " << androidSDK.AndroidJarPath();
+	apkCmd << " -I " << NormalizeExePath(androidSDK.AndroidJarPath());
 	apkCmd << " -F " << unsignedApkPath;
 	apkCmd << " " << GetAndroidProjectBinDir();
 	// PutConsole(apkCmd);
@@ -339,7 +344,8 @@ bool AndroidBuilder::Link(const Vector<String>& linkfile, const String& linkopti
 	PutConsole("Aliging apk file...");
 	DeleteFile(target);
 	String zipalignCmd;
-	zipalignCmd << androidSDK.ZipalignPath() << " -f 4 ";
+	zipalignCmd << NormalizeExePath(androidSDK.ZipalignPath());
+	zipalignCmd << " -f 4 ";
 	zipalignCmd << (HasFlag("DEBUG") ? signedApkPath : unsignedApkPath) << " ";
 	zipalignCmd << target;
 	//PutConsole(zipalignCmd);
@@ -413,7 +419,8 @@ bool AndroidBuilder::AddSharedLibsToApk(const String& apkPath)
 	
 	ChDir(androidProjectDir);	
 	String aaptAddCmd;
-	aaptAddCmd << androidSDK.AaptPath() << " add " << apkPath;
+	aaptAddCmd << NormalizeExePath(androidSDK.AaptPath());
+	aaptAddCmd << " add " << apkPath;
 	for(int i = 0; i < sharedLibsToAdd.GetCount(); i++)
 		aaptAddCmd << " " << sharedLibsToAdd[i];
 	// PutConsole(aaptAddCmd);
@@ -503,14 +510,15 @@ bool AndroidBuilder::GenerateRFile()
 	// TODO: gen in gen folder
 	if(DirectoryExists(GetAndroidProjectResourcesDir())) {
 		StringStream ss;
-		String aaptCommand;
-		aaptCommand << androidSDK.AaptPath() << " package -v -f -m";
-		aaptCommand << " -S " << GetAndroidProjectDir() << DIR_SEPS << "res";
-		aaptCommand << " -J " << GetAndroidProjectDir() << DIR_SEPS << "java";
-		aaptCommand << " -M " << GetAndroidProjectDir() << DIR_SEPS << "AndroidManifest.xml";
-		aaptCommand << " -I " << androidSDK.AndroidJarPath();
+		String aaptCmd;
+		aaptCmd << NormalizeExePath(androidSDK.AaptPath());
+		aaptCmd << " package -v -f -m";
+		aaptCmd << " -S " << GetAndroidProjectDir() << DIR_SEPS << "res";
+		aaptCmd << " -J " << GetAndroidProjectDir() << DIR_SEPS << "java";
+		aaptCmd << " -M " << GetAndroidProjectDir() << DIR_SEPS << "AndroidManifest.xml";
+		aaptCmd << " -I " << NormalizeExePath(androidSDK.AndroidJarPath());
 		
-		if(Execute(aaptCommand, ss) != 0) {
+		if(Execute(aaptCmd, ss) != 0) {
 			PutConsole(ss.GetResult());
 			return false;
 		}
@@ -538,7 +546,9 @@ bool AndroidBuilder::PreprocessJava(const String& package, const String& file, c
 	String compileCmd;
 	compileCmd << NormalizeExePath(jdk.GetJavacPath());
 	compileCmd << " -d "<< classesDir;
-	compileCmd << " -classpath " << androidSDK.AndroidJarPath() << Java::GetDelimiter() << GetAndroidProjectBuildDir();
+	compileCmd << " -classpath ";
+	compileCmd << NormalizeExePath(androidSDK.AndroidJarPath()) << Java::GetDelimiter();
+	compileCmd << GetAndroidProjectBuildDir();
 	compileCmd << " -sourcepath " << GetAndroidProjectJavaSourcesDir();
 	compileCmd << " " << file;
 	if(Execute(compileCmd) != 0)
@@ -574,7 +584,10 @@ bool AndroidBuilder::PreprocessJava(const String& package, const String& file, c
 	
 	String javahCmd;
 	javahCmd << NormalizeExePath(jdk.GetJavahPath());
-	javahCmd << " -classpath " << classesDir << Java::GetDelimiter() << androidSDK.AndroidJarPath() << Java::GetDelimiter() << GetAndroidProjectBuildDir();
+	javahCmd << " -classpath ";
+	javahCmd << classesDir << Java::GetDelimiter();
+	javahCmd << NormalizeExePath(androidSDK.AndroidJarPath()) << Java::GetDelimiter();
+	javahCmd << GetAndroidProjectBuildDir();
 	javahCmd << " -o " << target;
 	javahCmd << " " << className;
 	// PutConsole(javahCmd);

@@ -63,6 +63,7 @@ public:
 	FrameRight<Button> ndkBrowse;
 	FrameRight<Button> ndkDownload;
 	FrameRight<Button> jdkBrowse;
+	FrameRight<Button> jdkDownload;
 	
 public:
 	AndroidBuilderSetup();
@@ -74,9 +75,9 @@ public:
 	virtual void InitSetupCtrlsMap(VectorMap<Id, Ctrl*>& map);
 
 private:
+	void OnNdkPathInsert();
 	void OnNdkPathChange();
 	void OnNdkPathChange0(const String& ndkPath);
-	void OnNdkDownload();
 
 private:
 	void LoadPlatforms(const AndroidSDK& sdk);

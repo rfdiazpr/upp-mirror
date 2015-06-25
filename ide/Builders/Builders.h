@@ -21,8 +21,6 @@ struct CppBuilder : Builder {
 	const Workspace& wspc;
 	Time             targettime;
 	
-	BlitzBuilderComponent blitzComponent;
-	
 	String                 GetSharedLibPath(const String& package) const;
 	String                 GetLocalPath(const String& path) const;
 	int                    AllocSlot();
@@ -60,7 +58,7 @@ struct CppBuilder : Builder {
 		const Vector<String>& all_uses, const Vector<String>& all_libraries,
 		const Index<String>& common_config, bool exporting);
 
-	CppBuilder() : wspc(GetIdeWorkspace()), blitzComponent(this) {}
+	CppBuilder() : wspc(GetIdeWorkspace()) {}
 };
 
 struct GccBuilder : CppBuilder {
@@ -221,9 +219,6 @@ protected:
 	                                   const String& packageName,
 	                                   const String& fileName) const;
 	
-private:
-	BlitzBuilderComponent blitzComponent;
-
 };
 
 void DeletePCHFile(const String& pch_file);

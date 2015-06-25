@@ -3,6 +3,8 @@
 
 #include <Core/Core.h>
 
+#include <ide/Core/Core.h>
+
 NAMESPACE_UPP
 
 class NDKBuild {

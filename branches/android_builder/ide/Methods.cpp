@@ -96,12 +96,18 @@ AndroidBuilderSetup::AndroidBuilderSetup()
 	
 	ndkDownload.SetImage(IdeImg::DownloadBlack());
 	ndkDownload.Tip("Download");
-	ndkDownload <<= THISBACK(OnNdkDownload);
+	ndkDownload <<= callback1(LaunchWebBrowser, AndroidNDK::GetDownloadUrl());
 	ndk_path.AddFrame(ndkDownload);
 	
 	ndkBrowse.SetImage(CtrlImg::right_arrow());
-	ndkBrowse <<= callback1(InsertPath, &ndk_path);
+	ndkBrowse <<= THISBACK(OnNdkPathInsert);
 	ndk_path.AddFrame(ndkBrowse);
+	
+	jdkDownload.SetImage(IdeImg::DownloadBlack());
+	jdkDownload.Tip("Download");
+	// TODO: Move java from Builder to separate package.
+	jdkDownload <<= callback1(LaunchWebBrowser, "http://www.oracle.com/technetwork/java/javase/downloads/index.html");
+	jdk_path.AddFrame(jdkDownload);
 	
 	jdkBrowse.SetImage(CtrlImg::right_arrow());
 	jdkBrowse <<= callback1(InsertPath, &jdk_path);
@@ -159,6 +165,15 @@ void AndroidBuilderSetup::OnCtrlLoad(const String& ctrlKey, const String& value)
 	}
 }
 
+void AndroidBuilderSetup::OnNdkPathInsert()
+{
+	String currentPath = ndk_path.GetData();
+	
+	InsertPath(&ndk_path);
+	if(currentPath != ndk_path.GetData())
+		OnNdkPathChange();
+}
+
 void AndroidBuilderSetup::OnNdkPathChange()
 {
 	OnNdkPathChange0(ndk_path.GetData());
@@ -171,11 +186,6 @@ void AndroidBuilderSetup::OnNdkPathChange0(const String& ndkPath)
 		LoadToolchains(ndk);
 		LoadCppRuntimes(ndk);
 	}
-}
-
-void AndroidBuilderSetup::OnNdkDownload()
-{
-	LaunchWebBrowser(AndroidNDK::GetDownloadUrl());
 }
 
 void AndroidBuilderSetup::LoadPlatforms(const AndroidSDK& sdk)

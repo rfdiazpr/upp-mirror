@@ -120,7 +120,7 @@ void Ide::BuildAndExecute()
 				lauchApkOnDeviceCmd << " logcat *:E shell am start";
 				//lauchApkOnDeviceCmd << " shell am start";
 				lauchApkOnDeviceCmd << " -n " << packageName << "/" << lauchableActivityName;
-				Cout() << lauchApkOnDeviceCmd << "\n";
+				//Cout() << lauchApkOnDeviceCmd << "\n";
 				// FIXME: For some resons app close immediatly after lauch, but execute command in terminal works!!!
 				// h->Launch(lauchApkOnDeviceCmd);
 			}

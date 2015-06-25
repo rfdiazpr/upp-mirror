@@ -60,8 +60,8 @@ public:
 	String EmulatorPath() const   { return ToolsDir() + DIR_SEPS + "emulator" + GetExeExt(); }
 	
 public:
-	String GetLauchSDKManagerCmd() const;
-	String GetLauchAVDManagerCmd() const;
+	String GetLauchSDKManagerCmd() const { return NormalizeExePath(AndroidPath()) + " sdk"; }
+	String GetLauchAVDManagerCmd() const { return NormalizeExePath(AndroidPath()) + " avd"; }
 	
 public:
 	String GetPath() const              { return this->path; }

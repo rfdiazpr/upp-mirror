@@ -15,7 +15,7 @@ NDKBuild::~NDKBuild()
 
 String NDKBuild::ToString() const
 {
-	String cmd = path;
+	String cmd = NormalizeExePath(path);
 	if(!workingDir.IsEmpty())
 		cmd << " -C " << workingDir;
 	if(jobs > 0)

@@ -18,6 +18,9 @@ private:
 
 class Jdk {
 public:
+	static String GetDownloadUrl();
+	
+public:
 	Jdk();
 	Jdk(const String& path);
 	virtual ~Jdk();

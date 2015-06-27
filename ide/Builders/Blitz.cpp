@@ -22,6 +22,9 @@ Blitz BlitzBuilderComponent::MakeBlitzStep(Vector<String>& sfile, Vector<String>
                                            const char *objext, Vector<bool>& optimize,
                                            const Index<String>& noblitz)
 {
+	if(IsBuilder())
+		return Blitz();
+	
 	Blitz b;
 	Vector<String> excluded;
 	Vector<String> excludedoptions;

@@ -7,7 +7,12 @@ NAMESPACE_UPP
 
 class BuilderComponent {
 public:
+	BuilderComponent() { this->builder = NULL; }
 	BuilderComponent(Builder *builder) : builder(builder) {}
+	
+	void SetBuilder(Builder *builder) { this->builder = builder; }
+	
+	bool IsBuilder() const { return builder != NULL; }
 	
 protected:
 	Builder *builder;
